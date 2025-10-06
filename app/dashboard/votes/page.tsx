@@ -118,7 +118,6 @@ export default function VotesPage() {
       ) : userCreatedTests?.length === 0 ? (
         <div className="flex items-center justify-center h-32">
           <div className="text-center">
-            <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Henüz oylama bulunmuyor</h3>
             <p className="text-muted-foreground mb-4">
               İlk oylamanızı oluşturmak için butona tıklayın

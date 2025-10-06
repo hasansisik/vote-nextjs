@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { useAppDispatch } from "@/redux/hook";
 import { useRouter } from "next/navigation";
 import { createTest } from "@/redux/actions/userActions";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ interface Option {
 }
 
 export default function CreateTestPage() {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const { user, testsLoading } = useSelector((state: any) => state.user);
 
@@ -192,49 +193,282 @@ export default function CreateTestPage() {
   }
 
   return (
-    <div className="space-y-6 px-6">
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          onClick={() => router.back()}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Geri
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold">Yeni Oylama Oluştur</h1>
-          <p className="text-muted-foreground">
-            Yeni bir oylama testi oluşturun
-          </p>
+    <div className="min-h-screen ">
+      {/* WordPress-style Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => router.back()}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Geri
+            </Button>
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">Yeni Oylama Oluştur</h1>
+              <p className="text-sm text-gray-600">
+                Yeni bir oylama testi oluşturun
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+            >
+              İptal
+            </Button>
+            <Button
+              type="submit"
+              form="create-vote-form"
+              disabled={testsLoading}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {testsLoading ? "Oluşturuluyor..." : "Yayınla"}
+            </Button>
+          </div>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Genel Bilgiler</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="title">Başlık *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => handleInputChange("title", e.target.value)}
-                  placeholder="Oylama başlığı"
-                  required
-                />
+      {/* WordPress-style Content Layout */}
+      <div className="flex gap-6 p-6">
+        {/* Main Content Area */}
+        <div className="flex-1 max-w-4xl">
+          <form id="create-vote-form" onSubmit={handleSubmit} className="space-y-6">
+            {/* WordPress-style Title Input */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => handleInputChange("title", e.target.value)}
+                placeholder="Oylama başlığı girin..."
+                required
+                className="text-2xl font-semibold px-2 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-400 border border-gray-200"
+              />
+            </div>
+
+            {/* WordPress-style Content Editor */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                    Açıklama
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => handleInputChange("description", e.target.value)}
+                    placeholder="Oylama hakkında açıklama yazın..."
+                    rows={4}
+                    className="resize-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="coverImage" className="text-sm font-medium text-gray-700">
+                    Kapak Görseli
+                  </Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="mt-2">
+                      <label htmlFor="coverImage" className="cursor-pointer">
+                        <span className="text-sm font-medium text-orange-600 hover:text-orange-500">
+                          Görsel yüklemek için tıklayın
+                        </span>
+                        <input
+                          id="coverImage"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleCoverImageUpload(file);
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF (Max 10MB)</p>
+                    </div>
+                    {uploadingCover && (
+                      <div className="text-sm text-orange-600 mt-2">
+                        Yükleniyor...
+                      </div>
+                    )}
+                  </div>
+                  {formData.coverImage && (
+                    <div className="mt-4">
+                      <img
+                        src={formData.coverImage}
+                        alt="Kapak görseli"
+                        className="w-full h-48 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
+            </div>
+
+            {/* WordPress-style Options Section */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Oylama Seçenekleri</h3>
+                <Button
+                  type="button"
+                  onClick={addOption}
+                  variant="outline"
+                  size="sm"
+                  className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Seçenek Ekle
+                </Button>
+              </div>
+
+              <div className="space-y-6">
+                {options.map((option, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-medium text-gray-900">Seçenek {index + 1}</h4>
+                      {options.length > 2 && (
+                        <Button
+                          type="button"
+                          onClick={() => removeOption(index)}
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="grid gap-6 md:grid-cols-2">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Seçenek Başlığı *
+                        </Label>
+                        <Input
+                          value={option.title}
+                          onChange={(e) => handleOptionChange(index, "title", e.target.value)}
+                          placeholder="Seçenek başlığı girin..."
+                          className="bg-white"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Seçenek Görseli *
+                        </Label>
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center bg-white">
+                          <Upload className="mx-auto h-8 w-8 text-gray-400" />
+                          <div className="mt-2">
+                            <label className="cursor-pointer">
+                              <span className="text-sm font-medium text-orange-600 hover:text-orange-500">
+                                Görsel yükle
+                              </span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleImageUpload(index, file);
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                            {uploading === index && (
+                              <div className="text-sm text-orange-600 mt-1">
+                                Yükleniyor...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {option.image && (
+                          <div className="mt-3">
+                            <img
+                              src={option.image}
+                              alt={`Seçenek ${index + 1}`}
+                              className="w-24 h-24 object-cover rounded-lg border border-gray-200"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-sm font-medium text-gray-700">
+                          Özel Alanlar
+                        </Label>
+                        <Button
+                          type="button"
+                          onClick={() => addCustomField(index)}
+                          variant="outline"
+                          size="sm"
+                          className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Alan Ekle
+                        </Button>
+                      </div>
+                      
+                      {option.customFields.map((field, fieldIndex) => (
+                        <div key={fieldIndex} className="flex items-center gap-3">
+                          <Input
+                            placeholder="Alan adı"
+                            value={field.fieldName}
+                            onChange={(e) =>
+                              handleCustomFieldChange(index, fieldIndex, "fieldName", e.target.value)
+                            }
+                            className="bg-white"
+                          />
+                          <Input
+                            placeholder="Alan değeri"
+                            value={field.fieldValue}
+                            onChange={(e) =>
+                              handleCustomFieldChange(index, fieldIndex, "fieldValue", e.target.value)
+                            }
+                            className="bg-white"
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => removeCustomField(index, fieldIndex)}
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        {/* WordPress-style Sidebar */}
+        <div className="w-80 space-y-6">
+          {/* Publish Box */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Yayınla</h3>
+            <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="category">Kategori *</Label>
+                <Label htmlFor="category" className="text-sm font-medium text-gray-700">
+                  Kategori *
+                </Label>
                 <select
                   id="category"
                   value={formData.category}
                   onChange={(e) => handleInputChange("category", e.target.value)}
                   required
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 >
                   <option value="">Kategori seçin</option>
                   {categories.map((category) => (
@@ -245,209 +479,51 @@ export default function CreateTestPage() {
                 </select>
               </div>
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Açıklama</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
-                placeholder="Oylama açıklaması"
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="coverImage">Kapak Görseli</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleCoverImageUpload(file);
-                  }}
-                  className="flex-1"
-                />
-                {uploadingCover && (
-                  <div className="text-sm text-muted-foreground">
-                    Yükleniyor...
-                  </div>
-                )}
-              </div>
-              {formData.coverImage && (
-                <div className="mt-2">
-                  <img
-                    src={formData.coverImage}
-                    alt="Kapak görseli"
-                    className="w-full h-48 object-cover rounded"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
+          {/* Additional Settings */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ek Ayarlar</h3>
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="headerText">Üst Metin</Label>
+                <Label htmlFor="headerText" className="text-sm font-medium text-gray-700">
+                  Üst Metin
+                </Label>
                 <Input
                   id="headerText"
                   value={formData.headerText}
                   onChange={(e) => handleInputChange("headerText", e.target.value)}
                   placeholder="Üst kısımda görünecek metin"
+                  className="bg-white"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="footerText">Alt Metin</Label>
+                <Label htmlFor="footerText" className="text-sm font-medium text-gray-700">
+                  Alt Metin
+                </Label>
                 <Input
                   id="footerText"
                   value={formData.footerText}
                   onChange={(e) => handleInputChange("footerText", e.target.value)}
                   placeholder="Alt kısımda görünecek metin"
+                  className="bg-white"
                 />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Seçenekler</CardTitle>
-              <Button
-                type="button"
-                onClick={addOption}
-                variant="outline"
-                size="sm"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Seçenek Ekle
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {options.map((option, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium">Seçenek {index + 1}</h4>
-                  {options.length > 2 && (
-                    <Button
-                      type="button"
-                      onClick={() => removeOption(index)}
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Seçenek Başlığı *</Label>
-                    <Input
-                      value={option.title}
-                      onChange={(e) => handleOptionChange(index, "title", e.target.value)}
-                      placeholder="Seçenek başlığı"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Seçenek Görseli *</Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleImageUpload(index, file);
-                        }}
-                        className="flex-1"
-                      />
-                      {uploading === index && (
-                        <div className="text-sm text-muted-foreground">
-                          Yükleniyor...
-                        </div>
-                      )}
-                    </div>
-                    {option.image && (
-                      <div className="mt-2">
-                        <img
-                          src={option.image}
-                          alt={`Seçenek ${index + 1}`}
-                          className="w-20 h-20 object-cover rounded"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Özel Alanlar</Label>
-                    <Button
-                      type="button"
-                      onClick={() => addCustomField(index)}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Alan Ekle
-                    </Button>
-                  </div>
-                  
-                  {option.customFields.map((field, fieldIndex) => (
-                    <div key={fieldIndex} className="flex items-center gap-2">
-                      <Input
-                        placeholder="Alan adı"
-                        value={field.fieldName}
-                        onChange={(e) =>
-                          handleCustomFieldChange(index, fieldIndex, "fieldName", e.target.value)
-                        }
-                      />
-                      <Input
-                        placeholder="Alan değeri"
-                        value={field.fieldValue}
-                        onChange={(e) =>
-                          handleCustomFieldChange(index, fieldIndex, "fieldValue", e.target.value)
-                        }
-                      />
-                      <Button
-                        type="button"
-                        onClick={() => removeCustomField(index, fieldIndex)}
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        <div className="flex gap-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            className="flex-1"
-          >
-            İptal
-          </Button>
-          <Button
-            type="submit"
-            disabled={testsLoading}
-            className="flex-1"
-          >
-            <Save className="h-4 w-4 mr-2" />
-            {testsLoading ? "Oluşturuluyor..." : "Oylama Oluştur"}
-          </Button>
+          {/* Help Box */}
+          <div className="bg-orange-50 rounded-lg border border-orange-200 p-6">
+            <h3 className="text-lg font-semibold text-orange-900 mb-2">İpuçları</h3>
+            <ul className="text-sm text-orange-800 space-y-2">
+              <li>• En az 2 seçenek eklemelisiniz</li>
+              <li>• Her seçenek için görsel yüklemek zorunludur</li>
+              <li>• Başlık ve kategori alanları zorunludur</li>
+              <li>• Özel alanlar isteğe bağlıdır</li>
+            </ul>
+          </div>
         </div>
-      </form>
+      </div>
     </div>
   );
 }
