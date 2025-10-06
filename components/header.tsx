@@ -121,37 +121,41 @@ export default function Header() {
 
         {/* Sağdaki ikonlar - desktop için */}
         <div className="hidden md:flex items-center gap-4">
-          {/* Kullanıcı ikonu - sadece giriş yapmış kullanıcılar için */}
+          {/* Kullanıcı profili - sadece giriş yapmış kullanıcılar için */}
           {isAuthenticated && (
-            <button 
-              onClick={handleProfileClick}
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-              title="Profil"
-            >
-              {user?.profile?.picture ? (
-                <Image
-                  src={user.profile.picture}
-                  alt="Profil"
-                  width={24}
-                  height={24}
-                  className="w-6 h-6 rounded-full object-cover border-2 border-blue-500"
-                />
-              ) : (
-                <svg 
-                  className="w-6 h-6 text-gray-700" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={handleProfileClick}
+                className="p-2 hover:bg-orange-50 rounded-full transition-colors"
+                title="Profil"
+              >
+                {user?.profile?.picture ? (
+                  <Image
+                    src={user.profile.picture}
+                    alt="Profil"
+                    width={32}
+                    height={32}
+                    className="w-8 h-8 rounded-full object-cover"
                   />
-                </svg>
-              )}
-            </button>
+                ) : (
+                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <svg 
+                      className="w-5 h-5 text-gray-600" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                      />
+                    </svg>
+                  </div>
+                )}
+              </button>
+            </div>
           )}
 
           {/* Arama ikonu */}
@@ -199,7 +203,7 @@ export default function Header() {
           {isAuthenticated && (
             <button 
               onClick={handleLogout}
-              className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
               title="Çıkış Yap"
             >
               Çıkış Yap

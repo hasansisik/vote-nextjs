@@ -95,14 +95,14 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {isAuthenticated ? (
             <div className="space-y-4">
               {/* Kullanıcı profili */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
                 {user?.profile?.picture ? (
                   <Image
                     src={user.profile.picture}
                     alt="Profil"
                     width={40}
                     height={40}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-blue-500"
+                    className="w-10 h-10 rounded-full object-cover"
                   />
                 ) : (
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
@@ -140,9 +140,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </button>
                 <button 
                   onClick={handleMobileLogout}
-                  className="w-full text-left rounded-lg transition-colors text-red-600"
+                  className="w-full text-left rounded-lg transition-colors text-orange-500 border border-orange-500 hover:bg-orange-50"
                 >
-                  <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
+                  <div className="flex items-center gap-3 px-4 py-3 rounded-lg">
                     <LogOut className="w-5 h-5" />
                     Çıkış Yap
                   </div>

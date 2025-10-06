@@ -4,6 +4,8 @@ import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { useAppDispatch } from '@/redux/hook';
 import { editProfile } from '@/redux/actions/userActions';
+import { Button } from '@/components/ui/button';
+import { Camera, X, Check, XCircle } from 'lucide-react';
 
 interface ProfilePhotoUploadProps {
   currentPhoto?: string;
@@ -137,21 +139,21 @@ export default function ProfilePhotoUpload({
   const displayPhoto = previewUrl || currentPhoto;
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex items-center space-x-4">
       {/* Photo Display */}
       <div className="relative">
-        <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-gray-200">
+        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200">
           {displayPhoto ? (
             <Image
               src={displayPhoto}
               alt="Profil fotoğrafı"
-              width={96}
-              height={96}
+              width={80}
+              height={80}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
@@ -161,17 +163,60 @@ export default function ProfilePhotoUpload({
         {/* Upload indicator */}
         {isUploading && (
           <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="text-red-600 text-sm text-center max-w-xs">
-          {error}
-        </div>
-      )}
+      {/* Action Buttons */}
+      <div className="flex flex-col space-y-2">
+        {!previewUrl ? (
+          // Upload/Change Button
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            size="sm"
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Camera className="w-4 h-4" />
+            {currentPhoto ? 'Değiştir' : 'Yükle'}
+          </Button>
+        ) : (
+          // Preview Actions
+          <div className="flex gap-2">
+            <Button
+              onClick={handleUpload}
+              disabled={isUploading}
+              size="sm"
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Check className="w-4 h-4" />
+            </Button>
+            <Button
+              onClick={handleCancel}
+              disabled={isUploading}
+              size="sm"
+              variant="outline"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Remove Button */}
+        {currentPhoto && !previewUrl && (
+          <Button
+            onClick={handleRemove}
+            disabled={isUploading}
+            size="sm"
+            variant="outline"
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <XCircle className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
 
       {/* File Input */}
       <input
@@ -182,54 +227,12 @@ export default function ProfilePhotoUpload({
         className="hidden"
       />
 
-      {/* Action Buttons */}
-      <div className="flex flex-col space-y-2 w-full max-w-xs">
-        {!previewUrl ? (
-          // Upload Button
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-          >
-            {currentPhoto ? 'Fotoğrafı Değiştir' : 'Fotoğraf Yükle'}
-          </button>
-        ) : (
-          // Preview Actions
-          <>
-            <button
-              onClick={handleUpload}
-              disabled={isUploading}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              {isUploading ? 'Yükleniyor...' : 'Kaydet'}
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={isUploading}
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-            >
-              İptal
-            </button>
-          </>
-        )}
-
-        {/* Remove Button */}
-        {currentPhoto && !previewUrl && (
-          <button
-            onClick={handleRemove}
-            disabled={isUploading}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-          >
-            {isUploading ? 'Kaldırılıyor...' : 'Fotoğrafı Kaldır'}
-          </button>
-        )}
-      </div>
-
-      {/* File Info */}
-      <div className="text-xs text-gray-500 text-center max-w-xs">
-        Desteklenen formatlar: JPG, PNG, GIF<br />
-        Maksimum dosya boyutu: 5MB
-      </div>
+      {/* Error Message */}
+      {error && (
+        <div className="text-red-600 text-xs max-w-xs">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

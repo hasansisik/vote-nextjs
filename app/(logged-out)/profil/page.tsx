@@ -7,6 +7,10 @@ import { useAppDispatch } from '@/redux/hook';
 import { useRouter } from 'next/navigation';
 import { editProfile, deleteAccount, clearError } from '@/redux/actions/userActions';
 import ProfilePhotoUpload from '@/components/profile-photo-upload';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function ProfilPage() {
   const dispatch = useAppDispatch();
@@ -141,7 +145,7 @@ export default function ProfilPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-orange-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
@@ -177,7 +181,7 @@ export default function ProfilPage() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
-                      ? 'border-red-500 text-red-600'
+                      ? 'border-orange-500 text-orange-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -206,62 +210,61 @@ export default function ProfilPage() {
             {activeTab === 'profile' && (
               <form onSubmit={handleProfileSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                  <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">
                       Ad
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       type="text"
                       id="name"
                       name="name"
                       value={profileData.name}
                       onChange={handleProfileChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                      className="w-full bg-white"
                     />
                   </div>
-                  <div>
-                    <label htmlFor="surname" className="block text-sm font-medium text-gray-700">
+                  <div className="space-y-2">
+                    <Label htmlFor="surname" className="text-sm font-medium text-gray-700">
                       Soyad
-                    </label>
-                    <input
+                    </Label>
+                    <Input
                       type="text"
                       id="surname"
                       name="surname"
                       value={profileData.surname}
                       onChange={handleProfileChange}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                      className="w-full bg-white"
                     />
                   </div>
                 </div>
 
-
-                <div>
-                  <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+                <div className="space-y-2">
+                  <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
                     Biyografi
-                  </label>
-                  <textarea
+                  </Label>
+                  <Textarea
                     id="bio"
                     name="bio"
                     rows={4}
                     value={profileData.bio}
                     onChange={handleProfileChange}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                    className="w-full bg-white"
                     placeholder="Kendiniz hakkında bir şeyler yazın..."
                   />
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="text-sm text-gray-500">
                     {profileData.bio.length}/500 karakter
                   </p>
                 </div>
 
-
                 <div className="flex justify-end">
-                  <button
+                  <Button
                     type="submit"
                     disabled={loading}
-                    className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    size="sm"
+                    className="bg-orange-600 hover:bg-orange-700 text-white"
                   >
                     {loading ? 'Güncelleniyor...' : 'Güncelle'}
-                  </button>
+                  </Button>
                 </div>
               </form>
             )}
@@ -272,85 +275,88 @@ export default function ProfilPage() {
                 {!showPasswordForm ? (
                   <div className="text-center py-8">
                     <p className="text-gray-600 mb-4">Şifrenizi değiştirmek için aşağıdaki butona tıklayın</p>
-                    <button
+                    <Button
                       onClick={() => setShowPasswordForm(true)}
-                      className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700"
+                      size="sm"
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
                     >
                       Şifre Değiştir
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-md">
-                    <div>
-                      <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
                         Mevcut Şifre
-                      </label>
-                      <input
+                      </Label>
+                      <Input
                         type="password"
                         id="currentPassword"
                         name="currentPassword"
                         value={passwordData.currentPassword}
                         onChange={handlePasswordChange}
                         required
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                        className="w-full"
                       />
                     </div>
 
-                    <div>
-                      <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
                         Yeni Şifre
-                      </label>
-                      <input
+                      </Label>
+                      <Input
                         type="password"
                         id="newPassword"
                         name="newPassword"
                         value={passwordData.newPassword}
                         onChange={handlePasswordChange}
                         required
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                        className="w-full bg-white"
                       />
                       {passwordError && (
-                        <p className="mt-1 text-sm text-red-600">{passwordError}</p>
+                        <p className="text-sm text-red-600">{passwordError}</p>
                       )}
                       {!passwordError && passwordData.newPassword && (
-                        <p className="mt-1 text-sm text-green-600">Şifre güçlü</p>
+                        <p className="text-sm text-green-600">Şifre güçlü</p>
                       )}
                     </div>
 
-                    <div>
-                      <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
                         Yeni Şifre Tekrar
-                      </label>
-                      <input
+                      </Label>
+                      <Input
                         type="password"
                         id="confirmPassword"
                         name="confirmPassword"
                         value={passwordData.confirmPassword}
                         onChange={handlePasswordChange}
                         required
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500"
+                        className="w-full bg-white"
                       />
                     </div>
 
                     <div className="flex gap-3">
-                      <button
+                      <Button
                         type="submit"
                         disabled={loading || passwordError !== '' || passwordData.newPassword !== passwordData.confirmPassword}
-                        className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        size="sm"
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
                       >
                         {loading ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         onClick={() => {
                           setShowPasswordForm(false);
                           setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
                           setPasswordError('');
                         }}
-                        className="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400"
+                        size="sm"
+                        variant="outline"
                       >
                         İptal
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 )}
@@ -377,12 +383,13 @@ export default function ProfilPage() {
                 Hesabınızı kalıcı olarak silmek istiyorsanız bu seçeneği kullanın.
               </p>
             </div>
-            <button
+            <Button
               onClick={() => setShowDeleteConfirm(true)}
-              className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+              size="sm"
+              className="bg-red-600 hover:bg-red-700 text-white"
             >
               Hesabımı Sil
-            </button>
+            </Button>
           </div>
 
           {showDeleteConfirm && (
@@ -391,18 +398,20 @@ export default function ProfilPage() {
                 Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecektir.
               </p>
               <div className="flex gap-3">
-                <button
+                <Button
                   onClick={handleDeleteAccount}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
                 >
                   Evet, Hesabımı Sil
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                  size="sm"
+                  variant="outline"
                 >
                   İptal
-                </button>
+                </Button>
               </div>
             </div>
           )}

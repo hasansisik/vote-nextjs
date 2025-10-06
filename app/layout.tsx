@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "../redux/provider";
 import AuthWrapper from "../components/auth-wrapper";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Football App",
-  description: "Football management application",
+  title: "Vote App",
+  description: "Vote management application",
 };
 
 export default function RootLayout({
@@ -36,6 +37,12 @@ export default function RootLayout({
               {children}
             </main>
           </AuthWrapper>
+          <Toaster 
+            position="top-right"
+            expand={true}
+            richColors
+            closeButton
+          />
         </Providers>
       </body>
     </html>

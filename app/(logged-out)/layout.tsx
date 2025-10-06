@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Football App",
-  description: "Football management application",
+  title: "Vote App",
+  description: "Vote management application",
 };
 
 export default function LoggedOutLayout({
