@@ -287,7 +287,6 @@ export default function CategoryManagementModal({
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-gray-300"></div>
                         <div>
                           <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
                         </div>

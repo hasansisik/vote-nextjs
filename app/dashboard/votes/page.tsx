@@ -18,6 +18,7 @@ import {
   MoreHorizontal
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function VotesPage() {
   const dispatch = useDispatch();
@@ -26,6 +27,7 @@ export default function VotesPage() {
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [testToDelete, setTestToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'admin') {
@@ -46,9 +48,27 @@ export default function VotesPage() {
 
   const confirmDelete = async () => {
     if (testToDelete) {
-      await dispatch(deleteTest(testToDelete) as any);
-      dispatch(getAllTests({}) as any); // Refresh the list
-      setTestToDelete(null);
+      console.log('Deleting test with ID:', testToDelete);
+      setIsDeleting(true);
+      try {
+        const result = await dispatch(deleteTest(testToDelete) as any);
+        console.log('Delete result:', result);
+        if (result.type.endsWith('/fulfilled')) {
+          console.log('Test deleted successfully');
+          toast.success('Test başarıyla silindi');
+          // Test başarıyla silindi, listeyi yenile
+          await dispatch(getAllTests({}) as any);
+          setTestToDelete(null);
+        } else {
+          console.error('Delete test failed:', result.payload);
+          toast.error('Test silinirken bir hata oluştu: ' + result.payload);
+        }
+      } catch (error) {
+        console.error('Delete test error:', error);
+        toast.error('Test silinirken bir hata oluştu');
+      } finally {
+        setIsDeleting(false);
+      }
     }
   };
 
@@ -63,10 +83,6 @@ export default function VotesPage() {
 
 
   const getCategoryColor = (categoryId: string) => {
-    const category = activeCategories.find((cat: any) => cat._id === categoryId);
-    if (category && category.color) {
-      return `${category.color.replace('bg-', 'bg-').replace('-500', '-100')} ${category.color.replace('bg-', 'text-').replace('-500', '-800')}`;
-    }
     return "bg-gray-100 text-gray-800";
   };
 
@@ -228,41 +244,43 @@ export default function VotesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => router.push(`/dashboard/votes/${test._id}`)}
+                        onClick={() => router.push(`/${test._id}`)}
                         className="text-green-600 hover:text-green-700 p-2"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 p-2"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Testi Sil</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Bu testi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve test ile ilgili tüm veriler kalıcı olarak silinecektir.
-                              <br /><br />
-                              <strong>Emin misiniz?</strong>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>İptal</AlertDialogCancel>
-                            <AlertDialogAction
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => handleDeleteTest(test._id)}
-                              className="bg-red-600 hover:bg-red-700"
+                              className="text-red-600 hover:text-red-700 p-2"
                             >
-                              Sil
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Testi Sil</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Bu testi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve test ile ilgili tüm veriler kalıcı olarak silinecektir.
+                                <br /><br />
+                                <strong>Emin misiniz?</strong>
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel disabled={isDeleting}>İptal</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={confirmDelete}
+                                disabled={isDeleting}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                {isDeleting ? 'Siliniyor...' : 'Sil'}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                   </td>
                 </tr>

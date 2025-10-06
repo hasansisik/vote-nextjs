@@ -591,10 +591,7 @@ export default function CreateTestPage() {
                     {activeCategories?.map((category: any) => (
                       <SelectItem key={category._id} value={category._id}>
                         <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full" 
-                            style={{ backgroundColor: category.color || '#f97316' }}
-                          ></div>
+                          <div className="w-3 h-3 rounded-full bg-gray-400"></div>
                           <span>{category.name}</span>
                         </div>
                       </SelectItem>
