@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
-import { getActiveMenus } from '@/redux/actions/menuActions';
+import { getAllMenus } from '@/redux/actions/menuActions';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { 
   User, 
@@ -24,11 +24,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state: any) => state.user);
-  const { activeMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
+  const { allMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
 
-  // Load active menus on component mount
+  // Load all menus on component mount
   useEffect(() => {
-    dispatch(getActiveMenus() as any);
+    dispatch(getAllMenus({}) as any);
   }, [dispatch]);
 
   const handleLogoClick = () => {
@@ -195,15 +195,18 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
                 </div>
               ) : (
-                activeMenus.map((item: any, index: number) => (
+                allMenus?.filter((item: any) => item.isActive).map((item: any, index: number) => (
                   <button 
                     key={index}
-                    onClick={() => handleMobileCategoryClick(item.slug)}
+                    onClick={() => handleMobileCategoryClick(item.testCategory.slug)}
                     className="w-full text-left rounded-lg transition-colors"
                   >
                     <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
-                      <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                      {item.name}
+                      <div 
+                        className="w-3 h-3 rounded-full flex-shrink-0" 
+                        style={{ backgroundColor: item.color || '#f97316' }}
+                      ></div>
+                      {item.testCategory.name}
                     </div>
                   </button>
                 ))

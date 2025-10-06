@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
-import { getActiveMenus } from '@/redux/actions/menuActions';
+import { getAllMenus } from '@/redux/actions/menuActions';
 import { 
   User, 
   LogOut, 
@@ -22,13 +22,13 @@ export default function Header() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated, user, loading } = useSelector((state: any) => state.user);
-  const { activeMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
+  const { allMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasScroll, setHasScroll] = useState(false);
 
-  // Load active menus on component mount
+  // Load all menus on component mount
   useEffect(() => {
-    dispatch(getActiveMenus() as any);
+    dispatch(getAllMenus({}) as any);
   }, [dispatch]);
 
   // Check if navigation has scroll
@@ -224,14 +224,17 @@ export default function Header() {
                 Yükleniyor...
               </div>
             ) : (
-              activeMenus.map((item: any, index: number) => (
+              allMenus?.filter((item: any) => item.isActive).map((item: any, index: number) => (
                 <button 
                   key={index}
-                  onClick={() => handleCategoryClick(item.slug)}
+                  onClick={() => handleCategoryClick(item.testCategory.slug)}
                   className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors whitespace-nowrap"
                 >
-                  <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
-                  {item.name}
+                  <div 
+                    className="w-2 h-2 rounded-full flex-shrink-0" 
+                    style={{ backgroundColor: item.color || '#f97316' }}
+                  ></div>
+                  {item.testCategory.name}
                 </button>
               ))
             )}

@@ -6,7 +6,6 @@ import { server } from "@/config";
 export interface CreateTestCategoryPayload {
   name: string;
   description?: string;
-  color: string;
   icon?: string;
   order?: number;
 }
@@ -14,7 +13,6 @@ export interface CreateTestCategoryPayload {
 export interface UpdateTestCategoryPayload {
   name?: string;
   description?: string;
-  color?: string;
   icon?: string;
   isActive?: boolean;
   order?: number;

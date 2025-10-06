@@ -5,11 +5,13 @@ import { server } from "@/config";
 // Menu Action Types
 export interface CreateMenuPayload {
   testCategoryId: string;
+  color: string;
   order?: number;
 }
 
 export interface UpdateMenuPayload {
   testCategoryId?: string;
+  color?: string;
   isActive?: boolean;
   order?: number;
 }
@@ -310,6 +312,49 @@ export const updateMenuOrder = createAsyncThunk(
           return thunkAPI.rejectWithValue("İstenen kaynak bulunamadı.");
         } else if (status === 400) {
           return thunkAPI.rejectWithValue(message);
+        } else {
+          return thunkAPI.rejectWithValue(`Sunucu hatası (${status}): ${message}`);
+        }
+      } else if (error.request) {
+        return thunkAPI.rejectWithValue("Ağ bağlantısı hatası. Lütfen internet bağlantınızı kontrol edin.");
+      } else {
+        return thunkAPI.rejectWithValue(error.message || "Bilinmeyen bir hata oluştu.");
+      }
+    }
+  }
+);
+
+// Clear All Menus (for development)
+export const clearAllMenus = createAsyncThunk(
+  "menu/clearAllMenus",
+  async (_, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        return thunkAPI.rejectWithValue("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
+      }
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.delete(
+        `${server}/menus/clear-all`,
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Clear all menus error:", error);
+      
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message || error.response.data?.error || "Sunucu hatası";
+        
+        if (status === 401) {
+          return thunkAPI.rejectWithValue("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
+        } else if (status === 403) {
+          return thunkAPI.rejectWithValue("Bu işlem için yetkiniz yok.");
         } else {
           return thunkAPI.rejectWithValue(`Sunucu hatası (${status}): ${message}`);
         }

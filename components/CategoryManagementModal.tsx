@@ -24,10 +24,22 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 interface CategoryManagementModalProps {
   isOpen: boolean;
@@ -36,20 +48,7 @@ interface CategoryManagementModalProps {
   selectMode?: boolean;
 }
 
-const colorOptions = [
-  { name: 'Kırmızı', value: 'bg-red-500', hex: '#ef4444' },
-  { name: 'Pembe', value: 'bg-pink-500', hex: '#ec4899' },
-  { name: 'Mor', value: 'bg-purple-500', hex: '#a855f7' },
-  { name: 'İndigo', value: 'bg-indigo-500', hex: '#6366f1' },
-  { name: 'Mavi', value: 'bg-blue-500', hex: '#3b82f6' },
-  { name: 'Teal', value: 'bg-teal-500', hex: '#14b8a6' },
-  { name: 'Yeşil', value: 'bg-green-500', hex: '#22c55e' },
-  { name: 'Sarı', value: 'bg-yellow-500', hex: '#eab308' },
-  { name: 'Turuncu', value: 'bg-orange-500', hex: '#f97316' },
-  { name: 'Gri', value: 'bg-gray-500', hex: '#6b7280' },
-  { name: 'Siyah', value: 'bg-gray-900', hex: '#111827' },
-  { name: 'Beyaz', value: 'bg-white', hex: '#ffffff' },
-];
+// Color options removed - now handled in Menu management
 
 export default function CategoryManagementModal({ 
   isOpen, 
@@ -68,9 +67,9 @@ export default function CategoryManagementModal({
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
-    color: 'bg-orange-500',
   });
 
   // Load categories on mount
@@ -86,7 +85,6 @@ export default function CategoryManagementModal({
     setEditingCategory(null);
     setFormData({
       name: '',
-      color: 'bg-orange-500',
     });
   };
 
@@ -96,7 +94,6 @@ export default function CategoryManagementModal({
     setIsCreating(true);
     setFormData({
       name: category.name,
-      color: category.color,
     });
   };
 
@@ -109,14 +106,29 @@ export default function CategoryManagementModal({
       return;
     }
 
+    console.log('Creating category with data:', formData);
+
     try {
+      let result;
       if (editingCategory) {
-        await dispatch(updateTestCategory({ 
+        result = await dispatch(updateTestCategory({ 
           id: editingCategory._id, 
           formData 
         }) as any);
+        if (result.type.endsWith('/fulfilled')) {
+          toast.success('Kategori başarıyla güncellendi');
+        } else {
+          toast.error(result.payload || 'Kategori güncellenirken bir hata oluştu');
+          return;
+        }
       } else {
-        await dispatch(createTestCategory(formData) as any);
+        result = await dispatch(createTestCategory(formData) as any);
+        if (result.type.endsWith('/fulfilled')) {
+          toast.success('Kategori başarıyla oluşturuldu');
+        } else {
+          toast.error(result.payload || 'Kategori oluşturulurken bir hata oluştu');
+          return;
+        }
       }
       
       // Refresh categories after create/update
@@ -126,22 +138,33 @@ export default function CategoryManagementModal({
       setEditingCategory(null);
       setFormData({
         name: '',
-        color: 'bg-orange-500',
       });
     } catch (error) {
       console.error('Category operation error:', error);
+      toast.error('Bir hata oluştu');
     }
   };
 
   // Handle delete category
   const handleDelete = async (categoryId: string) => {
-    if (window.confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) {
+    setCategoryToDelete(categoryId);
+  };
+
+  const confirmDelete = async () => {
+    if (categoryToDelete) {
       try {
-        await dispatch(deleteTestCategory(categoryId) as any);
-        // Refresh categories after delete
-        await dispatch(getActiveTestCategories() as any);
+        const result = await dispatch(deleteTestCategory(categoryToDelete) as any);
+        if (result.type.endsWith('/fulfilled')) {
+          toast.success('Kategori başarıyla silindi');
+          // Refresh categories after delete
+          await dispatch(getActiveTestCategories() as any);
+        } else {
+          toast.error(result.payload || 'Kategori silinirken bir hata oluştu');
+        }
+        setCategoryToDelete(null);
       } catch (error) {
         console.error('Delete category error:', error);
+        toast.error('Kategori silinirken bir hata oluştu');
       }
     }
   };
@@ -175,21 +198,8 @@ export default function CategoryManagementModal({
         {/* Content */}
         <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
-              {error}
-              <button onClick={clearError} className="ml-2 text-red-500 hover:text-red-700">
-                ×
-              </button>
-            </div>
-          )}
 
-          {/* Success Message */}
-          {message && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm">
-              {message}
-            </div>
-          )}
+
 
           {/* Create/Edit Form */}
           {isCreating && (
@@ -212,26 +222,7 @@ export default function CategoryManagementModal({
                   />
                 </div>
 
-                <div>
-                  <Label className="text-sm font-medium text-gray-700 mb-2">
-                    Renk *
-                  </Label>
-                  <div className="flex flex-wrap gap-2">
-                    {colorOptions.map((color) => (
-                      <button
-                        key={color.value}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, color: color.value })}
-                        className={`w-8 h-8 rounded-full ${color.value} ${
-                          formData.color === color.value 
-                            ? 'ring-2 ring-gray-400 ring-offset-2' 
-                            : 'hover:opacity-80'
-                        } ${color.value === 'bg-white' ? 'border border-gray-300' : ''}`}
-                        title={color.name}
-                      />
-                    ))}
-                  </div>
-                </div>
+                {/* Color selection removed - now handled in Menu management */}
 
                 <div className="flex gap-2">
                   <Button
@@ -254,7 +245,6 @@ export default function CategoryManagementModal({
                       setEditingCategory(null);
                       setFormData({
                         name: '',
-                        color: 'bg-orange-500',
                       });
                     }}
                   >
@@ -297,10 +287,7 @@ export default function CategoryManagementModal({
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: category.color || '#f97316' }}
-                        ></div>
+                        <div className="w-3 h-3 rounded-full bg-gray-300"></div>
                         <div>
                           <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
                         </div>
@@ -319,17 +306,40 @@ export default function CategoryManagementModal({
                           >
                             <Edit2 className="w-3 h-3" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(category._id);
-                            }}
-                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => e.stopPropagation()}
+                                className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Kategoriyi Sil</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Bu kategoriyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve kategori kalıcı olarak silinecektir.
+                                  <br /><br />
+                                  <strong>Emin misiniz?</strong>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>İptal</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => {
+                                    handleDelete(category._id);
+                                    confirmDelete();
+                                  }}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Sil
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       )}
                     </div>
