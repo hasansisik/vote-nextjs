@@ -1,16 +1,43 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { 
+  User, 
+  LogOut, 
+  LogIn, 
+  UserPlus, 
+  Search, 
+  Play,
+  Menu,
+  X
+} from 'lucide-react';
+import MobileMenu from './mobile-menu';
 
 export default function Header() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated, user, loading } = useSelector((state: any) => state.user);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [hasScroll, setHasScroll] = useState(false);
+
+  // Check if navigation has scroll
+  useEffect(() => {
+    const checkScroll = () => {
+      const navElement = document.querySelector('nav');
+      if (navElement) {
+        setHasScroll(navElement.scrollWidth > navElement.clientWidth);
+      }
+    };
+
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    
+    return () => window.removeEventListener('resize', checkScroll);
+  }, []);
 
   const handleLogin = () => {
     router.push('/giris');
@@ -43,14 +70,25 @@ export default function Header() {
 
   const handleProfileClick = () => {
     router.push('/profil');
+    setIsMobileMenuOpen(false);
   };
+
 
   return (
     <header className="bg-white border-b border-gray-200">
       {/* Üst kısım - Logo ve sağdaki ikonlar */}
       <div className="flex items-center justify-between px-4 py-3 relative">
-        {/* Sol boşluk - sağdaki ikonların genişliği kadar */}
-        <div className="flex items-center gap-4 invisible">
+        {/* Mobil menü butonu - mobilde veya scroll olduğunda görünür */}
+        <button 
+          onClick={() => setIsMobileMenuOpen(true)}
+          className={`${hasScroll ? 'block' : 'md:hidden'} p-2 hover:bg-gray-100 rounded-full transition-colors`}
+          title="Menü"
+        >
+          <Menu className="w-6 h-6 text-gray-700" />
+        </button>
+
+        {/* Sol boşluk - desktop için */}
+        <div className="hidden md:flex items-center gap-4 invisible">
           <div className="p-2">
             <div className="w-6 h-6"></div>
           </div>
@@ -74,8 +112,8 @@ export default function Header() {
           />
         </button>
 
-        {/* Sağdaki ikonlar */}
-        <div className="flex items-center gap-4">
+        {/* Sağdaki ikonlar - desktop için */}
+        <div className="hidden md:flex items-center gap-4">
           {/* Kullanıcı ikonu - sadece giriş yapmış kullanıcılar için */}
           {isAuthenticated && (
             <button 
@@ -135,14 +173,14 @@ export default function Header() {
             <>
               <button 
                 onClick={handleLogin}
-                className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
                 title="Giriş Yap"
               >
                 Giriş Yap
               </button>
               <button 
                 onClick={handleRegister}
-                className="px-3 py-1 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
                 title="Kayıt Ol"
               >
                 Kayıt Ol
@@ -164,8 +202,8 @@ export default function Header() {
       </div>
 
 
-      {/* Alt kısım - Menü kategorileri */}
-      <nav className="border-t border-gray-200">
+      {/* Alt kısım - Menü kategorileri - sadece desktop */}
+      <nav className="hidden md:block border-t border-gray-200">
         <div className="flex items-center justify-center px-4 py-2 overflow-x-auto">
           <div className="flex items-center gap-4">
             {/* OY VERMEK - Özel buton */}
@@ -200,6 +238,12 @@ export default function Header() {
           </div>
         </div>
       </nav>
+
+      {/* Mobil Menü */}
+      <MobileMenu 
+        isOpen={isMobileMenuOpen} 
+        onClose={() => setIsMobileMenuOpen(false)} 
+      />
     </header>
   );
 }
