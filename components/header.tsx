@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
+import { getActiveMenus } from '@/redux/actions/menuActions';
 import { 
   User, 
   LogOut, 
@@ -21,8 +22,14 @@ export default function Header() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated, user, loading } = useSelector((state: any) => state.user);
+  const { activeMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasScroll, setHasScroll] = useState(false);
+
+  // Load active menus on component mount
+  useEffect(() => {
+    dispatch(getActiveMenus() as any);
+  }, [dispatch]);
 
   // Check if navigation has scroll
   useEffect(() => {
@@ -206,35 +213,24 @@ export default function Header() {
       <nav className="hidden md:block border-t border-gray-200">
         <div className="flex items-center justify-center px-4 py-2 overflow-x-auto">
           <div className="flex items-center gap-4">
-            {/* OY VERMEK - Özel buton */}
-            <button className="bg-black text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-gray-800 transition-colors whitespace-nowrap">
-              <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z"/>
-              </svg>
-              OY VERMEK
-            </button>
-
-            {/* Diğer menü öğeleri */}
-            {[
-              { name: "İZLENMEYE DEĞER", color: "bg-pink-400", slug: "izlenmeye-deger" },
-              { name: "GARİP TARİH", color: "bg-orange-600", slug: "garip-tarih" },
-              { name: "MEZARLIK VARDİYASI", color: "bg-gray-600", slug: "mezarlik-vardiyasi" },
-              { name: "TAM BİR İNEK", color: "bg-purple-600", slug: "tam-bir-inek" },
-              { name: "OYUN", color: "bg-teal-500", slug: "oyun" },
-              { name: "SENARYOSUZ", color: "bg-red-500", slug: "senaryosuz" },
-              { name: "YAŞAM TARZI", color: "bg-blue-600", slug: "yasam-tarzi" },
-              { name: "MÜZİK", color: "bg-gray-400", slug: "muzik" },
-              { name: "SPOR", color: "bg-green-500", slug: "spor" }
-            ].map((item, index) => (
-              <button 
-                key={index}
-                onClick={() => handleCategoryClick(item.slug)}
-                className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors whitespace-nowrap"
-              >
-                <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
-                {item.name}
-              </button>
-            ))}
+            {/* Menü öğeleri - API'den gelen veriler */}
+            {menuLoading ? (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                Yükleniyor...
+              </div>
+            ) : (
+              activeMenus.map((item: any, index: number) => (
+                <button 
+                  key={index}
+                  onClick={() => handleCategoryClick(item.slug)}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors whitespace-nowrap"
+                >
+                  <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
+                  {item.name}
+                </button>
+              ))
+            )}
           </div>
         </div>
       </nav>

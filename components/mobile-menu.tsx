@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
+import { getActiveMenus } from '@/redux/actions/menuActions';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { 
   User, 
@@ -23,6 +24,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state: any) => state.user);
+  const { activeMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
+
+  // Load active menus on component mount
+  useEffect(() => {
+    dispatch(getActiveMenus() as any);
+  }, [dispatch]);
 
   const handleLogoClick = () => {
     router.push('/');
@@ -183,34 +190,24 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           <div className="border-t pt-4 px-4">
             <div className="space-y-1">
               {/* Kategoriler */}
-              {[
-                { name: "İZLENMEYE DEĞER", color: "bg-pink-400", slug: "izlenmeye-deger" },
-                { name: "GARİP TARİH", color: "bg-orange-600", slug: "garip-tarih" },
-                { name: "MEZARLIK VARDİYASI", color: "bg-gray-600", slug: "mezarlik-vardiyasi" },
-                { name: "TAM BİR İNEK", color: "bg-purple-600", slug: "tam-bir-inek" },
-                { name: "OYUN", color: "bg-teal-500", slug: "oyun" },
-                { name: "SENARYOSUZ", color: "bg-red-500", slug: "senaryosuz" },
-                { name: "YAŞAM TARZI", color: "bg-blue-600", slug: "yasam-tarzi" },
-                { name: "MÜZİK", color: "bg-gray-400", slug: "muzik" },
-                { name: "SPOR", color: "bg-green-500", slug: "spor" },
-                { name: "TEKNOLOJİ", color: "bg-indigo-500", slug: "teknoloji" },
-                { name: "EĞLENCE", color: "bg-yellow-500", slug: "eglence" },
-                { name: "HABERLER", color: "bg-cyan-500", slug: "haberler" },
-                { name: "BİLİM", color: "bg-emerald-500", slug: "bilim" },
-                { name: "SANAT", color: "bg-rose-500", slug: "sanat" },
-                { name: "YEMEK", color: "bg-amber-500", slug: "yemek" }
-              ].map((item, index) => (
-                <button 
-                  key={index}
-                  onClick={() => handleMobileCategoryClick(item.slug)}
-                  className="w-full text-left rounded-lg transition-colors"
-                >
-                  <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
-                    <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                    {item.name}
-                  </div>
-                </button>
-              ))}
+              {menuLoading ? (
+                <div className="flex justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
+                </div>
+              ) : (
+                activeMenus.map((item: any, index: number) => (
+                  <button 
+                    key={index}
+                    onClick={() => handleMobileCategoryClick(item.slug)}
+                    className="w-full text-left rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
+                      <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                      {item.name}
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>
