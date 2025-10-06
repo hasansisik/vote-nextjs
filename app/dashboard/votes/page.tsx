@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { getUserCreatedTests, deleteTest, resetTestVotes } from "@/redux/actions/userActions";
+import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import CategoryManagementModal from "@/components/CategoryManagementModal";
 import { 
   Trash2, 
   RotateCcw, 
   Edit,
   Calendar,
   Users,
-  Trophy
+  Trophy,
+  Settings
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -20,39 +23,41 @@ export default function VotesPage() {
   const dispatch = useDispatch();
   const router = useRouter();
   const { userCreatedTests, testsLoading, testsError, user } = useSelector((state: any) => state.user);
+  const { activeCategories } = useSelector((state: any) => state.testCategory);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   useEffect(() => {
     if (user?.role === 'admin') {
-      dispatch(getUserCreatedTests());
+      dispatch(getUserCreatedTests() as any);
+      dispatch(getActiveTestCategories() as any);
     }
   }, [dispatch, user]);
 
   const handleDeleteTest = async (testId: string) => {
     if (confirm("Bu testi silmek istediğinizden emin misiniz?")) {
-      await dispatch(deleteTest(testId));
-      dispatch(getUserCreatedTests()); // Refresh the list
+      await dispatch(deleteTest(testId) as any);
+      dispatch(getUserCreatedTests() as any); // Refresh the list
     }
   };
 
   const handleResetVotes = async (testId: string) => {
     if (confirm("Bu testin oylarını sıfırlamak istediğinizden emin misiniz?")) {
-      await dispatch(resetTestVotes(testId));
-      dispatch(getUserCreatedTests()); // Refresh the list
+      await dispatch(resetTestVotes(testId) as any);
+      dispatch(getUserCreatedTests() as any); // Refresh the list
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      futbol: "bg-green-100 text-green-800",
-      yemek: "bg-orange-100 text-orange-800",
-      müzik: "bg-purple-100 text-purple-800",
-      film: "bg-blue-100 text-blue-800",
-      oyun: "bg-pink-100 text-pink-800",
-      teknoloji: "bg-gray-100 text-gray-800",
-      spor: "bg-red-100 text-red-800",
-      diğer: "bg-yellow-100 text-yellow-800",
-    };
-    return colors[category as keyof typeof colors] || colors.diğer;
+  const getCategoryColor = (categorySlug: string) => {
+    const category = activeCategories.find((cat: any) => cat.slug === categorySlug);
+    if (category) {
+      return `${category.color.replace('bg-', 'bg-').replace('-500', '-100')} ${category.color.replace('bg-', 'text-').replace('-500', '-800')}`;
+    }
+    return "bg-gray-100 text-gray-800";
+  };
+
+  const getCategoryName = (categorySlug: string) => {
+    const category = activeCategories.find((cat: any) => cat.slug === categorySlug);
+    return category ? category.name : categorySlug;
   };
 
   if (user?.role !== 'admin') {
@@ -75,9 +80,19 @@ export default function VotesPage() {
             Tüm oylamalarınızı görüntüleyin
           </p>
         </div>
-        <Button onClick={() => router.push('/dashboard/votes/create')}>
-          Yeni Oylama Oluştur
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Settings className="w-4 h-4" />
+            Kategori Yönetimi
+          </Button>
+          <Button onClick={() => router.push('/dashboard/votes/create')}>
+            Yeni Oylama Oluştur
+          </Button>
+        </div>
       </div>
 
       {testsLoading ? (
@@ -93,7 +108,7 @@ export default function VotesPage() {
             <p className="text-red-600">{testsError}</p>
             <Button 
               variant="outline" 
-              onClick={() => dispatch(getUserCreatedTests())}
+              onClick={() => dispatch(getUserCreatedTests() as any)}
               className="mt-2"
             >
               Tekrar Dene
@@ -134,7 +149,7 @@ export default function VotesPage() {
                     </CardTitle>
                     <div className="flex items-center gap-2 mb-2">
                       <Badge className={getCategoryColor(test.category)}>
-                        {test.category}
+                        {getCategoryName(test.category)}
                       </Badge>
                       <Badge variant={test.isActive ? "default" : "secondary"}>
                         {test.isActive ? "Aktif" : "Pasif"}
@@ -200,6 +215,12 @@ export default function VotesPage() {
           ))}
         </div>
       )}
+
+      {/* Category Management Modal */}
+      <CategoryManagementModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+      />
     </div>
   );
 }

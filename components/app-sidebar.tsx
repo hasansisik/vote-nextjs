@@ -9,7 +9,9 @@ import {
   Frame,
   GalleryVerticalEnd,
   Map,
+  Menu,
   PieChart,
+  Plus,
   Settings2,
   SquareTerminal,
   Users,
@@ -32,129 +34,31 @@ import {
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Kullanıcı",
+    email: "kullanici@example.com",
+    avatar: "/avatars/default.jpg",
   },
   teams: [
     {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      name: "VOTE Platform",
+      logo: Vote,
+      plan: "Pro",
     },
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
+      title: "Ana Sayfa",
+      url: "/dashboard",
       icon: SquareTerminal,
       isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
+      items: [],
     },
   ],
   projects: [
     {
-      name: "Design Engineering",
+      name: "Hızlı Erişim",
       url: "#",
       icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
     },
   ],
 }
@@ -184,6 +88,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         items: [],
       });
 
+      // Add menu management section for admin users
+      baseNavMain.push({
+        title: "Menü Yönetimi",
+        url: "/dashboard/menus",
+        icon: Menu,
+        isActive: false,
+        items: [],
+      });
+
       // Add user management section for admin users
       baseNavMain.push({
         title: "Kullanıcı Yönetimi",
@@ -194,9 +107,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       });
     }
 
+    // Quick access projects
+    const quickAccessProjects = [
+      {
+        name: "Tüm Oylamalar",
+        url: "/oylamalar",
+        icon: Vote,
+      },
+      {
+        name: "Kategoriler",
+        url: "/kategoriler",
+        icon: BookOpen,
+      },
+    ];
+
+    // Add admin quick access
+    if (user?.role === 'admin') {
+      quickAccessProjects.push(
+        {
+          name: "Yeni Oylama Oluştur",
+          url: "/dashboard/votes?create=true",
+          icon: Plus,
+        },
+        {
+          name: "Menü Ekle",
+          url: "/dashboard/menus?create=true",
+          icon: Menu,
+        }
+      );
+    }
+
     return {
       ...data,
       navMain: baseNavMain,
+      projects: quickAccessProjects,
     };
   };
 

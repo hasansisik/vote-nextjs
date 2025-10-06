@@ -1,5 +1,8 @@
 "use client"
 
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useRouter } from 'next/navigation';
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -15,12 +18,50 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { loadUser } from '@/redux/actions/userActions';
+import { Loader2 } from 'lucide-react';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const { user, loading, isAuthenticated } = useSelector((state: any) => state.user);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem('accessToken');
+    
+    if (!token) {
+      router.push('/giris');
+      return;
+    }
+
+    // If no user data but token exists, load user
+    if (!user && !loading) {
+      dispatch(loadUser() as any);
+    }
+  }, [dispatch, router, user, loading]);
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Yükleniyor...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // If not authenticated, don't render anything (redirect will happen)
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />

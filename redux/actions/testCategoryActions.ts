@@ -2,32 +2,38 @@ import axios from "axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { server } from "@/config";
 
-// Menu Action Types
-export interface CreateMenuPayload {
-  testCategoryId: string;
+// Test Category Action Types
+export interface CreateTestCategoryPayload {
+  name: string;
+  description?: string;
+  color: string;
+  icon?: string;
   order?: number;
 }
 
-export interface UpdateMenuPayload {
-  testCategoryId?: string;
+export interface UpdateTestCategoryPayload {
+  name?: string;
+  description?: string;
+  color?: string;
+  icon?: string;
   isActive?: boolean;
   order?: number;
 }
 
-export interface UpdateMenuOrderPayload {
-  menus: Array<{
+export interface UpdateTestCategoryOrderPayload {
+  categories: Array<{
     id: string;
     order: number;
   }>;
 }
 
-// Get All Menus (Public - no authentication required)
-export const getAllMenus = createAsyncThunk(
-  "menu/getAllMenus",
+// Get All Test Categories (Public - no authentication required)
+export const getAllTestCategories = createAsyncThunk(
+  "testCategory/getAllTestCategories",
   async (params: Record<string, string> = {}, thunkAPI) => {
     try {
       const queryString = new URLSearchParams(params).toString();
-      const url = `${server}/menus${queryString ? `?${queryString}` : ''}`;
+      const url = `${server}/test-categories${queryString ? `?${queryString}` : ''}`;
       const response = await axios.get(url);
       return response.data;
     } catch (error: any) {
@@ -40,12 +46,12 @@ export const getAllMenus = createAsyncThunk(
   }
 );
 
-// Get Active Menus (Public - no authentication required)
-export const getActiveMenus = createAsyncThunk(
-  "menu/getActiveMenus",
+// Get Active Test Categories (Public - no authentication required)
+export const getActiveTestCategories = createAsyncThunk(
+  "testCategory/getActiveTestCategories",
   async (_, thunkAPI) => {
     try {
-      const response = await axios.get(`${server}/menus/active`);
+      const response = await axios.get(`${server}/test-categories/active`);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -57,9 +63,9 @@ export const getActiveMenus = createAsyncThunk(
   }
 );
 
-// Get Single Menu
-export const getMenu = createAsyncThunk(
-  "menu/getMenu",
+// Get Single Test Category
+export const getTestCategory = createAsyncThunk(
+  "testCategory/getTestCategory",
   async (id: string, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -68,7 +74,7 @@ export const getMenu = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get(`${server}/menus/${id}`, config);
+      const response = await axios.get(`${server}/test-categories/${id}`, config);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -80,10 +86,10 @@ export const getMenu = createAsyncThunk(
   }
 );
 
-// Create Menu
-export const createMenu = createAsyncThunk(
-  "menu/createMenu",
-  async (formData: CreateMenuPayload, thunkAPI) => {
+// Create Test Category
+export const createTestCategory = createAsyncThunk(
+  "testCategory/createTestCategory",
+  async (formData: CreateTestCategoryPayload, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
@@ -97,13 +103,13 @@ export const createMenu = createAsyncThunk(
         },
       };
       const response = await axios.post(
-        `${server}/menus`,
+        `${server}/test-categories`,
         formData,
         config
       );
       return response.data;
     } catch (error: any) {
-      console.error("Create menu error:", error);
+      console.error("Create test category error:", error);
       
       if (error.response) {
         const status = error.response.status;
@@ -129,10 +135,10 @@ export const createMenu = createAsyncThunk(
   }
 );
 
-// Update Menu
-export const updateMenu = createAsyncThunk(
-  "menu/updateMenu",
-  async ({ id, formData }: { id: string; formData: UpdateMenuPayload }, thunkAPI) => {
+// Update Test Category
+export const updateTestCategory = createAsyncThunk(
+  "testCategory/updateTestCategory",
+  async ({ id, formData }: { id: string; formData: UpdateTestCategoryPayload }, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
@@ -146,13 +152,13 @@ export const updateMenu = createAsyncThunk(
         },
       };
       const response = await axios.put(
-        `${server}/menus/${id}`,
+        `${server}/test-categories/${id}`,
         formData,
         config
       );
       return response.data;
     } catch (error: any) {
-      console.error("Update menu error:", error);
+      console.error("Update test category error:", error);
       
       if (error.response) {
         const status = error.response.status;
@@ -163,7 +169,7 @@ export const updateMenu = createAsyncThunk(
         } else if (status === 403) {
           return thunkAPI.rejectWithValue("Bu işlem için yetkiniz yok.");
         } else if (status === 404) {
-          return thunkAPI.rejectWithValue("Menü bulunamadı.");
+          return thunkAPI.rejectWithValue("Test kategorisi bulunamadı.");
         } else if (status === 400) {
           return thunkAPI.rejectWithValue(message);
         } else {
@@ -178,9 +184,9 @@ export const updateMenu = createAsyncThunk(
   }
 );
 
-// Delete Menu
-export const deleteMenu = createAsyncThunk(
-  "menu/deleteMenu",
+// Delete Test Category
+export const deleteTestCategory = createAsyncThunk(
+  "testCategory/deleteTestCategory",
   async (id: string, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -194,12 +200,12 @@ export const deleteMenu = createAsyncThunk(
         },
       };
       const response = await axios.delete(
-        `${server}/menus/${id}`,
+        `${server}/test-categories/${id}`,
         config
       );
       return { id, message: response.data.message };
     } catch (error: any) {
-      console.error("Delete menu error:", error);
+      console.error("Delete test category error:", error);
       
       if (error.response) {
         const status = error.response.status;
@@ -210,7 +216,7 @@ export const deleteMenu = createAsyncThunk(
         } else if (status === 403) {
           return thunkAPI.rejectWithValue("Bu işlem için yetkiniz yok.");
         } else if (status === 404) {
-          return thunkAPI.rejectWithValue("Menü bulunamadı.");
+          return thunkAPI.rejectWithValue("Test kategorisi bulunamadı.");
         } else if (status === 400) {
           return thunkAPI.rejectWithValue(message);
         } else {
@@ -225,9 +231,9 @@ export const deleteMenu = createAsyncThunk(
   }
 );
 
-// Toggle Menu Status
-export const toggleMenuStatus = createAsyncThunk(
-  "menu/toggleMenuStatus",
+// Toggle Test Category Status
+export const toggleTestCategoryStatus = createAsyncThunk(
+  "testCategory/toggleTestCategoryStatus",
   async (id: string, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -241,13 +247,13 @@ export const toggleMenuStatus = createAsyncThunk(
         },
       };
       const response = await axios.patch(
-        `${server}/menus/${id}/toggle-status`,
+        `${server}/test-categories/${id}/toggle-status`,
         {},
         config
       );
       return response.data;
     } catch (error: any) {
-      console.error("Toggle menu status error:", error);
+      console.error("Toggle test category status error:", error);
       
       if (error.response) {
         const status = error.response.status;
@@ -258,7 +264,7 @@ export const toggleMenuStatus = createAsyncThunk(
         } else if (status === 403) {
           return thunkAPI.rejectWithValue("Bu işlem için yetkiniz yok.");
         } else if (status === 404) {
-          return thunkAPI.rejectWithValue("Menü bulunamadı.");
+          return thunkAPI.rejectWithValue("Test kategorisi bulunamadı.");
         } else if (status === 400) {
           return thunkAPI.rejectWithValue(message);
         } else {
@@ -273,10 +279,10 @@ export const toggleMenuStatus = createAsyncThunk(
   }
 );
 
-// Update Menu Order
-export const updateMenuOrder = createAsyncThunk(
-  "menu/updateMenuOrder",
-  async (formData: UpdateMenuOrderPayload, thunkAPI) => {
+// Update Test Category Order
+export const updateTestCategoryOrder = createAsyncThunk(
+  "testCategory/updateTestCategoryOrder",
+  async (formData: UpdateTestCategoryOrderPayload, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
@@ -290,13 +296,13 @@ export const updateMenuOrder = createAsyncThunk(
         },
       };
       const response = await axios.patch(
-        `${server}/menus/update-order`,
+        `${server}/test-categories/update-order`,
         formData,
         config
       );
       return response.data;
     } catch (error: any) {
-      console.error("Update menu order error:", error);
+      console.error("Update test category order error:", error);
       
       if (error.response) {
         const status = error.response.status;
@@ -322,9 +328,9 @@ export const updateMenuOrder = createAsyncThunk(
   }
 );
 
-// Clear Menu Error Action
-export const clearMenuError = createAsyncThunk(
-  "menu/clearMenuError",
+// Clear Test Category Error Action
+export const clearTestCategoryError = createAsyncThunk(
+  "testCategory/clearTestCategoryError",
   async () => {
     return null;
   }
