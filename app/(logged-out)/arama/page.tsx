@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests } from '@/redux/actions/userActions';
+import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 
 interface Test {
   _id: string;
@@ -20,14 +21,22 @@ export default function AramaPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { allTests, testsLoading } = useAppSelector((state) => state.user);
+  const { activeCategories } = useAppSelector((state) => state.testCategory);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTests, setFilteredTests] = useState<Test[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Load all tests
+  // Load all tests and categories
   useEffect(() => {
     dispatch(getAllTests({ isActive: true }));
+    dispatch(getActiveTestCategories());
   }, [dispatch]);
+
+  // Get category name by ID
+  const getCategoryName = (categoryId: string) => {
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    return category ? category.name : categoryId;
+  };
 
   // Set initial filtered tests
   useEffect(() => {
@@ -167,15 +176,8 @@ export default function AramaPage() {
                     
                     {/* Kategori Badge */}
                     <div className="absolute top-4 left-4">
-                      <div className={`px-3 py-1 rounded-full text-xs font-medium text-white ${
-                        test.category === 'spor' ? 'bg-green-500' :
-                        test.category === 'film' ? 'bg-blue-500' :
-                        test.category === 'yemek' ? 'bg-orange-500' :
-                        test.category === 'müzik' ? 'bg-purple-500' :
-                        test.category === 'teknoloji' ? 'bg-indigo-500' :
-                        'bg-gray-500'
-                      }`}>
-                        {test.category.toUpperCase()}
+                      <div className="px-3 py-1 rounded-full text-xs font-medium text-white bg-gray-500">
+                        {getCategoryName(test.category).toUpperCase()}
                       </div>
                     </div>
 

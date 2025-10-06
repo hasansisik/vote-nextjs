@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests } from '@/redux/actions/userActions';
+import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 
 interface Test {
   _id: string;
@@ -33,15 +34,23 @@ export default function CategoryPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { allTests, testsLoading } = useAppSelector((state) => state.user);
+  const { activeCategories } = useAppSelector((state) => state.testCategory);
   const [tests, setTests] = useState<Test[]>([]);
 
   // URL'den kategori parametresini al
   const categorySlug = params.menu as string;
 
-  // Load all tests
+  // Load all tests and categories
   useEffect(() => {
     dispatch(getAllTests({ isActive: true }));
+    dispatch(getActiveTestCategories());
   }, [dispatch]);
+
+  // Get category name by ID
+  const getCategoryName = (categoryId: string) => {
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    return category ? category.name : categoryId;
+  };
 
   useEffect(() => {
     if (categorySlug && allTests.length > 0) {
@@ -166,7 +175,7 @@ export default function CategoryPage() {
                   {/* Kategori Badge */}
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500 capitalize">
-                      {test.category}
+                      {getCategoryName(test.category)}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-500">

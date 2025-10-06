@@ -9,15 +9,24 @@ import FeaturedGrid from "../../components/featured-grid";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getAllTests } from "@/redux/actions/userActions";
+import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
 
 export default function Home() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { allTests, testsLoading } = useAppSelector((state) => state.user);
+  const { activeCategories } = useAppSelector((state) => state.testCategory);
 
   useEffect(() => {
     dispatch(getAllTests({}));
+    dispatch(getActiveTestCategories());
   }, [dispatch]);
+
+  // Get category name by ID
+  const getCategoryName = (categoryId: string) => {
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    return category ? category.name.toUpperCase() : 'GENEL';
+  };
 
   // Convert tests to homepage card format - sadece aktif testleri göster
   const homepageData = useMemo(() => {
@@ -43,14 +52,14 @@ export default function Home() {
       return {
         id: index + 1,
         testId: test._id, // Gerçek test ID'si
-        category: test.category?.toUpperCase() || 'GENEL',
+        category: getCategoryName(test.category),
         title: test.title,
         image: imageUrl,
         description: test.description,
         tag: index < 10 ? "popular" : "featured"
       };
     });
-  }, [allTests]);
+  }, [allTests, activeCategories]);
 
   // Filter data by tags
   const popularData = homepageData.filter(item => item.tag === "popular");

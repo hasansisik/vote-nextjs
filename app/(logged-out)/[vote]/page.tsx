@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests } from '@/redux/actions/userActions';
+import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 
 interface CustomField {
   fieldName: string;
@@ -40,6 +41,7 @@ export default function VotePage() {
   const voteId = params?.vote as string;
   
   const { allTests, testsLoading } = useAppSelector((state) => state.user);
+  const { activeCategories } = useAppSelector((state) => state.testCategory);
   const [test, setTest] = useState<Test | null>(null);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
   const [remainingOptions, setRemainingOptions] = useState<Option[]>([]);
@@ -52,9 +54,16 @@ export default function VotePage() {
   const [finalRankings, setFinalRankings] = useState<Array<{option: Option, score: number}>>([]);
   const [finalWinner, setFinalWinner] = useState<Option | null>(null);
 
-  // Load tests
+  // Get category name by ID
+  const getCategoryName = (categoryId: string) => {
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    return category ? category.name : categoryId;
+  };
+
+  // Load tests and categories
   useEffect(() => {
     dispatch(getAllTests({ isActive: true }));
+    dispatch(getActiveTestCategories());
   }, [dispatch]);
 
   // Test'i yükle
@@ -171,7 +180,7 @@ export default function VotePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-               {test.category.toUpperCase()} SIRALAMASI
+               {getCategoryName(test.category).toUpperCase()} SIRALAMASI
              </h1>
              <p className="text-lg text-gray-600 mb-2">{test.title}</p>
              <p className="text-base text-gray-500">{test.description}</p>
@@ -372,7 +381,7 @@ export default function VotePage() {
         <div className="max-w-7xl mx-auto px-4 py-4">
            <div className="flex items-center justify-between mb-2">
              <h1 className="text-xl md:text-2xl font-bold text-gray-900 uppercase">
-               {test.category}
+               {getCategoryName(test.category)}
              </h1>
             <button
               onClick={() => router.push('/logged-out')}
