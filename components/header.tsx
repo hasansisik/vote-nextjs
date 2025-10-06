@@ -224,7 +224,7 @@ export default function Header() {
                 Yükleniyor...
               </div>
             ) : (
-              allMenus?.filter((item: any) => item.isActive).map((item: any, index: number) => (
+              [...(allMenus || [])].sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((item: any, index: number) => (
                 <button 
                   key={index}
                   onClick={() => handleCategoryClick(item.testCategory.slug)}

@@ -13,7 +13,6 @@ import {
   getAllMenus,
   updateMenu,
   deleteMenu,
-  toggleMenuStatus,
   updateMenuOrder,
   clearAllMenus,
 } from '@/redux/actions/menuActions';
@@ -44,9 +43,11 @@ export default function MenusPage() {
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     testCategoryId: '',
-    color: '#f97316',
+    color: '',
+    order: 0,
   });
 
   useEffect(() => {
@@ -63,393 +64,359 @@ export default function MenusPage() {
     }
   }, [message, error]);
 
-  // Debug: Log categories and menus
-  useEffect(() => {
-    console.log('Active categories:', activeCategories);
-    console.log('All menus:', allMenus);
-  }, [activeCategories, allMenus]);
-
   const handleCreate = () => {
-    if (!formData.testCategoryId) {
-      toast.error('Lütfen bir test kategorisi seçin');
-      return;
-    }
-    if (!formData.color) {
-      toast.error('Lütfen bir renk seçin');
-      return;
-    }
-
-    console.log('Creating menu with data:', formData);
-    dispatch(createMenu(formData) as any);
-    setIsCreating(false);
-    setFormData({ testCategoryId: '', color: '#f97316' });
+    setFormData({
+      testCategoryId: '',
+      color: '',
+      order: 0, // Order will be calculated on submit
+    });
+    setIsCreating(true);
+    setEditingId(null);
   };
 
   const handleEdit = (menu: any) => {
-    setEditingId(menu._id);
     setFormData({
-      testCategoryId: menu.testCategory._id,
-      color: menu.color || '#f97316',
+      testCategoryId: menu.testCategory?._id || '',
+      color: menu.color || '',
+      order: menu.order || 0,
     });
+    setEditingId(menu._id);
+    setIsCreating(false);
   };
 
-  const handleUpdate = (id: string) => {
-    if (!formData.testCategoryId) {
-      toast.error('Lütfen bir test kategorisi seçin');
-      return;
-    }
-    if (!formData.color) {
-      toast.error('Lütfen bir renk seçin');
-      return;
-    }
-
-    dispatch(updateMenu({ id, formData }) as any);
+  const handleCancel = () => {
+    setIsCreating(false);
     setEditingId(null);
-    setFormData({ testCategoryId: '', color: '#f97316' });
-  };
-
-  const handleDelete = (id: string) => {
-    dispatch(deleteMenu(id) as any);
-  };
-
-  const handleToggleStatus = (id: string) => {
-    dispatch(toggleMenuStatus(id) as any);
-  };
-
-  const handleClearAllMenus = () => {
-    dispatch(clearAllMenus() as any).then(() => {
-      // Refresh the menus list after clearing
-      dispatch(getAllMenus({}) as any);
+    setFormData({
+      testCategoryId: '',
+      color: '',
+      order: 0,
     });
   };
 
-  const handleDragStart = (e: React.DragEvent, index: number) => {
-    e.dataTransfer.setData('text/plain', index.toString());
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.testCategoryId) {
+      toast.error('Test kategorisi seçiniz');
+      return;
+    }
+
+    if (!formData.color) {
+      toast.error('Renk seçiniz');
+      return;
+    }
+
+    try {
+      if (editingId) {
+        const updateData: any = {};
+        if (formData.testCategoryId) updateData.testCategoryId = formData.testCategoryId;
+        if (formData.color) updateData.color = formData.color;
+        
+        await dispatch(updateMenu({ id: editingId, formData: updateData }) as any);
+        setEditingId(null);
+      } else {
+        const submitData = {
+          testCategoryId: formData.testCategoryId,
+          color: formData.color,
+          order: allMenus.length + 1
+        };
+        await dispatch(createMenu(submitData) as any);
+        setIsCreating(false);
+      }
+      
+      setFormData({
+        testCategoryId: '',
+        color: '',
+        order: 0,
+      });
+      
+      await dispatch(getAllMenus({}) as any);
+    } catch (error) {
+      console.error('Menu operation error:', error);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteMenu(id) as any);
+      await dispatch(getAllMenus({}) as any);
+    } catch (error) {
+      toast.error('Menü silinirken hata oluştu');
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent, menuId: string) => {
+    setDraggedItem(menuId);
+    e.dataTransfer.effectAllowed = 'move';
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+  const handleDrop = async (e: React.DragEvent, targetMenuId: string) => {
     e.preventDefault();
-    const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
     
-    if (dragIndex === dropIndex) return;
-
-    const newMenus = [...allMenus];
-    const draggedMenu = newMenus[dragIndex];
-    newMenus.splice(dragIndex, 1);
-    newMenus.splice(dropIndex, 0, draggedMenu);
-
-    // Update order numbers
-    const updatedMenus = newMenus.map((menu, index) => ({
-      id: menu._id,
-      order: index + 1,
-    }));
-
-    dispatch(updateMenuOrder({ menus: updatedMenus }) as any);
-  };
-
-  const getAvailableTestCategories = () => {
-    if (!activeCategories || !Array.isArray(activeCategories)) {
-      return [];
+    if (!draggedItem || draggedItem === targetMenuId) {
+      setDraggedItem(null);
+      return;
     }
-    const usedCategoryIds = allMenus.map((menu: any) => menu.testCategory._id);
-    return activeCategories.filter((category: any) => !usedCategoryIds.includes(category._id));
+
+    const draggedMenu = allMenus.find((menu: any) => menu._id === draggedItem);
+    const targetMenu = allMenus.find((menu: any) => menu._id === targetMenuId);
+    
+    if (!draggedMenu || !targetMenu) {
+      setDraggedItem(null);
+      return;
+    }
+
+    // Create new order array
+    const newMenus = allMenus.map((menu: any) => {
+      if (menu._id === draggedItem) {
+        return { ...menu, order: targetMenu.order };
+      } else if (menu._id === targetMenuId) {
+        return { ...menu, order: draggedMenu.order };
+      }
+      return menu;
+    });
+
+    // Update order in backend
+    try {
+      const orderData = newMenus.map((menu: any) => ({
+        id: menu._id,
+        order: menu.order
+      }));
+      
+      await dispatch(updateMenuOrder({ menus: orderData }) as any);
+      await dispatch(getAllMenus({}) as any);
+    } catch (error) {
+      toast.error('Sıralama güncellenirken hata oluştu');
+    }
+
+    setDraggedItem(null);
   };
 
-  if (loading && allMenus.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Menüler yükleniyor...</span>
-        </div>
-      </div>
-    );
-  }
+  const handleDragEnd = () => {
+    setDraggedItem(null);
+  };
+
+  const clearAllMenusHandler = async () => {
+    try {
+      await dispatch(clearAllMenus() as any);
+      await dispatch(getAllMenus({}) as any);
+    } catch (error) {
+      toast.error('Tüm menüler silinirken hata oluştu');
+    }
+  };
+
+  // Get available categories (not already in menus)
+  const availableCategories = activeCategories?.filter((category: any) => 
+    !allMenus.some((menu: any) => menu.testCategory?._id === category._id)
+  ) || [];
+
+  // Sort menus by order
+  const sortedMenus = [...allMenus].sort((a: any, b: any) => a.order - b.order);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Menü Yönetimi</h1>
-          <p className="text-muted-foreground">
-            Menüleri oluşturun, düzenleyin ve sıralayın
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Menü Yönetimi</h1>
+          <p className="text-gray-600 mt-3">Test kategorilerini menüye ekleyin ve sıralayın</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            onClick={() => setIsCreating(true)}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
+          <Button onClick={handleCreate} disabled={loading}>
+            <Plus className="w-4 h-4 mr-2" />
             Yeni Menü
           </Button>
-          
-          {allMenus.length > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  className="flex items-center gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Tümünü Temizle
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Tüm Menüleri Sil</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Bu işlem tüm menüleri kalıcı olarak silecektir. Bu işlem geri alınamaz.
-                    <br /><br />
-                    <strong>Emin misiniz?</strong>
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>İptal</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleClearAllMenus}
-                    className="bg-red-600 hover:bg-red-700"
-                  >
-                    Tümünü Sil
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={loading}>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Tümünü Temizle
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Tüm Menüleri Sil</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Bu işlem tüm menüleri kalıcı olarak silecektir. Bu işlem geri alınamaz.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>İptal</AlertDialogCancel>
+                <AlertDialogAction onClick={clearAllMenusHandler}>
+                  Tümünü Sil
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
-      {/* Create Form */}
-      {isCreating && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Yeni Menü Oluştur</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="testCategoryId" className="text-sm font-medium text-gray-700">
-                Test Kategorisi
-              </Label>
-              <Select
-                value={formData.testCategoryId}
-                onValueChange={(value) => setFormData({ ...formData, testCategoryId: value })}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Kategori seçin" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getAvailableTestCategories().map((category: any) => (
-                    <SelectItem key={category._id} value={category._id}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-gray-300"></div>
-                        <span>{category.name}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label className="text-sm font-medium text-gray-700 mb-2">
-                Renk
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color.value}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, color: color.value })}
-                    className={`w-8 h-8 rounded-full ${
-                      formData.color === color.value 
-                        ? 'ring-2 ring-gray-400 ring-offset-2' 
-                        : 'hover:opacity-80'
-                    }`}
-                    style={{ backgroundColor: color.value }}
-                    title={color.name}
-                  />
-                ))}
+      {/* Create/Edit Form */}
+      {(isCreating || editingId) && (
+        <Card className="mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg">
+              {editingId ? 'Menü Düzenle' : 'Yeni Menü Ekle'}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="testCategoryId" className="text-sm font-medium">Test Kategorisi *</Label>
+                  <Select
+                    value={formData.testCategoryId}
+                    onValueChange={(value) => setFormData({ ...formData, testCategoryId: value })}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Kategori seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableCategories.map((category: any) => (
+                        <SelectItem key={category._id} value={category._id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="color" className="text-sm font-medium">Renk *</Label>
+                  <Select
+                    value={formData.color}
+                    onValueChange={(value) => setFormData({ ...formData, color: value })}
+                  >
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Renk seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {colorOptions.map((color) => (
+                        <SelectItem key={color.value} value={color.value}>
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-full" 
+                              style={{ backgroundColor: color.value }}
+                            ></div>
+                            {color.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="flex gap-2 mt-4">
-            <Button onClick={handleCreate} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Oluştur
-            </Button>
-            <Button variant="outline" onClick={() => setIsCreating(false)}>
-              <X className="h-4 w-4" />
-              İptal
-            </Button>
-          </div>
-        </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button type="submit" disabled={loading} size="sm">
+                  {loading ? (
+                    <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="w-3 h-3 mr-2" />
+                  )}
+                  {editingId ? 'Güncelle' : 'Oluştur'}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleCancel} size="sm">
+                  <X className="w-3 h-3 mr-2" />
+                  İptal
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       )}
 
       {/* Menus List */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-        {allMenus.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">Henüz menü bulunmuyor</p>
-            <p className="text-gray-400 text-sm mt-2">İlk menünüzü oluşturmak için yukarıdaki butona tıklayın</p>
+      <div className="space-y-2">
+        {loading ? (
+          <div className="flex justify-center py-6">
+            <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
           </div>
+        ) : sortedMenus.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-6">
+              <p className="text-gray-500">Henüz menü eklenmemiş.</p>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="divide-y divide-gray-200">
-            {allMenus.map((menu: any, index: number) => (
-              <div
-                key={menu._id}
-                draggable
-                onDragStart={(e) => handleDragStart(e, index)}
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, index)}
-                className="p-4 hover:bg-gray-50 transition-colors cursor-move"
-              >
+          sortedMenus.map((menu: any, index: number) => (
+            <Card
+              key={menu._id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, menu._id)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, menu._id)}
+              onDragEnd={handleDragEnd}
+              className={`cursor-move transition-all duration-200 ${
+                draggedItem === menu._id ? 'opacity-50 scale-95' : 'hover:shadow-md'
+              }`}
+            >
+              <CardContent className="px-3 ">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
+                    <GripVertical className="w-4 h-4 text-gray-400" />
                     <div className="flex items-center gap-2">
-                      <GripVertical className="h-5 w-5 text-gray-400" />
                       <div 
-                        className="w-4 h-4 rounded-full" 
-                        style={{ backgroundColor: menu.color || '#f97316' }}
+                        className="w-4 h-4 rounded-full border border-white shadow-sm"
+                        style={{ backgroundColor: menu.color }}
                       ></div>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{menu.testCategory.name}</h3>
+                      <div>
+                        <h3 className="font-medium text-gray-900 text-sm">
+                          {menu.testCategory?.name || 'Bilinmeyen Kategori'}
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                          Sıra: {menu.order || 0}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1">
-                      <Button
-                        onClick={() => handleToggleStatus(menu._id)}
-                        disabled={loading}
-                        size="sm"
-                        variant={menu.isActive ? "default" : "outline"}
-                        className={menu.isActive ? "bg-green-600 hover:bg-green-700 text-white" : "text-gray-600 hover:text-gray-800"}
-                      >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (menu.isActive ? 'Pasif Et' : 'Aktif Et')}
-                      </Button>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(menu)}
-                        className="text-green-600 hover:text-green-700"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
+
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEdit(menu)}
+                      className="h-7 w-7 p-0"
+                    >
+                      <Edit className="w-3 h-3" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 h-7 w-7 p-0">
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Menüyü Sil</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Bu menüyü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>İptal</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(menu._id)}
+                            className="bg-red-600 hover:bg-red-700"
                           >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Menüyü Sil</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Bu menüyü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve menü kalıcı olarak silinecektir.
-                              <br /><br />
-                              <strong>Emin misiniz?</strong>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>İptal</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(menu._id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Sil
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
+                            Sil
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
-
-                {/* Edit Form */}
-                {editingId === menu._id && (
-                  <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Menüyü Düzenle</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`edit-testCategoryId-${menu._id}`} className="text-sm font-medium text-gray-700">
-                          Test Kategorisi
-                        </Label>
-                        <Select
-                          value={formData.testCategoryId}
-                          onValueChange={(value) => setFormData({ ...formData, testCategoryId: value })}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Kategori seçin" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {activeCategories?.map((category: any) => (
-                              <SelectItem key={category._id} value={category._id}>
-                                <div className="flex items-center gap-2">
-                                  <div className="w-3 h-3 rounded-full bg-gray-300"></div>
-                                  <span>{category.name}</span>
-                                </div>
-                              </SelectItem>
-                            )) || []}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm font-medium text-gray-700 mb-2">
-                          Renk
-                        </Label>
-                        <div className="flex flex-wrap gap-2">
-                          {colorOptions.map((color) => (
-                            <button
-                              key={color.value}
-                              type="button"
-                              onClick={() => setFormData({ ...formData, color: color.value })}
-                              className={`w-6 h-6 rounded-full ${
-                                formData.color === color.value 
-                                  ? 'ring-2 ring-gray-400 ring-offset-1' 
-                                  : 'hover:opacity-80'
-                              }`}
-                              style={{ backgroundColor: color.value }}
-                              title={color.name}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button
-                        onClick={() => handleUpdate(menu._id)}
-                        disabled={loading}
-                        size="sm"
-                      >
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                        Güncelle
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setEditingId(null)}
-                        size="sm"
-                      >
-                        <X className="h-4 w-4" />
-                        İptal
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+              </CardContent>
+            </Card>
+          ))
         )}
       </div>
+
     </div>
   );
 }

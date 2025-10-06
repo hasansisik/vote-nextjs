@@ -12,7 +12,6 @@ export interface CreateMenuPayload {
 export interface UpdateMenuPayload {
   testCategoryId?: string;
   color?: string;
-  isActive?: boolean;
   order?: number;
 }
 
@@ -227,53 +226,6 @@ export const deleteMenu = createAsyncThunk(
   }
 );
 
-// Toggle Menu Status
-export const toggleMenuStatus = createAsyncThunk(
-  "menu/toggleMenuStatus",
-  async (id: string, thunkAPI) => {
-    try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        return thunkAPI.rejectWithValue("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
-      }
-      
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const response = await axios.patch(
-        `${server}/menus/${id}/toggle-status`,
-        {},
-        config
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error("Toggle menu status error:", error);
-      
-      if (error.response) {
-        const status = error.response.status;
-        const message = error.response.data?.message || error.response.data?.error || "Sunucu hatası";
-        
-        if (status === 401) {
-          return thunkAPI.rejectWithValue("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
-        } else if (status === 403) {
-          return thunkAPI.rejectWithValue("Bu işlem için yetkiniz yok.");
-        } else if (status === 404) {
-          return thunkAPI.rejectWithValue("Menü bulunamadı.");
-        } else if (status === 400) {
-          return thunkAPI.rejectWithValue(message);
-        } else {
-          return thunkAPI.rejectWithValue(`Sunucu hatası (${status}): ${message}`);
-        }
-      } else if (error.request) {
-        return thunkAPI.rejectWithValue("Ağ bağlantısı hatası. Lütfen internet bağlantınızı kontrol edin.");
-      } else {
-        return thunkAPI.rejectWithValue(error.message || "Bilinmeyen bir hata oluştu.");
-      }
-    }
-  }
-);
 
 // Update Menu Order
 export const updateMenuOrder = createAsyncThunk(

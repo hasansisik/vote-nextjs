@@ -195,7 +195,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
                 </div>
               ) : (
-                allMenus?.filter((item: any) => item.isActive).map((item: any, index: number) => (
+                [...(allMenus || [])].sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((item: any, index: number) => (
                   <button 
                     key={index}
                     onClick={() => handleMobileCategoryClick(item.testCategory.slug)}

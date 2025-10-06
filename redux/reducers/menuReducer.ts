@@ -6,7 +6,6 @@ import {
   createMenu,
   updateMenu,
   deleteMenu,
-  toggleMenuStatus,
   updateMenuOrder,
   clearMenuError,
 } from "../actions/menuActions";
@@ -135,39 +134,6 @@ export const menuReducer = createReducer(initialState, (builder) => {
       state.loading = false;
       state.error = action.payload as string;
       state.message = null;
-    })
-    // Toggle Menu Status
-    .addCase(toggleMenuStatus.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(toggleMenuStatus.fulfilled, (state, action) => {
-      state.loading = false;
-      const index = state.allMenus.findIndex(menu => menu._id === action.payload.menu._id);
-      if (index !== -1) {
-        state.allMenus[index] = action.payload.menu;
-      }
-      // Update in activeMenus
-      const activeIndex = state.activeMenus.findIndex(menu => menu._id === action.payload.menu._id);
-      if (action.payload.menu.isActive) {
-        // If menu is now active, add it to activeMenus if not already there
-        if (activeIndex === -1) {
-          state.activeMenus.push(action.payload.menu);
-        } else {
-          state.activeMenus[activeIndex] = action.payload.menu;
-        }
-      } else {
-        // If menu is now inactive, remove it from activeMenus
-        if (activeIndex !== -1) {
-          state.activeMenus.splice(activeIndex, 1);
-        }
-      }
-      state.message = action.payload.message;
-      state.error = null;
-    })
-    .addCase(toggleMenuStatus.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload as string;
     })
     // Update Menu Order
     .addCase(updateMenuOrder.pending, (state) => {
