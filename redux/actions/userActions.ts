@@ -1410,9 +1410,9 @@ export const getAllTests = createAsyncThunk(
   }
 );
 
-export const getUserCreatedTests = createAsyncThunk(
-  "user/getUserCreatedTests",
-  async (_, thunkAPI) => {
+export const getSingleTest = createAsyncThunk(
+  "user/getSingleTest",
+  async (id: string, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
       const config = {
@@ -1420,10 +1420,7 @@ export const getUserCreatedTests = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       };
-      const response = await axios.get(
-        `${server}/tests/user/created`,
-        config
-      );
+      const response = await axios.get(`${server}/tests/${id}`, config);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -1434,6 +1431,7 @@ export const getUserCreatedTests = createAsyncThunk(
     }
   }
 );
+
 
 export const updateTest = createAsyncThunk(
   "user/updateTest",

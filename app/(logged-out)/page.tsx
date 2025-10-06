@@ -16,12 +16,12 @@ export default function Home() {
   const { allTests, testsLoading } = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    dispatch(getAllTests({ isActive: true }));
+    dispatch(getAllTests({}));
   }, [dispatch]);
 
-  // Convert tests to homepage card format
+  // Convert tests to homepage card format - sadece aktif testleri göster
   const homepageData = useMemo(() => {
-    return allTests.map((test: any, index: number) => {
+    return allTests.filter((test: any) => test.isActive).map((test: any, index: number) => {
       // Use local images from public/images folder as fallback
       const imageIndex = index % 8; // Cycle through v1.jpg to v8.jpg
       const localImage = `/images/v${imageIndex + 1}.jpg`;

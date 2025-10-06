@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { getUserCreatedTests, deleteTest } from "@/redux/actions/userActions";
+import { getAllTests, deleteTest, getSingleTest } from "@/redux/actions/userActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,14 +22,14 @@ import { useRouter } from "next/navigation";
 export default function VotesPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { userCreatedTests, testsLoading, testsError, user } = useSelector((state: any) => state.user);
+  const { allTests, testsLoading, testsError, user, singleTest } = useSelector((state: any) => state.user);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [testToDelete, setTestToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.role === 'admin') {
-      dispatch(getUserCreatedTests() as any);
+      dispatch(getAllTests({}) as any);
       dispatch(getActiveTestCategories() as any);
     }
   }, [dispatch, user]);
@@ -37,8 +37,8 @@ export default function VotesPage() {
   // Debug: Log categories and tests
   useEffect(() => {
     console.log('Active categories:', activeCategories);
-    console.log('User created tests:', userCreatedTests);
-  }, [activeCategories, userCreatedTests]);
+    console.log('All tests:', allTests);
+  }, [activeCategories, allTests]);
 
   const handleDeleteTest = async (testId: string) => {
     setTestToDelete(testId);
@@ -47,15 +47,24 @@ export default function VotesPage() {
   const confirmDelete = async () => {
     if (testToDelete) {
       await dispatch(deleteTest(testToDelete) as any);
-      dispatch(getUserCreatedTests() as any); // Refresh the list
+      dispatch(getAllTests({}) as any); // Refresh the list
       setTestToDelete(null);
+    }
+  };
+
+  const handleEditTest = async (testId: string) => {
+    try {
+      await dispatch(getSingleTest(testId) as any);
+      router.push(`/dashboard/votes/create?edit=${testId}`);
+    } catch (error) {
+      console.error('Test verileri yüklenirken hata:', error);
     }
   };
 
 
   const getCategoryColor = (categoryId: string) => {
     const category = activeCategories.find((cat: any) => cat._id === categoryId);
-    if (category) {
+    if (category && category.color) {
       return `${category.color.replace('bg-', 'bg-').replace('-500', '-100')} ${category.color.replace('bg-', 'text-').replace('-500', '-800')}`;
     }
     return "bg-gray-100 text-gray-800";
@@ -114,14 +123,14 @@ export default function VotesPage() {
             <p className="text-red-600">{testsError}</p>
             <Button 
               variant="outline" 
-              onClick={() => dispatch(getUserCreatedTests() as any)}
+              onClick={() => dispatch(getAllTests({}) as any)}
               className="mt-2"
             >
               Tekrar Dene
             </Button>
           </div>
         </div>
-      ) : userCreatedTests?.length === 0 ? (
+      ) : allTests?.length === 0 ? (
         <div className="flex items-center justify-center h-32">
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-2">Henüz oylama bulunmuyor</h3>
@@ -135,135 +144,131 @@ export default function VotesPage() {
         </div>
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-sidebar border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Oylama
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Kategori
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Durum
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Oy Sayısı
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tarih
-                  </th>
-                  <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    İşlemler
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {userCreatedTests?.map((test: any) => (
-                  <tr key={test._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center space-x-4">
-                        {test.coverImage && (
-                          <div className="flex-shrink-0 h-12 w-12 rounded-lg overflow-hidden">
-                            <img
-                              src={test.coverImage}
-                              alt={test.title}
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium text-gray-900 truncate">
-                            {test.title}
-                          </h3>
-                          {test.description && (
-                            <p className="text-sm text-gray-500 truncate mt-1">
-                              {test.description}
-                            </p>
-                          )}
+          <table className="w-full table-fixed">
+            <thead className="bg-sidebar border-b border-gray-200">
+              <tr>
+                <th className="w-2/5 px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Oylama
+                </th>
+                <th className="w-1/8 px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Kategori
+                </th>
+                <th className="w-1/8 px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Durum
+                </th>
+                <th className="w-1/8 px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Oy Sayısı
+                </th>
+                <th className="w-1/8 px-4 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tarih
+                </th>
+                <th className="w-1/8 px-4 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  İşlemler
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {allTests?.map((test: any) => (
+                <tr key={test._id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-4">
+                    <div className="flex items-center space-x-3">
+                      {test.coverImage && (
+                        <div className="flex-shrink-0 h-10 w-10 rounded-lg overflow-hidden">
+                          <img
+                            src={test.coverImage}
+                            alt={test.title}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-gray-900 truncate">
+                          {test.title}
+                        </h3>
+                        {test.description && (
+                          <p className="text-xs text-gray-500 truncate mt-1">
+                            {test.description}
+                          </p>
+                        )}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge className={getCategoryColor(test.category)}>
-                        {getCategoryName(test.category)}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge variant={test.isActive ? "default" : "secondary"}>
-                        {test.isActive ? "Aktif" : "Pasif"}
-                      </Badge>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-900">
-                        <Users className="h-4 w-4 mr-1" />
-                        {test.totalVotes}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {new Date(test.createdAt).toLocaleDateString('tr-TR')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <Badge className={`${getCategoryColor(test.category)} text-xs`}>
+                      {getCategoryName(test.category)}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-4">
+                    <Badge variant={test.isActive ? "default" : "secondary"} className="text-xs">
+                      {test.isActive ? "Aktif" : "Pasif"}
+                    </Badge>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center text-sm text-gray-900">
+                      <Users className="h-4 w-4 mr-1" />
+                      {test.totalVotes}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {new Date(test.createdAt).toLocaleDateString('tr-TR')}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 text-right text-sm font-medium">
+                    <div className="flex items-center justify-end space-x-1">
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/dashboard/votes/create?edit=${test._id}`)}
-                          className="text-blue-600 hover:text-blue-700"
+                          onClick={() => handleEditTest(test._id)}
+                          className="text-blue-600 hover:text-blue-700 p-2"
                         >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Düzenle
+                          <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/votes/${test._id}`)}
-                          className="text-green-600 hover:text-green-700"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Görüntüle
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700"
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => router.push(`/dashboard/votes/${test._id}`)}
+                        className="text-green-600 hover:text-green-700 p-2"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700 p-2"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Testi Sil</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Bu testi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve test ile ilgili tüm veriler kalıcı olarak silinecektir.
+                              <br /><br />
+                              <strong>Emin misiniz?</strong>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>İptal</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteTest(test._id)}
+                              className="bg-red-600 hover:bg-red-700"
                             >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Testi Sil</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Bu testi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve test ile ilgili tüm veriler kalıcı olarak silinecektir.
-                                <br /><br />
-                                <strong>Emin misiniz?</strong>
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>İptal</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteTest(test._id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Sil
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                              Sil
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

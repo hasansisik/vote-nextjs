@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/redux/hook";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createTest } from "@/redux/actions/userActions";
+import { createTest, updateTest, getSingleTest } from "@/redux/actions/userActions";
 import { getActiveTestCategories, createTestCategory } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +35,7 @@ export default function CreateTestPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, testsLoading, userCreatedTests } = useSelector((state: any) => state.user);
+  const { user, testsLoading, userCreatedTests, singleTest } = useSelector((state: any) => state.user);
   const { activeCategories, loading: categoriesLoading } = useSelector((state: any) => state.testCategory);
   
   const editId = searchParams.get('edit');
@@ -72,28 +72,51 @@ export default function CreateTestPage() {
 
   // Load test data for edit mode
   useEffect(() => {
-    if (isEditMode && editId && userCreatedTests) {
-      const testToEdit = userCreatedTests.find((test: any) => test._id === editId);
-      if (testToEdit) {
+    if (isEditMode && editId) {
+      // First try to get from singleTest (if already loaded)
+      if (singleTest && singleTest._id === editId) {
         setFormData({
-          title: testToEdit.title || "",
-          description: testToEdit.description || "",
-          coverImage: testToEdit.coverImage || "",
-          headerText: testToEdit.headerText || "",
-          footerText: testToEdit.footerText || "",
-          category: testToEdit.category || "",
+          title: singleTest.title || "",
+          description: singleTest.description || "",
+          coverImage: singleTest.coverImage || "",
+          headerText: singleTest.headerText || "",
+          footerText: singleTest.footerText || "",
+          category: singleTest.category || "",
         });
         
-        if (testToEdit.options && testToEdit.options.length > 0) {
-          setOptions(testToEdit.options.map((option: any) => ({
+        if (singleTest.options && singleTest.options.length > 0) {
+          setOptions(singleTest.options.map((option: any) => ({
             title: option.title || "",
             image: option.image || "",
             customFields: option.customFields || []
           })));
         }
+      } else {
+        // If not in singleTest, try userCreatedTests as fallback
+        if (userCreatedTests) {
+          const testToEdit = userCreatedTests.find((test: any) => test._id === editId);
+          if (testToEdit) {
+            setFormData({
+              title: testToEdit.title || "",
+              description: testToEdit.description || "",
+              coverImage: testToEdit.coverImage || "",
+              headerText: testToEdit.headerText || "",
+              footerText: testToEdit.footerText || "",
+              category: testToEdit.category || "",
+            });
+            
+            if (testToEdit.options && testToEdit.options.length > 0) {
+              setOptions(testToEdit.options.map((option: any) => ({
+                title: option.title || "",
+                image: option.image || "",
+                customFields: option.customFields || []
+              })));
+            }
+          }
+        }
       }
     }
-  }, [isEditMode, editId, userCreatedTests]);
+  }, [isEditMode, editId, singleTest, userCreatedTests]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -209,13 +232,25 @@ export default function CreateTestPage() {
     }
 
     try {
-      await dispatch(createTest({
-        ...formData,
-        options: validOptions,
-      }));
+      if (isEditMode && editId) {
+        // Update existing test
+        await dispatch(updateTest({
+          id: editId,
+          formData: {
+            ...formData,
+            options: validOptions,
+          }
+        }));
+      } else {
+        // Create new test
+        await dispatch(createTest({
+          ...formData,
+          options: validOptions,
+        }));
+      }
       router.push("/dashboard/votes");
     } catch (error) {
-      console.error("Create test error:", error);
+      console.error(isEditMode ? "Update test error:" : "Create test error:", error);
     }
   };
 

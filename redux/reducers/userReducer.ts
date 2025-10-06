@@ -43,7 +43,7 @@ import {
   clearError,
   createTest,
   getAllTests,
-  getUserCreatedTests,
+  getSingleTest,
   updateTest,
   deleteTest,
   resetTestVotes,
@@ -80,7 +80,7 @@ interface UserState {
   unreadCount: number;
   tests: any[];
   allTests: any[];
-  userCreatedTests: any[];
+  singleTest: any;
   testsLoading: boolean;
   testsError: string | null;
 }
@@ -113,7 +113,7 @@ const initialState: UserState = {
   unreadCount: 0,
   tests: [],
   allTests: [],
-  userCreatedTests: [],
+  singleTest: null,
   testsLoading: false,
   testsError: null,
 };
@@ -812,7 +812,7 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(createTest.fulfilled, (state, action) => {
       state.testsLoading = false;
-      state.userCreatedTests.unshift(action.payload.test);
+      state.allTests.unshift(action.payload.test);
       state.message = action.payload.message;
       state.testsError = null;
     })
@@ -834,15 +834,15 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.testsLoading = false;
       state.testsError = action.payload as string;
     })
-    // Get User Created Tests
-    .addCase(getUserCreatedTests.pending, (state) => {
+    // Get Single Test
+    .addCase(getSingleTest.pending, (state) => {
       state.testsLoading = true;
     })
-    .addCase(getUserCreatedTests.fulfilled, (state, action) => {
+    .addCase(getSingleTest.fulfilled, (state, action) => {
       state.testsLoading = false;
-      state.userCreatedTests = action.payload.createdTests;
+      state.singleTest = action.payload.test;
     })
-    .addCase(getUserCreatedTests.rejected, (state, action) => {
+    .addCase(getSingleTest.rejected, (state, action) => {
       state.testsLoading = false;
       state.testsError = action.payload as string;
     })
@@ -854,10 +854,6 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(updateTest.fulfilled, (state, action) => {
       state.testsLoading = false;
-      const index = state.userCreatedTests.findIndex(test => test._id === action.payload.test._id);
-      if (index !== -1) {
-        state.userCreatedTests[index] = action.payload.test;
-      }
       const allIndex = state.allTests.findIndex(test => test._id === action.payload.test._id);
       if (allIndex !== -1) {
         state.allTests[allIndex] = action.payload.test;
@@ -878,7 +874,6 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(deleteTest.fulfilled, (state, action) => {
       state.testsLoading = false;
-      state.userCreatedTests = state.userCreatedTests.filter(test => test._id !== action.payload.id);
       state.allTests = state.allTests.filter(test => test._id !== action.payload.id);
       state.message = action.payload.message;
       state.testsError = null;
@@ -894,10 +889,6 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(resetTestVotes.fulfilled, (state, action) => {
       state.testsLoading = false;
-      const index = state.userCreatedTests.findIndex(test => test._id === action.payload.test._id);
-      if (index !== -1) {
-        state.userCreatedTests[index] = action.payload.test;
-      }
       const allIndex = state.allTests.findIndex(test => test._id === action.payload.test._id);
       if (allIndex !== -1) {
         state.allTests[allIndex] = action.payload.test;

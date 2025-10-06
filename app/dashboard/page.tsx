@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  getUserCreatedTests,
+  getAllTests,
   deleteTest,
   resetTestVotes,
 } from '@/redux/actions/userActions';
@@ -19,33 +19,34 @@ import { toast } from 'react-hot-toast';
 export default function DashboardPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { userCreatedTests, testsLoading, testsError, user } = useSelector((state: any) => state.user);
+  const { allTests, testsLoading, testsError, user } = useSelector((state: any) => state.user);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   useEffect(() => {
-    if (user?.role === 'admin') {
-      dispatch(getUserCreatedTests() as any);
-      dispatch(getActiveTestCategories() as any);
-    }
+    // Her zaman getAllTests tetikle - tüm testleri getir
+    dispatch(getAllTests({}) as any);
+    dispatch(getActiveTestCategories() as any);
   }, [dispatch, user]);
 
   const handleDeleteTest = async (testId: string) => {
     if (confirm("Bu testi silmek istediğinizden emin misiniz?")) {
       await dispatch(deleteTest(testId) as any);
-      dispatch(getUserCreatedTests() as any); // Refresh the list
+      // Her zaman getAllTests'i refresh et - tüm testleri getir
+      dispatch(getAllTests({}) as any);
     }
   };
 
   const handleResetVotes = async (testId: string) => {
     if (confirm("Bu testin oylarını sıfırlamak istediğinizden emin misiniz?")) {
       await dispatch(resetTestVotes(testId) as any);
-      dispatch(getUserCreatedTests() as any); // Refresh the list
+      // Her zaman getAllTests'i refresh et - tüm testleri getir
+      dispatch(getAllTests({}) as any);
     }
   };
 
   const getCategoryColor = (categorySlug: string) => {
     const category = activeCategories.find((cat: any) => cat.slug === categorySlug);
-    if (category) {
+    if (category && category.color) {
       return `${category.color.replace('bg-', 'bg-').replace('-500', '-100')} ${category.color.replace('bg-', 'text-').replace('-500', '-800')}`;
     }
     return 'bg-gray-100 text-gray-800';
@@ -68,13 +69,16 @@ export default function DashboardPage() {
     router.push(`/dashboard/votes?edit=${testId}`);
   };
 
+  // Her zaman allTests kullan - hem aktif hem pasif testleri göster
+  const testsData = allTests;
+  
   // Calculate statistics
-  const totalTests = userCreatedTests?.length || 0;
-  const totalVotes = userCreatedTests?.reduce((sum: number, test: any) => sum + (test.totalVotes || 0), 0) || 0;
-  const activeTests = userCreatedTests?.filter((test: any) => test.isActive).length || 0;
+  const totalTests = testsData?.length || 0;
+  const totalVotes = testsData?.reduce((sum: number, test: any) => sum + (test.totalVotes || 0), 0) || 0;
+  const activeTests = testsData?.filter((test: any) => test.isActive).length || 0;
   const avgVotesPerTest = totalTests > 0 ? Math.round(totalVotes / totalTests) : 0;
 
-  if (testsLoading && userCreatedTests?.length === 0) {
+  if (testsLoading && testsData?.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex items-center gap-2">
@@ -175,14 +179,14 @@ export default function DashboardPage() {
                 <p className="text-red-600">{testsError}</p>
                 <Button 
                   variant="outline" 
-                  onClick={() => dispatch(getUserCreatedTests() as any)}
+                  onClick={() => dispatch(getAllTests({}) as any)}
                   className="mt-2"
                 >
                   Tekrar Dene
                 </Button>
               </div>
             </div>
-          ) : userCreatedTests?.length === 0 ? (
+          ) : testsData?.length === 0 ? (
             <div className="text-center py-8">
               <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz oylama yok</h3>
@@ -194,7 +198,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {userCreatedTests?.slice(0, 5).map((test: any) => (
+              {testsData?.slice(0, 5).map((test: any) => (
                 <div key={test._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
@@ -256,7 +260,7 @@ export default function DashboardPage() {
                 </div>
               ))}
               
-              {userCreatedTests?.length > 5 && (
+              {testsData?.length > 5 && (
                 <div className="text-center pt-4">
                   <Button 
                     variant="outline" 
