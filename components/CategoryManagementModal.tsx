@@ -7,7 +7,6 @@ import {
   createTestCategory, 
   updateTestCategory, 
   deleteTestCategory,
-  toggleTestCategoryStatus,
   clearTestCategoryError 
 } from '@/redux/actions/testCategoryActions';
 import { 
@@ -15,11 +14,20 @@ import {
   Plus, 
   Edit2, 
   Trash2, 
-  Eye, 
-  EyeOff,
   Save,
   Loader2
 } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CategoryManagementModalProps {
   isOpen: boolean;
@@ -29,16 +37,18 @@ interface CategoryManagementModalProps {
 }
 
 const colorOptions = [
-  { name: 'Pembe', value: 'bg-pink-500', hex: '#ec4899' },
-  { name: 'Turuncu', value: 'bg-orange-500', hex: '#f97316' },
   { name: 'Kırmızı', value: 'bg-red-500', hex: '#ef4444' },
-  { name: 'Mavi', value: 'bg-blue-500', hex: '#3b82f6' },
-  { name: 'Yeşil', value: 'bg-green-500', hex: '#22c55e' },
+  { name: 'Pembe', value: 'bg-pink-500', hex: '#ec4899' },
   { name: 'Mor', value: 'bg-purple-500', hex: '#a855f7' },
-  { name: 'Teal', value: 'bg-teal-500', hex: '#14b8a6' },
-  { name: 'Gri', value: 'bg-gray-500', hex: '#6b7280' },
-  { name: 'Sarı', value: 'bg-yellow-500', hex: '#eab308' },
   { name: 'İndigo', value: 'bg-indigo-500', hex: '#6366f1' },
+  { name: 'Mavi', value: 'bg-blue-500', hex: '#3b82f6' },
+  { name: 'Teal', value: 'bg-teal-500', hex: '#14b8a6' },
+  { name: 'Yeşil', value: 'bg-green-500', hex: '#22c55e' },
+  { name: 'Sarı', value: 'bg-yellow-500', hex: '#eab308' },
+  { name: 'Turuncu', value: 'bg-orange-500', hex: '#f97316' },
+  { name: 'Gri', value: 'bg-gray-500', hex: '#6b7280' },
+  { name: 'Siyah', value: 'bg-gray-900', hex: '#111827' },
+  { name: 'Beyaz', value: 'bg-white', hex: '#ffffff' },
 ];
 
 export default function CategoryManagementModal({ 
@@ -60,9 +70,7 @@ export default function CategoryManagementModal({
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    color: 'bg-blue-500',
-    icon: '',
+    color: 'bg-orange-500',
   });
 
   // Load categories on mount
@@ -78,9 +86,7 @@ export default function CategoryManagementModal({
     setEditingCategory(null);
     setFormData({
       name: '',
-      description: '',
-      color: 'bg-blue-500',
-      icon: '',
+      color: 'bg-orange-500',
     });
   };
 
@@ -90,9 +96,7 @@ export default function CategoryManagementModal({
     setIsCreating(true);
     setFormData({
       name: category.name,
-      description: category.description || '',
       color: category.color,
-      icon: category.icon || '',
     });
   };
 
@@ -115,13 +119,14 @@ export default function CategoryManagementModal({
         await dispatch(createTestCategory(formData) as any);
       }
       
+      // Refresh categories after create/update
+      await dispatch(getActiveTestCategories() as any);
+      
       setIsCreating(false);
       setEditingCategory(null);
       setFormData({
         name: '',
-        description: '',
-        color: 'bg-blue-500',
-        icon: '',
+        color: 'bg-orange-500',
       });
     } catch (error) {
       console.error('Category operation error:', error);
@@ -133,20 +138,14 @@ export default function CategoryManagementModal({
     if (window.confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) {
       try {
         await dispatch(deleteTestCategory(categoryId) as any);
+        // Refresh categories after delete
+        await dispatch(getActiveTestCategories() as any);
       } catch (error) {
         console.error('Delete category error:', error);
       }
     }
   };
 
-  // Handle toggle status
-  const handleToggleStatus = async (categoryId: string) => {
-    try {
-      await dispatch(toggleTestCategoryStatus(categoryId) as any);
-    } catch (error) {
-      console.error('Toggle category status error:', error);
-    }
-  };
 
   // Handle category selection
   const handleCategorySelect = (category: any) => {
@@ -161,29 +160,23 @@ export default function CategoryManagementModal({
     dispatch(clearTestCategoryError() as any);
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <h2 className="text-xl font-semibold">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold">
             {selectMode ? 'Kategori Seç' : 'Kategori Yönetimi'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+          </DialogTitle>
+          <DialogDescription className="text-sm text-gray-600">
+            Kategorileri yönetin, yeni kategori ekleyin veya mevcut kategorileri düzenleyin.
+          </DialogDescription>
+        </DialogHeader>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
               {error}
               <button onClick={clearError} className="ml-2 text-red-500 hover:text-red-700">
                 ×
@@ -193,84 +186,58 @@ export default function CategoryManagementModal({
 
           {/* Success Message */}
           {message && (
-            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm">
               {message}
             </div>
           )}
 
           {/* Create/Edit Form */}
           {isCreating && (
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-medium mb-4">
+            <div className="mb-6 p-4  rounded-lg">
+              <h3 className="text-base font-medium mb-4">
                 {editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori Ekle'}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <Label className="text-sm font-medium text-gray-700">
                     Kategori Adı *
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Kategori adını girin"
                     required
+                    className="mt-1"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Açıklama
-                  </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Kategori açıklaması (opsiyonel)"
-                    rows={3}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Label className="text-sm font-medium text-gray-700 mb-2">
                     Renk *
-                  </label>
-                  <div className="grid grid-cols-5 gap-2">
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
                     {colorOptions.map((color) => (
                       <button
                         key={color.value}
                         type="button"
                         onClick={() => setFormData({ ...formData, color: color.value })}
-                        className={`w-12 h-12 rounded-lg ${color.value} ${
+                        className={`w-8 h-8 rounded-full ${color.value} ${
                           formData.color === color.value 
                             ? 'ring-2 ring-gray-400 ring-offset-2' 
                             : 'hover:opacity-80'
-                        }`}
+                        } ${color.value === 'bg-white' ? 'border border-gray-300' : ''}`}
                         title={color.name}
                       />
                     ))}
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    İkon (opsiyonel)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.icon}
-                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="İkon adı (örn: music, game, food)"
-                  />
-                </div>
-
                 <div className="flex gap-2">
-                  <button
+                  <Button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+                    className="flex items-center gap-2"
                   >
                     {loading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -278,17 +245,21 @@ export default function CategoryManagementModal({
                       <Save className="w-4 h-4" />
                     )}
                     {editingCategory ? 'Güncelle' : 'Oluştur'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
+                    variant="outline"
                     onClick={() => {
                       setIsCreating(false);
                       setEditingCategory(null);
+                      setFormData({
+                        name: '',
+                        color: 'bg-orange-500',
+                      });
                     }}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                   >
                     İptal
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>
@@ -297,15 +268,16 @@ export default function CategoryManagementModal({
           {/* Categories List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Kategoriler</h3>
+              <h3 className="text-base font-medium">Kategoriler</h3>
               {!selectMode && (
-                <button
+                <Button
                   onClick={handleCreateNew}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                  className="flex items-center gap-2"
+                  size="sm"
                 >
                   <Plus className="w-4 h-4" />
                   Yeni Kategori
-                </button>
+                </Button>
               )}
             </div>
 
@@ -314,62 +286,50 @@ export default function CategoryManagementModal({
                 <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {activeCategories.map((category: any) => (
                   <div
                     key={category._id}
-                    className={`p-4 border rounded-lg hover:shadow-md transition-shadow ${
+                    className={`p-3 border rounded-lg hover:shadow-sm transition-shadow ${
                       selectMode ? 'cursor-pointer hover:bg-gray-50' : ''
                     }`}
                     onClick={selectMode ? () => handleCategorySelect(category) : undefined}
                   >
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full ${category.color}`}></div>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="w-3 h-3 rounded-full" 
+                          style={{ backgroundColor: category.color || '#f97316' }}
+                        ></div>
                         <div>
-                          <h4 className="font-medium text-gray-900">{category.name}</h4>
-                          {category.description && (
-                            <p className="text-sm text-gray-500 mt-1">{category.description}</p>
-                          )}
+                          <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
                         </div>
                       </div>
                       
                       {!selectMode && (
                         <div className="flex gap-1">
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEdit(category);
                             }}
-                            className="p-1 text-gray-400 hover:text-blue-500"
-                            title="Düzenle"
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-blue-500"
                           >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleToggleStatus(category._id);
-                            }}
-                            className="p-1 text-gray-400 hover:text-yellow-500"
-                            title={category.isActive ? 'Pasif Yap' : 'Aktif Yap'}
-                          >
-                            {category.isActive ? (
-                              <EyeOff className="w-4 h-4" />
-                            ) : (
-                              <Eye className="w-4 h-4" />
-                            )}
-                          </button>
-                          <button
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDelete(category._id);
                             }}
-                            className="p-1 text-gray-400 hover:text-red-500"
-                            title="Sil"
+                            className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
                           >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
                         </div>
                       )}
                     </div>
@@ -379,13 +339,13 @@ export default function CategoryManagementModal({
             )}
 
             {activeCategories.length === 0 && !loading && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-gray-500 text-sm">
                 Henüz kategori eklenmemiş.
               </div>
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

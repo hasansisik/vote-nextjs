@@ -375,11 +375,11 @@ export default function ProfilPage() {
         </div>
 
         {/* Delete Account Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-medium text-red-900">Hesabı Sil</h3>
-              <p className="text-sm text-red-700 mt-1">
+              <h3 className="text-lg font-medium text-red-600">Hesabı Sil</h3>
+              <p className="text-sm text-gray-500 mt-1">
                 Hesabınızı kalıcı olarak silmek istiyorsanız bu seçeneği kullanın.
               </p>
             </div>

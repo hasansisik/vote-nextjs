@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/redux/hook";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createTest } from "@/redux/actions/userActions";
+import { getActiveTestCategories, createTestCategory } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,8 @@ import {
   Save
 } from "lucide-react";
 import { uploadImageToCloudinary } from "@/utils/cloudinary";
+import CategoryManagementModal from "@/components/CategoryManagementModal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Option {
   title: string;
@@ -31,7 +34,12 @@ interface Option {
 export default function CreateTestPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { user, testsLoading } = useSelector((state: any) => state.user);
+  const searchParams = useSearchParams();
+  const { user, testsLoading, userCreatedTests } = useSelector((state: any) => state.user);
+  const { activeCategories, loading: categoriesLoading } = useSelector((state: any) => state.testCategory);
+  
+  const editId = searchParams.get('edit');
+  const isEditMode = !!editId;
 
   const [formData, setFormData] = useState({
     title: "",
@@ -49,17 +57,43 @@ export default function CreateTestPage() {
 
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
-  const categories = [
-    { value: "futbol", label: "Futbol" },
-    { value: "yemek", label: "Yemek" },
-    { value: "müzik", label: "Müzik" },
-    { value: "film", label: "Film" },
-    { value: "oyun", label: "Oyun" },
-    { value: "teknoloji", label: "Teknoloji" },
-    { value: "spor", label: "Spor" },
-    { value: "diğer", label: "Diğer" },
-  ];
+  // Load categories on component mount
+  useEffect(() => {
+    dispatch(getActiveTestCategories());
+  }, [dispatch]);
+
+  // Debug: Log categories when they change
+  useEffect(() => {
+    console.log('Active categories:', activeCategories);
+    console.log('Categories loading:', categoriesLoading);
+  }, [activeCategories, categoriesLoading]);
+
+  // Load test data for edit mode
+  useEffect(() => {
+    if (isEditMode && editId && userCreatedTests) {
+      const testToEdit = userCreatedTests.find((test: any) => test._id === editId);
+      if (testToEdit) {
+        setFormData({
+          title: testToEdit.title || "",
+          description: testToEdit.description || "",
+          coverImage: testToEdit.coverImage || "",
+          headerText: testToEdit.headerText || "",
+          footerText: testToEdit.footerText || "",
+          category: testToEdit.category || "",
+        });
+        
+        if (testToEdit.options && testToEdit.options.length > 0) {
+          setOptions(testToEdit.options.map((option: any) => ({
+            title: option.title || "",
+            image: option.image || "",
+            customFields: option.customFields || []
+          })));
+        }
+      }
+    }
+  }, [isEditMode, editId, userCreatedTests]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -155,6 +189,10 @@ export default function CreateTestPage() {
     );
   };
 
+  const handleCategorySelect = (category: any) => {
+    handleInputChange("category", category._id);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -207,13 +245,27 @@ export default function CreateTestPage() {
               Geri
             </Button>
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Yeni Oylama Oluştur</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                {isEditMode ? 'Oylamayı Düzenle' : 'Yeni Oylama Oluştur'}
+              </h1>
               <p className="text-sm text-gray-600">
-                Yeni bir oylama testi oluşturun
+                {isEditMode ? 'Oylama detaylarını düzenleyin' : 'Yeni bir oylama testi oluşturun'}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
+            {/* Category Management */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="text-orange-600 border-orange-600 hover:bg-orange-50"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Kategori Yönet
+            </Button>
+            
             <Button
               type="button"
               variant="outline"
@@ -228,7 +280,7 @@ export default function CreateTestPage() {
               className="bg-orange-600 hover:bg-orange-700"
             >
               <Save className="h-4 w-4 mr-2" />
-              {testsLoading ? "Oluşturuluyor..." : "Yayınla"}
+              {testsLoading ? (isEditMode ? "Güncelleniyor..." : "Oluşturuluyor...") : (isEditMode ? "Güncelle" : "Yayınla")}
             </Button>
           </div>
         </div>
@@ -307,6 +359,19 @@ export default function CreateTestPage() {
                       />
                     </div>
                   )}
+                </div>
+
+                {/* Header Text */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Üst Metin
+                  </Label>
+                  <Input
+                    value={formData.headerText}
+                    onChange={(e) => handleInputChange("headerText", e.target.value)}
+                    placeholder="Oylama üst kısmında görünecek metin..."
+                    className="bg-white"
+                  />
                 </div>
               </div>
             </div>
@@ -450,6 +515,22 @@ export default function CreateTestPage() {
               </div>
             </div>
 
+            {/* Footer Text */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  Alt Metin
+                </Label>
+                <Textarea
+                  value={formData.footerText}
+                  onChange={(e) => handleInputChange("footerText", e.target.value)}
+                  placeholder="Oylama alt kısmında görünecek metin..."
+                  rows={4}
+                  className="bg-white"
+                />
+              </div>
+            </div>
+
           </form>
         </div>
 
@@ -463,54 +544,32 @@ export default function CreateTestPage() {
                 <Label htmlFor="category" className="text-sm font-medium text-gray-700">
                   Kategori *
                 </Label>
-                <select
-                  id="category"
+                <Select
                   value={formData.category}
-                  onChange={(e) => handleInputChange("category", e.target.value)}
-                  required
-                  className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  onValueChange={(value) => handleInputChange("category", value)}
+                  disabled={categoriesLoading}
                 >
-                  <option value="">Kategori seçin</option>
-                  {categories.map((category) => (
-                    <option key={category.value} value={category.value}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={categoriesLoading ? "Kategoriler yükleniyor..." : "Kategori seçin"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {activeCategories?.map((category: any) => (
+                      <SelectItem key={category._id} value={category._id}>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: category.color || '#f97316' }}
+                          ></div>
+                          <span>{category.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </div>
 
-          {/* Additional Settings */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ek Ayarlar</h3>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="headerText" className="text-sm font-medium text-gray-700">
-                  Üst Metin
-                </Label>
-                <Input
-                  id="headerText"
-                  value={formData.headerText}
-                  onChange={(e) => handleInputChange("headerText", e.target.value)}
-                  placeholder="Üst kısımda görünecek metin"
-                  className="bg-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="footerText" className="text-sm font-medium text-gray-700">
-                  Alt Metin
-                </Label>
-                <Input
-                  id="footerText"
-                  value={formData.footerText}
-                  onChange={(e) => handleInputChange("footerText", e.target.value)}
-                  placeholder="Alt kısımda görünecek metin"
-                  className="bg-white"
-                />
-              </div>
-            </div>
-          </div>
 
           {/* Help Box */}
           <div className="bg-orange-50 rounded-lg border border-orange-200 p-6">
@@ -524,6 +583,14 @@ export default function CreateTestPage() {
           </div>
         </div>
       </div>
+
+      {/* Category Management Modal */}
+      <CategoryManagementModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onCategorySelect={handleCategorySelect}
+        selectMode={false}
+      />
     </div>
   );
 }

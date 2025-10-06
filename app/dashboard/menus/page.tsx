@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   createMenu,
   getAllMenus,
@@ -15,26 +17,25 @@ import {
   updateMenuOrder,
 } from '@/redux/actions/menuActions';
 import {
-  getAllTestCategories,
+  getActiveTestCategories,
 } from '@/redux/actions/testCategoryActions';
 import { Plus, Edit, Trash2, GripVertical, Loader2, Save, X } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export default function MenusPage() {
   const dispatch = useDispatch();
   const { allMenus, loading, error, message } = useSelector((state: any) => state.menu);
-  const { allTestCategories } = useSelector((state: any) => state.testCategory);
+  const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     testCategoryId: '',
-    order: 0,
   });
 
   useEffect(() => {
     dispatch(getAllMenus({}) as any);
-    dispatch(getAllTestCategories({}) as any);
+    dispatch(getActiveTestCategories() as any);
   }, [dispatch]);
 
   useEffect(() => {
@@ -46,6 +47,12 @@ export default function MenusPage() {
     }
   }, [message, error]);
 
+  // Debug: Log categories and menus
+  useEffect(() => {
+    console.log('Active categories:', activeCategories);
+    console.log('All menus:', allMenus);
+  }, [activeCategories, allMenus]);
+
   const handleCreate = () => {
     if (!formData.testCategoryId) {
       toast.error('Lütfen bir test kategorisi seçin');
@@ -54,14 +61,13 @@ export default function MenusPage() {
 
     dispatch(createMenu(formData) as any);
     setIsCreating(false);
-    setFormData({ testCategoryId: '', order: 0 });
+    setFormData({ testCategoryId: '' });
   };
 
   const handleEdit = (menu: any) => {
     setEditingId(menu._id);
     setFormData({
       testCategoryId: menu.testCategory._id,
-      order: menu.order,
     });
   };
 
@@ -73,13 +79,11 @@ export default function MenusPage() {
 
     dispatch(updateMenu({ id, formData }) as any);
     setEditingId(null);
-    setFormData({ testCategoryId: '', order: 0 });
+    setFormData({ testCategoryId: '' });
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm('Bu menüyü silmek istediğinizden emin misiniz?')) {
-      dispatch(deleteMenu(id) as any);
-    }
+    dispatch(deleteMenu(id) as any);
   };
 
   const handleToggleStatus = (id: string) => {
@@ -115,8 +119,11 @@ export default function MenusPage() {
   };
 
   const getAvailableTestCategories = () => {
+    if (!activeCategories || !Array.isArray(activeCategories)) {
+      return [];
+    }
     const usedCategoryIds = allMenus.map((menu: any) => menu.testCategory._id);
-    return allTestCategories.filter((category: any) => !usedCategoryIds.includes(category._id));
+    return activeCategories.filter((category: any) => !usedCategoryIds.includes(category._id));
   };
 
   if (loading && allMenus.length === 0) {
@@ -131,11 +138,13 @@ export default function MenusPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Menü Yönetimi</h1>
-          <p className="text-gray-600 mt-2">Menüleri oluşturun, düzenleyin ve sıralayın</p>
+          <p className="text-muted-foreground">
+            Menüleri oluşturun, düzenleyin ve sıralayın
+          </p>
         </div>
         <Button
           onClick={() => setIsCreating(true)}
@@ -148,85 +157,80 @@ export default function MenusPage() {
 
       {/* Create Form */}
       {isCreating && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Yeni Menü Oluştur</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="testCategoryId">Test Kategorisi</Label>
-                <select
-                  id="testCategoryId"
-                  value={formData.testCategoryId}
-                  onChange={(e) => setFormData({ ...formData, testCategoryId: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Kategori seçin</option>
-                  {getAvailableTestCategories().map((category: any) => (
-                    <option key={category._id} value={category._id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <Label htmlFor="order">Sıra</Label>
-                <Input
-                  id="order"
-                  type="number"
-                  value={formData.order}
-                  onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                  placeholder="Sıra numarası"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <Button onClick={handleCreate} disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                Oluştur
-              </Button>
-              <Button variant="outline" onClick={() => setIsCreating(false)}>
-                <X className="h-4 w-4" />
-                İptal
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Yeni Menü Oluştur</h2>
+          <div>
+            <Label htmlFor="testCategoryId" className="text-sm font-medium text-gray-700">
+              Test Kategorisi
+            </Label>
+            <Select
+              value={formData.testCategoryId}
+              onValueChange={(value) => setFormData({ ...formData, testCategoryId: value })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Kategori seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                {getAvailableTestCategories().map((category: any) => (
+                  <SelectItem key={category._id} value={category._id}>
+                    <div className="flex items-center gap-2">
+                      <div 
+                        className="w-3 h-3 rounded-full" 
+                        style={{ backgroundColor: category.color || '#f97316' }}
+                      ></div>
+                      <span>{category.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button onClick={handleCreate} disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              Oluştur
+            </Button>
+            <Button variant="outline" onClick={() => setIsCreating(false)}>
+              <X className="h-4 w-4" />
+              İptal
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Menus List */}
-      <div className="space-y-4">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         {allMenus.length === 0 ? (
-          <Card>
-            <CardContent className="text-center py-8">
-              <p className="text-gray-500">Henüz menü bulunmuyor</p>
-            </CardContent>
-          </Card>
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">Henüz menü bulunmuyor</p>
+            <p className="text-gray-400 text-sm mt-2">İlk menünüzü oluşturmak için yukarıdaki butona tıklayın</p>
+          </div>
         ) : (
-          allMenus.map((menu: any, index: number) => (
-            <Card
-              key={menu._id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, index)}
-              className="cursor-move hover:shadow-md transition-shadow"
-            >
-              <CardContent className="p-4">
+          <div className="divide-y divide-gray-200">
+            {allMenus.map((menu: any, index: number) => (
+              <div
+                key={menu._id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, index)}
+                className="p-4 hover:bg-gray-50 transition-colors cursor-move"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <GripVertical className="h-5 w-5 text-gray-400" />
                     <div className="flex items-center gap-3">
-                      <div className={`w-4 h-4 rounded-full ${menu.testCategory.color}`}></div>
+                      <div 
+                        className="w-4 h-4 rounded-full" 
+                        style={{ backgroundColor: menu.testCategory.color || '#f97316' }}
+                      ></div>
                       <div>
-                        <h3 className="font-semibold">{menu.testCategory.name}</h3>
-                        <p className="text-sm text-gray-500">Sıra: {menu.order}</p>
+                        <h3 className="font-semibold text-gray-900">{menu.testCategory.name}</h3>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       menu.isActive 
                         ? 'bg-green-100 text-green-800' 
@@ -241,6 +245,7 @@ export default function MenusPage() {
                         size="sm"
                         onClick={() => handleToggleStatus(menu._id)}
                         disabled={loading}
+                        className="text-blue-600 hover:text-blue-700"
                       >
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Durum'}
                       </Button>
@@ -249,18 +254,41 @@ export default function MenusPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleEdit(menu)}
+                        className="text-green-600 hover:text-green-700"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
                       
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(menu._id)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Menüyü Sil</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Bu menüyü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz ve menü kalıcı olarak silinecektir.
+                              <br /><br />
+                              <strong>Emin misiniz?</strong>
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>İptal</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(menu._id)}
+                              className="bg-red-600 hover:bg-red-700"
+                            >
+                              Sil
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>
@@ -268,33 +296,32 @@ export default function MenusPage() {
                 {/* Edit Form */}
                 {editingId === menu._id && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor={`edit-testCategoryId-${menu._id}`}>Test Kategorisi</Label>
-                        <select
-                          id={`edit-testCategoryId-${menu._id}`}
-                          value={formData.testCategoryId}
-                          onChange={(e) => setFormData({ ...formData, testCategoryId: e.target.value })}
-                          className="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                          <option value="">Kategori seçin</option>
-                          {allTestCategories.map((category: any) => (
-                            <option key={category._id} value={category._id}>
-                              {category.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <Label htmlFor={`edit-order-${menu._id}`}>Sıra</Label>
-                        <Input
-                          id={`edit-order-${menu._id}`}
-                          type="number"
-                          value={formData.order}
-                          onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })}
-                          placeholder="Sıra numarası"
-                        />
-                      </div>
+                    <h3 className="text-sm font-semibold text-gray-900 mb-3">Menüyü Düzenle</h3>
+                    <div>
+                      <Label htmlFor={`edit-testCategoryId-${menu._id}`} className="text-sm font-medium text-gray-700">
+                        Test Kategorisi
+                      </Label>
+                      <Select
+                        value={formData.testCategoryId}
+                        onValueChange={(value) => setFormData({ ...formData, testCategoryId: value })}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Kategori seçin" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {activeCategories?.map((category: any) => (
+                            <SelectItem key={category._id} value={category._id}>
+                              <div className="flex items-center gap-2">
+                                <div 
+                                  className="w-3 h-3 rounded-full" 
+                                  style={{ backgroundColor: category.color || '#f97316' }}
+                                ></div>
+                                <span>{category.name}</span>
+                              </div>
+                            </SelectItem>
+                          )) || []}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex gap-2 mt-4">
                       <Button
@@ -316,9 +343,9 @@ export default function MenusPage() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          ))
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
