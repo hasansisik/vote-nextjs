@@ -234,12 +234,12 @@ export default function VotePage() {
                     )}
                     
                     {/* Image */}
-                    <div className={`relative ${index === 0 ? 'h-80' : 'h-64'}`}>
+                    <div className={`relative ${index === 0 ? 'h-72' : 'h-56'}`}>
                       <Image
                         src={ranking.option.image}
                         alt={ranking.option.title}
                         fill
-                        className="object-cover"
+                        className="object-cover w-full h-full"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                     </div>
@@ -257,7 +257,7 @@ export default function VotePage() {
                         <span className="text-sm font-medium text-gray-600">
                           {ranking.option._id === finalWinner?._id ? 'Kazanan (Sizin Seçiminiz)' : 'Diğer Katılımcıların Tercihi'}
                         </span>
-                        <span className="text-2xl font-bold text-blue-600">
+                        <span className="text-2xl font-bold text-orange-600">
                           {ranking.score.toFixed(1)}%
                         </span>
                       </div>
@@ -310,7 +310,7 @@ export default function VotePage() {
                         src={ranking.option.image}
                         alt={ranking.option.title}
                         fill
-                        className="object-cover"
+                        className="object-cover w-full h-full"
                       />
                     </div>
 
@@ -324,7 +324,7 @@ export default function VotePage() {
 
                     {/* Score */}
                     <div className="flex-shrink-0 text-right">
-                      <div className="text-xl font-bold text-blue-600">
+                      <div className="text-xl font-bold text-orange-600">
                         {ranking.score.toFixed(1)}%
                       </div>
                       <div className="text-xs text-gray-500 mb-1">
@@ -333,7 +333,7 @@ export default function VotePage() {
                       <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
                         <div 
                           className={`h-full rounded-full transition-all duration-1000 ${
-                            ranking.option._id === finalWinner?._id ? 'bg-green-500' : 'bg-blue-500'
+                            ranking.option._id === finalWinner?._id ? 'bg-green-500' : 'bg-orange-500'
                           }`}
                           style={{ width: `${ranking.score}%` }}
                         ></div>
@@ -378,46 +378,46 @@ export default function VotePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-           <div className="flex items-center justify-between mb-2">
-             <h1 className="text-xl md:text-2xl font-bold text-gray-900 uppercase">
-               {getCategoryName(test.category)}
+        <div className="max-w-4xl mx-auto px-4 py-3">
+           <div className="flex items-center justify-between mb-3">
+             <h1 className="text-lg md:text-xl font-bold text-gray-900">
+               {test.title}
              </h1>
             <button
-              onClick={() => router.push('/logged-out')}
-              className="text-gray-600 hover:text-gray-900"
+              onClick={() => router.push('/')}
+              className="text-gray-600 hover:text-gray-900 p-1"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
           
           {/* Progress Bar */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 mb-3">
             <div className="flex-1">
-              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-blue-600 transition-all duration-300"
+                  className="h-full bg-orange-500 transition-all duration-300"
                   style={{ width: `${(round / totalRounds) * 100}%` }}
                 ></div>
               </div>
             </div>
-            <span className="text-sm font-medium text-gray-600">
+            <span className="text-xs font-medium text-gray-600">
               {round}/{totalRounds}
             </span>
           </div>
           
-          <div className="text-center mt-3">
-            <p className="text-gray-600 mb-2">{test.description}</p>
-            <p className="text-gray-600 font-medium">{test.headerText}</p>
+          <div className="text-center">
+            <p className="text-sm text-gray-600 mb-1">{test.description}</p>
+            <p className="text-xs text-gray-500">{test.headerText}</p>
           </div>
         </div>
       </div>
 
-      {/* Voting Cards */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        {/* Voting Cards */}
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {currentPair.map((option) => (
             <button
               key={option._id}
@@ -428,12 +428,12 @@ export default function VotePage() {
               } ${selectedOption && selectedOption !== option._id ? 'opacity-50' : ''}`}
             >
               {/* Image */}
-              <div className="relative h-80 md:h-96">
+              <div className="relative h-96 md:h-[28rem]">
                 <Image
                   src={option.image}
                   alt={option.title}
                   fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-110"
+                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                 
@@ -456,10 +456,10 @@ export default function VotePage() {
               </div>
 
               {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/20 transition-all duration-300 flex items-center justify-center">
+              <div className="absolute inset-0 bg-orange-600/0 group-hover:bg-orange-600/20 transition-all duration-300 flex items-center justify-center">
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="bg-white rounded-full p-4 shadow-xl">
-                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
