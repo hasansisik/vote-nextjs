@@ -52,12 +52,16 @@ const ContentGrid: React.FC<ContentGridProps> = ({
     const localImage = `/images/v${imageIndex + 1}.jpg`;
     
     // Görsel öncelik sırası:
-    // 1. Test'in ilk option'ının görseli (eğer local path ise)
-    // 2. Cloudinary veya başka bir CDN'den gelen görsel
-    // 3. Local fallback görsel
+    // 1. Test'in coverImage'ı (eğer varsa)
+    // 2. Test'in ilk option'ının görseli (eğer local path ise)
+    // 3. Cloudinary veya başka bir CDN'den gelen görsel
+    // 4. Local fallback görsel
     let imageUrl = localImage;
     
-    if (test.options && test.options.length > 0 && test.options[0].image) {
+    // Önce coverImage'ı kontrol et
+    if (test.coverImage) {
+      imageUrl = test.coverImage;
+    } else if (test.options && test.options.length > 0 && test.options[0].image) {
       const optionImage = test.options[0].image;
       // Eğer görsel local path ise veya cloudinary'den geliyorsa kullan
       if (optionImage.startsWith('/') || optionImage.includes('cloudinary.com')) {

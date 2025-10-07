@@ -73,6 +73,7 @@ interface UserState {
   instrumentsError: string | null;
   allUsers: any[];
   userStats: any;
+  userPagination: any;
   usersLoading: boolean;
   usersError: string | null;
   conversations: any[];
@@ -114,6 +115,7 @@ const initialState: UserState = {
   instrumentsError: null,
   allUsers: [],
   userStats: null,
+  userPagination: null,
   usersLoading: false,
   usersError: null,
   conversations: [],
@@ -610,6 +612,7 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.usersLoading = false;
       state.allUsers = action.payload.users;
       state.userStats = action.payload.stats;
+      state.userPagination = action.payload.pagination;
       state.message = action.payload.message;
     })
     .addCase(getAllUsers.rejected, (state, action) => {

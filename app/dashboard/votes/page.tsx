@@ -40,6 +40,10 @@ export default function VotesPage() {
   useEffect(() => {
     console.log('Active categories:', activeCategories);
     console.log('All tests:', allTests);
+    if (allTests?.length > 0) {
+      console.log('First test category:', allTests[0]?.category);
+      console.log('Category match:', activeCategories?.find((cat: any) => cat._id === allTests[0]?.category));
+    }
   }, [activeCategories, allTests]);
 
   const handleDeleteTest = async (testId: string) => {
@@ -87,8 +91,9 @@ export default function VotesPage() {
   };
 
   const getCategoryName = (categoryId: string) => {
-    const category = activeCategories.find((cat: any) => cat._id === categoryId);
-    return category ? category.name : categoryId;
+    if (!categoryId) return 'Kategori Yok';
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    return category ? category.name : 'Bilinmeyen Kategori';
   };
 
   if (user?.role !== 'admin') {
@@ -211,7 +216,7 @@ export default function VotesPage() {
                   </td>
                   <td className="px-4 py-4">
                     <Badge className={`${getCategoryColor(test.category)} text-xs`}>
-                      {getCategoryName(test.category)}
+                      {activeCategories?.length > 0 ? getCategoryName(test.category) : 'Yükleniyor...'}
                     </Badge>
                   </td>
                   <td className="px-1 py-2">

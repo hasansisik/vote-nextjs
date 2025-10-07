@@ -167,7 +167,7 @@ export default function AramaPage() {
                   {/* Test Resmi */}
                   <div className="relative h-48">
                     <Image
-                      src={test.options[0]?.image?.startsWith('/') ? test.options[0].image : `/images/v${(filteredTests.indexOf(test) % 8) + 1}.jpg`}
+                      src={test.coverImage || (test.options[0]?.image?.startsWith('/') ? test.options[0].image : `/images/v${(filteredTests.indexOf(test) % 8) + 1}.jpg`)}
                       alt={test.title}
                       fill
                       className="object-cover"
