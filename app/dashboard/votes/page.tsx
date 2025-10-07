@@ -79,10 +79,16 @@ export default function VotesPage() {
 
   const handleEditTest = async (testId: string) => {
     try {
-      await dispatch(getSingleTest(testId) as any);
-      router.push(`/dashboard/votes/create?edit=${testId}`);
+      const result = await dispatch(getSingleTest(testId) as any);
+      if (result.type.endsWith('/fulfilled')) {
+        router.push(`/dashboard/votes/create?edit=${testId}`);
+      } else {
+        console.error('Test verileri yüklenemedi:', result.payload);
+        toast.error('Test verileri yüklenirken bir hata oluştu');
+      }
     } catch (error) {
       console.error('Test verileri yüklenirken hata:', error);
+      toast.error('Test verileri yüklenirken bir hata oluştu');
     }
   };
 

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { uploadImageToCloudinary } from "@/utils/cloudinary";
 import CategoryManagementModal from "@/components/CategoryManagementModal";
+import ImageCropper from "@/components/ImageCropper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
@@ -37,7 +38,8 @@ export default function CreateTestPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, testsLoading, userCreatedTests, singleTest, testsError } = useSelector((state: any) => state.user);
+  const { user } = useSelector((state: any) => state.user);
+  const { singleTest, testsLoading, testsError } = useSelector((state: any) => state.test);
   const { activeCategories, loading: categoriesLoading } = useSelector((state: any) => state.testCategory);
   
   const editId = searchParams.get('edit');
@@ -62,11 +64,23 @@ export default function CreateTestPage() {
   const [uploading, setUploading] = useState<number | null>(null);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  
+  // Image cropping states
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperImageUrl, setCropperImageUrl] = useState("");
+  const [croppingFor, setCroppingFor] = useState<"cover" | number>("cover");
 
   // Load categories on component mount
   useEffect(() => {
     dispatch(getActiveTestCategories());
   }, [dispatch]);
+
+  // Load single test data when in edit mode
+  useEffect(() => {
+    if (isEditMode && editId && !singleTest) {
+      dispatch(getSingleTest(editId));
+    }
+  }, [isEditMode, editId, singleTest, dispatch]);
 
   // Debug: Log categories when they change
   useEffect(() => {
@@ -87,7 +101,7 @@ export default function CreateTestPage() {
   // Load test data for edit mode
   useEffect(() => {
     if (isEditMode && editId) {
-      // First try to get from singleTest (if already loaded)
+      // If singleTest is loaded and matches the editId, populate the form
       if (singleTest && singleTest._id === editId) {
         setFormData({
           title: singleTest.title || "",
@@ -107,34 +121,9 @@ export default function CreateTestPage() {
             customFields: option.customFields || []
           })));
         }
-      } else {
-        // If not in singleTest, try userCreatedTests as fallback
-        if (userCreatedTests) {
-          const testToEdit = userCreatedTests.find((test: any) => test._id === editId);
-          if (testToEdit) {
-            setFormData({
-              title: testToEdit.title || "",
-              description: testToEdit.description || "",
-              coverImage: testToEdit.coverImage || "",
-              headerText: testToEdit.headerText || "",
-              footerText: testToEdit.footerText || "",
-              category: testToEdit.category || "",
-              trend: testToEdit.trend || false,
-              popular: testToEdit.popular || false,
-            });
-            
-            if (testToEdit.options && testToEdit.options.length > 0) {
-              setOptions(testToEdit.options.map((option: any) => ({
-                title: option.title || "",
-                image: option.image || "",
-                customFields: option.customFields || []
-              })));
-            }
-          }
-        }
       }
     }
-  }, [isEditMode, editId, singleTest, userCreatedTests]);
+  }, [isEditMode, editId, singleTest]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -148,43 +137,59 @@ export default function CreateTestPage() {
     );
   };
 
-  const handleImageUpload = async (index: number, file: File) => {
-    setUploading(index);
+  const handleImageUpload = (index: number, file: File) => {
+    const imageUrl = URL.createObjectURL(file);
+    setCropperImageUrl(imageUrl);
+    setCroppingFor(index);
+    setCropperOpen(true);
+  };
+
+  const handleCoverImageUpload = (file: File) => {
+    const imageUrl = URL.createObjectURL(file);
+    setCropperImageUrl(imageUrl);
+    setCroppingFor("cover");
+    setCropperOpen(true);
+  };
+
+  const handleCroppedImage = async (croppedImageUrl: string) => {
     try {
-      const imageUrl = await uploadImageToCloudinary(file);
-      handleOptionChange(index, "image", imageUrl);
-      toast.success("Başarılı", {
-        description: "Görsel başarıyla yüklendi.",
-        duration: 2000
-      });
+      if (croppingFor === "cover") {
+        setUploadingCover(true);
+        // Convert blob URL to file
+        const response = await fetch(croppedImageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], "cropped-cover.jpg", { type: "image/jpeg" });
+        
+        const uploadedUrl = await uploadImageToCloudinary(file);
+        handleInputChange("coverImage", uploadedUrl);
+        toast.success("Başarılı", {
+          description: "Kapak görseli başarıyla yüklendi.",
+          duration: 2000
+        });
+        setUploadingCover(false);
+      } else {
+        setUploading(croppingFor);
+        // Convert blob URL to file
+        const response = await fetch(croppedImageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], `cropped-option-${croppingFor}.jpg`, { type: "image/jpeg" });
+        
+        const uploadedUrl = await uploadImageToCloudinary(file);
+        handleOptionChange(croppingFor, "image", uploadedUrl);
+        toast.success("Başarılı", {
+          description: "Görsel başarıyla yüklendi.",
+          duration: 2000
+        });
+        setUploading(null);
+      }
     } catch (error) {
       console.error("Image upload error:", error);
       toast.error("Yükleme Hatası", {
         description: "Görsel yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
         duration: 4000
       });
-    } finally {
-      setUploading(null);
-    }
-  };
-
-  const handleCoverImageUpload = async (file: File) => {
-    setUploadingCover(true);
-    try {
-      const imageUrl = await uploadImageToCloudinary(file);
-      handleInputChange("coverImage", imageUrl);
-      toast.success("Başarılı", {
-        description: "Kapak görseli başarıyla yüklendi.",
-        duration: 2000
-      });
-    } catch (error) {
-      console.error("Cover image upload error:", error);
-      toast.error("Yükleme Hatası", {
-        description: "Kapak görseli yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
-        duration: 4000
-      });
-    } finally {
       setUploadingCover(false);
+      setUploading(null);
     }
   };
 
@@ -335,6 +340,18 @@ export default function CreateTestPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Erişim Reddedildi</h2>
           <p className="text-gray-600">Bu sayfaya erişim yetkiniz bulunmamaktadır.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state when fetching single test data in edit mode
+  if (isEditMode && testsLoading && !singleTest) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+          <p className="text-muted-foreground">Test verileri yükleniyor...</p>
         </div>
       </div>
     );
@@ -726,6 +743,15 @@ export default function CreateTestPage() {
         onClose={() => setIsCategoryModalOpen(false)}
         onCategorySelect={handleCategorySelect}
         selectMode={false}
+      />
+
+      {/* Image Cropper Modal */}
+      <ImageCropper
+        isOpen={cropperOpen}
+        onClose={() => setCropperOpen(false)}
+        onCrop={handleCroppedImage}
+        imageUrl={cropperImageUrl}
+        aspectRatio={1} // Square aspect ratio
       />
     </div>
   );
