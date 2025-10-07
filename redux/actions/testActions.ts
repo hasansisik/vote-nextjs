@@ -4,42 +4,112 @@ import { server } from "@/config";
 
 // Test Interfaces
 export interface CreateTestPayload {
-  title: string;
-  description?: string;
+  title: {
+    tr: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
+  description?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   coverImage?: string;
-  headerText?: string;
-  footerText?: string;
+  headerText?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
+  footerText?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   category: string;
   trend?: boolean;
   popular?: boolean;
   endDate?: string;
   options: Array<{
-    title: string;
+    title: {
+      tr: string;
+      en?: string;
+      de?: string;
+      fr?: string;
+    };
     image: string;
     customFields?: Array<{
-      fieldName: string;
-      fieldValue: string;
+      fieldName: {
+        tr: string;
+        en?: string;
+        de?: string;
+        fr?: string;
+      };
+      fieldValue: {
+        tr: string;
+        en?: string;
+        de?: string;
+        fr?: string;
+      };
     }>;
   }>;
 }
 
 export interface UpdateTestPayload {
-  title?: string;
-  description?: string;
+  title?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
+  description?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   coverImage?: string;
-  headerText?: string;
-  footerText?: string;
+  headerText?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
+  footerText?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   category?: string;
   isActive?: boolean;
   trend?: boolean;
   popular?: boolean;
   endDate?: string;
   options?: Array<{
-    title: string;
+    title: {
+      tr?: string;
+      en?: string;
+      de?: string;
+      fr?: string;
+    };
     image: string;
     customFields?: Array<{
-      fieldName: string;
-      fieldValue: string;
+      fieldName: {
+        tr?: string;
+        en?: string;
+        de?: string;
+        fr?: string;
+      };
+      fieldValue: {
+        tr?: string;
+        en?: string;
+        de?: string;
+        fr?: string;
+      };
     }>;
   }>;
 }

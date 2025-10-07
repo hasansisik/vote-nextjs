@@ -24,14 +24,30 @@ import CategoryManagementModal from "@/components/CategoryManagementModal";
 import ImageCropper from "@/components/ImageCropper";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 
 interface Option {
-  title: string;
+  title: {
+    tr: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   image: string;
   customFields: Array<{
-    fieldName: string;
-    fieldValue: string;
+    fieldName: {
+      tr: string;
+      en?: string;
+      de?: string;
+      fr?: string;
+    };
+    fieldValue: {
+      tr: string;
+      en?: string;
+      de?: string;
+      fr?: string;
+    };
   }>;
 }
 
@@ -48,11 +64,31 @@ export default function CreateTestPage() {
   const isEditMode = !!editId;
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
+    title: {
+      tr: "",
+      en: "",
+      de: "",
+      fr: "",
+    },
+    description: {
+      tr: "",
+      en: "",
+      de: "",
+      fr: "",
+    },
     coverImage: "",
-    headerText: "",
-    footerText: "",
+    headerText: {
+      tr: "",
+      en: "",
+      de: "",
+      fr: "",
+    },
+    footerText: {
+      tr: "",
+      en: "",
+      de: "",
+      fr: "",
+    },
     category: "",
     trend: false,
     popular: false,
@@ -60,8 +96,16 @@ export default function CreateTestPage() {
   });
 
   const [options, setOptions] = useState<Option[]>([
-    { title: "", image: "", customFields: [] },
-    { title: "", image: "", customFields: [] },
+    { 
+      title: { tr: "", en: "", de: "", fr: "" }, 
+      image: "", 
+      customFields: [] 
+    },
+    { 
+      title: { tr: "", en: "", de: "", fr: "" }, 
+      image: "", 
+      customFields: [] 
+    },
   ]);
 
   const [uploading, setUploading] = useState<number | null>(null);
@@ -72,6 +116,15 @@ export default function CreateTestPage() {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImageUrl, setCropperImageUrl] = useState("");
   const [croppingFor, setCroppingFor] = useState<"cover" | number>("cover");
+  
+  // Language tabs state
+  const [activeLanguage, setActiveLanguage] = useState<"tr" | "en" | "de" | "fr">("tr");
+  const availableLanguages = [
+    { code: "tr", name: "Türkçe", flag: "🇹🇷" },
+    { code: "en", name: "English", flag: "🇺🇸" },
+    { code: "de", name: "Deutsch", flag: "🇩🇪" },
+    { code: "fr", name: "Français", flag: "🇫🇷" },
+  ];
 
   // Load categories on component mount
   useEffect(() => {
@@ -107,11 +160,11 @@ export default function CreateTestPage() {
       // If singleTest is loaded and matches the editId, populate the form
       if (singleTest && singleTest._id === editId) {
         setFormData({
-          title: singleTest.title || "",
-          description: singleTest.description || "",
+          title: singleTest.title || { tr: "", en: "", de: "", fr: "" },
+          description: singleTest.description || { tr: "", en: "", de: "", fr: "" },
           coverImage: singleTest.coverImage || "",
-          headerText: singleTest.headerText || "",
-          footerText: singleTest.footerText || "",
+          headerText: singleTest.headerText || { tr: "", en: "", de: "", fr: "" },
+          footerText: singleTest.footerText || { tr: "", en: "", de: "", fr: "" },
           category: singleTest.category || "",
           trend: singleTest.trend || false,
           popular: singleTest.popular || false,
@@ -120,24 +173,50 @@ export default function CreateTestPage() {
         
         if (singleTest.options && singleTest.options.length > 0) {
           setOptions(singleTest.options.map((option: any) => ({
-            title: option.title || "",
+            title: option.title || { tr: "", en: "", de: "", fr: "" },
             image: option.image || "",
-            customFields: option.customFields || []
+            customFields: option.customFields?.map((field: any) => ({
+              fieldName: field.fieldName || { tr: "", en: "", de: "", fr: "" },
+              fieldValue: field.fieldValue || { tr: "", en: "", de: "", fr: "" },
+            })) || []
           })));
         }
       }
     }
   }, [isEditMode, editId, singleTest]);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: string, value: string | boolean, language?: "tr" | "en" | "de" | "fr") => {
+    if (language && typeof value === 'string') {
+      setFormData(prev => ({
+        ...prev,
+        [field]: {
+          ...prev[field as keyof typeof prev],
+          [language]: value
+        }
+      }));
+    } else {
+      setFormData(prev => ({ ...prev, [field]: value }));
+    }
   };
 
-  const handleOptionChange = (index: number, field: string, value: string) => {
+  const handleOptionChange = (index: number, field: string, value: string, language?: "tr" | "en" | "de" | "fr") => {
     setOptions(prev => 
-      prev.map((option, i) => 
-        i === index ? { ...option, [field]: value } : option
-      )
+      prev.map((option, i) => {
+        if (i === index) {
+          if (language && field === 'title') {
+            return { 
+              ...option, 
+              [field]: { 
+                ...option[field as keyof Option], 
+                [language]: value 
+              } 
+            };
+          } else if (field === 'image') {
+            return { ...option, [field]: value };
+          }
+        }
+        return option;
+      })
     );
   };
 
@@ -198,7 +277,11 @@ export default function CreateTestPage() {
   };
 
   const addOption = () => {
-    setOptions(prev => [...prev, { title: "", image: "", customFields: [] }]);
+    setOptions(prev => [...prev, { 
+      title: { tr: "", en: "", de: "", fr: "" }, 
+      image: "", 
+      customFields: [] 
+    }]);
   };
 
   const removeOption = (index: number) => {
@@ -213,7 +296,10 @@ export default function CreateTestPage() {
         i === optionIndex
           ? {
               ...option,
-              customFields: [...option.customFields, { fieldName: "", fieldValue: "" }],
+              customFields: [...option.customFields, { 
+                fieldName: { tr: "", en: "", de: "", fr: "" }, 
+                fieldValue: { tr: "", en: "", de: "", fr: "" } 
+              }],
             }
           : option
       )
@@ -237,7 +323,8 @@ export default function CreateTestPage() {
     optionIndex: number,
     fieldIndex: number,
     field: string,
-    value: string
+    value: string,
+    language?: "tr" | "en" | "de" | "fr"
   ) => {
     setOptions(prev =>
       prev.map((option, i) =>
@@ -245,7 +332,14 @@ export default function CreateTestPage() {
           ? {
               ...option,
               customFields: option.customFields.map((cf, fi) =>
-                fi === fieldIndex ? { ...cf, [field]: value } : cf
+                fi === fieldIndex 
+                  ? { 
+                      ...cf, 
+                      [field]: language 
+                        ? { ...cf[field as keyof typeof cf], [language]: value }
+                        : value 
+                    } 
+                  : cf
               ),
             }
           : option
@@ -261,28 +355,28 @@ export default function CreateTestPage() {
     e.preventDefault();
 
     // Validation
-    if (!formData.title || !formData.category) {
+    if (!formData.title.tr || !formData.category) {
       toast.error("Eksik Bilgi", {
-        description: "Başlık ve kategori alanları zorunludur.",
+        description: "Türkçe başlık ve kategori alanları zorunludur.",
         duration: 4000
       });
       return;
     }
 
-    const validOptions = options.filter(option => option.title && option.image);
+    const validOptions = options.filter(option => option.title.tr && option.image);
     if (validOptions.length < 2) {
       toast.error("Yetersiz Seçenek", {
-        description: "En az 2 geçerli seçenek (başlık ve görsel ile) gereklidir.",
+        description: "En az 2 geçerli seçenek (Türkçe başlık ve görsel ile) gereklidir.",
         duration: 4000
       });
       return;
     }
 
     // Check for empty option titles or images
-    const emptyOptions = options.filter(option => !option.title || !option.image);
+    const emptyOptions = options.filter(option => !option.title.tr || !option.image);
     if (emptyOptions.length > 0) {
       toast.error("Eksik Seçenek Bilgileri", {
-        description: "Tüm seçenekler için başlık ve görsel gereklidir.",
+        description: "Tüm seçenekler için Türkçe başlık ve görsel gereklidir.",
         duration: 4000
       });
       return;
@@ -292,7 +386,7 @@ export default function CreateTestPage() {
     const cleanedOptions = validOptions.map(option => ({
       ...option,
       customFields: option.customFields?.filter(field => 
-        field.fieldName.trim() !== '' && field.fieldValue.trim() !== ''
+        field.fieldName.tr.trim() !== '' && field.fieldValue.tr.trim() !== ''
       ) || []
     }));
 
@@ -422,14 +516,32 @@ export default function CreateTestPage() {
         {/* Main Content Area */}
         <div className="flex-1 max-w-4xl">
           <form id="create-vote-form" onSubmit={handleSubmit} className="space-y-6">
+            {/* Language Tabs */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Dil Seçenekleri</h3>
+                <p className="text-sm text-gray-500">Farklı dillerde içerik oluşturun</p>
+              </div>
+              <Tabs value={activeLanguage} onValueChange={(value) => setActiveLanguage(value as "tr" | "en" | "de" | "fr")}>
+                <TabsList className="grid w-full grid-cols-4">
+                  {availableLanguages.map((lang) => (
+                    <TabsTrigger key={lang.code} value={lang.code} className="flex items-center gap-2">
+                      <span>{lang.flag}</span>
+                      <span className="hidden sm:inline">{lang.name}</span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+
             {/* WordPress-style Title Input */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <Input
                 id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                placeholder="Oylama başlığı girin..."
-                required
+                value={formData.title[activeLanguage] || ""}
+                onChange={(e) => handleInputChange("title", e.target.value, activeLanguage)}
+                placeholder={`Oylama başlığı girin (${availableLanguages.find(l => l.code === activeLanguage)?.name})...`}
+                required={activeLanguage === "tr"}
                 className="text-2xl font-semibold px-2 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-400 border border-gray-200"
               />
             </div>
@@ -439,13 +551,13 @@ export default function CreateTestPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                    Açıklama
+                    Açıklama ({availableLanguages.find(l => l.code === activeLanguage)?.name})
                   </Label>
                   <Textarea
                     id="description"
-                    value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                    placeholder="Oylama hakkında açıklama yazın..."
+                    value={formData.description[activeLanguage] || ""}
+                    onChange={(e) => handleInputChange("description", e.target.value, activeLanguage)}
+                    placeholder={`Oylama hakkında açıklama yazın (${availableLanguages.find(l => l.code === activeLanguage)?.name})...`}
                     rows={4}
                     className="resize-none"
                   />
@@ -495,12 +607,12 @@ export default function CreateTestPage() {
                 {/* Header Text */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Üst Metin
+                    Üst Metin ({availableLanguages.find(l => l.code === activeLanguage)?.name})
                   </Label>
                   <Input
-                    value={formData.headerText}
-                    onChange={(e) => handleInputChange("headerText", e.target.value)}
-                    placeholder="Oylama üst kısmında görünecek metin..."
+                    value={formData.headerText[activeLanguage] || ""}
+                    onChange={(e) => handleInputChange("headerText", e.target.value, activeLanguage)}
+                    placeholder={`Oylama üst kısmında görünecek metin (${availableLanguages.find(l => l.code === activeLanguage)?.name})...`}
                     className="bg-white"
                   />
                 </div>
@@ -544,13 +656,14 @@ export default function CreateTestPage() {
                     <div className="grid gap-6 md:grid-cols-2">
                       <div className="space-y-3">
                         <Label className="text-sm font-medium text-gray-700">
-                          Seçenek Başlığı *
+                          Seçenek Başlığı ({availableLanguages.find(l => l.code === activeLanguage)?.name}) *
                         </Label>
                         <Input
-                          value={option.title}
-                          onChange={(e) => handleOptionChange(index, "title", e.target.value)}
-                          placeholder="Seçenek başlığı girin..."
+                          value={option.title[activeLanguage] || ""}
+                          onChange={(e) => handleOptionChange(index, "title", e.target.value, activeLanguage)}
+                          placeholder={`Seçenek başlığı girin (${availableLanguages.find(l => l.code === activeLanguage)?.name})...`}
                           className="bg-white"
+                          required={activeLanguage === "tr"}
                         />
                       </div>
 
@@ -612,32 +725,36 @@ export default function CreateTestPage() {
                       </div>
                       
                       {option.customFields.map((field, fieldIndex) => (
-                        <div key={fieldIndex} className="flex items-center gap-3">
-                          <Input
-                            placeholder="Alan adı"
-                            value={field.fieldName}
-                            onChange={(e) =>
-                              handleCustomFieldChange(index, fieldIndex, "fieldName", e.target.value)
-                            }
-                            className="bg-white"
-                          />
-                          <Input
-                            placeholder="Alan değeri"
-                            value={field.fieldValue}
-                            onChange={(e) =>
-                              handleCustomFieldChange(index, fieldIndex, "fieldValue", e.target.value)
-                            }
-                            className="bg-white"
-                          />
-                          <Button
-                            type="button"
-                            onClick={() => removeCustomField(index, fieldIndex)}
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <div key={fieldIndex} className="space-y-3">
+                          <div className="flex items-center gap-3">
+                            <Input
+                              placeholder={`Alan adı (${availableLanguages.find(l => l.code === activeLanguage)?.name})`}
+                              value={field.fieldName[activeLanguage] || ""}
+                              onChange={(e) =>
+                                handleCustomFieldChange(index, fieldIndex, "fieldName", e.target.value, activeLanguage)
+                              }
+                              className="bg-white"
+                              required={activeLanguage === "tr"}
+                            />
+                            <Input
+                              placeholder={`Alan değeri (${availableLanguages.find(l => l.code === activeLanguage)?.name})`}
+                              value={field.fieldValue[activeLanguage] || ""}
+                              onChange={(e) =>
+                                handleCustomFieldChange(index, fieldIndex, "fieldValue", e.target.value, activeLanguage)
+                              }
+                              className="bg-white"
+                              required={activeLanguage === "tr"}
+                            />
+                            <Button
+                              type="button"
+                              onClick={() => removeCustomField(index, fieldIndex)}
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -650,12 +767,12 @@ export default function CreateTestPage() {
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
-                  Alt Metin
+                  Alt Metin ({availableLanguages.find(l => l.code === activeLanguage)?.name})
                 </Label>
                 <Textarea
-                  value={formData.footerText}
-                  onChange={(e) => handleInputChange("footerText", e.target.value)}
-                  placeholder="Oylama alt kısmında görünecek metin..."
+                  value={formData.footerText[activeLanguage] || ""}
+                  onChange={(e) => handleInputChange("footerText", e.target.value, activeLanguage)}
+                  placeholder={`Oylama alt kısmında görünecek metin (${availableLanguages.find(l => l.code === activeLanguage)?.name})...`}
                   rows={4}
                   className="bg-white"
                 />
@@ -751,7 +868,8 @@ export default function CreateTestPage() {
             <ul className="text-sm text-orange-800 space-y-2">
               <li>• En az 2 seçenek eklemelisiniz</li>
               <li>• Her seçenek için görsel yüklemek zorunludur</li>
-              <li>• Başlık ve kategori alanları zorunludur</li>
+              <li>• Türkçe başlık ve kategori alanları zorunludur</li>
+              <li>• Diğer diller isteğe bağlıdır</li>
               <li>• Özel alanlar isteğe bağlıdır</li>
               <li>• Bitiş tarihi belirlenirse test otomatik pasif olur</li>
             </ul>
