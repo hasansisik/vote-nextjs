@@ -250,7 +250,7 @@ function TestDetailPageClient({ testId }: { testId: string }) {
                       })}
                     </span>
                     {new Date(test.endDate) < new Date() && (
-                      <Badge variant="destructive" className="ml-2">
+                      <Badge variant="destructive" className="ml-2 text-white bg-red-600">
                         Süresi Dolmuş
                       </Badge>
                     )}

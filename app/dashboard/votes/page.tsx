@@ -242,7 +242,7 @@ export default function VotesPage() {
                         </Badge>
                       )}
                       {test.endDate && new Date(test.endDate) < new Date() && (
-                        <Badge variant="destructive" className="text-[9px] px-1 py-0.5 whitespace-nowrap">
+                        <Badge variant="destructive" className="text-[9px] px-1 py-0.5 whitespace-nowrap text-white bg-red-600">
                           Süresi Dolmuş
                         </Badge>
                       )}
