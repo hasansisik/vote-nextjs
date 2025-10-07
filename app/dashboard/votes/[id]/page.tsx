@@ -20,9 +20,29 @@ import {
   Eye
 } from "lucide-react";
 
-export default async function TestDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = await params;
-  const testId = resolvedParams.id;
+export default function TestDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  return <TestDetailPageWrapper params={params} />;
+}
+
+function TestDetailPageWrapper({ params }: { params: Promise<{ id: string }> }) {
+  const [testId, setTestId] = useState<string | null>(null);
+
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setTestId(resolvedParams.id);
+    });
+  }, [params]);
+
+  if (!testId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+          <p className="text-muted-foreground">Yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return <TestDetailPageClient testId={testId} />;
 }
@@ -55,15 +75,15 @@ function TestDetailPageClient({ testId }: { testId: string }) {
   };
 
   const getCategoryColor = (categoryId: string) => {
-    const category = activeCategories.find((cat: any) => cat._id === categoryId);
-    if (category) {
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    if (category && category.color) {
       return `${category.color.replace('bg-', 'bg-').replace('-500', '-100')} ${category.color.replace('bg-', 'text-').replace('-500', '-800')}`;
     }
     return "bg-gray-100 text-gray-800";
   };
 
   const getCategoryName = (categoryId: string) => {
-    const category = activeCategories.find((cat: any) => cat._id === categoryId);
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
     return category ? category.name : categoryId;
   };
 
@@ -197,14 +217,46 @@ function TestDetailPageClient({ testId }: { testId: string }) {
           {/* Test Title */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Badge className={getCategoryColor(test.category)}>
                   {getCategoryName(test.category)}
                 </Badge>
                 <Badge variant={test.isActive ? "default" : "secondary"}>
                   {test.isActive ? "Aktif" : "Pasif"}
                 </Badge>
+                {test.trend && (
+                  <Badge variant="outline" className="text-orange-600 border-orange-600">
+                    Trend
+                  </Badge>
+                )}
+                {test.popular && (
+                  <Badge variant="outline" className="text-blue-600 border-blue-600">
+                    Popüler
+                  </Badge>
+                )}
               </div>
+              {test.endDate && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    <span className="text-gray-600">Bitiş Tarihi:</span>
+                    <span className="font-medium text-gray-900">
+                      {new Date(test.endDate).toLocaleDateString('tr-TR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    {new Date(test.endDate) < new Date() && (
+                      <Badge variant="destructive" className="ml-2">
+                        Süresi Dolmuş
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
               <h1 className="text-2xl font-bold text-gray-900">{test.title}</h1>
               {test.description && (
                 <p className="text-base text-gray-600 leading-relaxed">{test.description}</p>
@@ -367,7 +419,32 @@ function TestDetailPageClient({ testId }: { testId: string }) {
                 <Badge variant={test.isActive ? "default" : "secondary"}>
                   {test.isActive ? "Aktif" : "Pasif"}
                 </Badge>
+                {test.trend && (
+                  <Badge variant="outline" className="text-orange-600 border-orange-600">
+                    Trend
+                  </Badge>
+                )}
+                {test.popular && (
+                  <Badge variant="outline" className="text-blue-600 border-blue-600">
+                    Popüler
+                  </Badge>
+                )}
               </div>
+              {test.endDate && (
+                <div className="flex items-center gap-2 text-xs">
+                  <Calendar className="h-3 w-3 text-gray-500" />
+                  <span className="text-gray-600">Bitiş:</span>
+                  <span className="font-medium">
+                    {new Date(test.endDate).toLocaleDateString('tr-TR', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

@@ -54,6 +54,7 @@ export default function CreateTestPage() {
     category: "",
     trend: false,
     popular: false,
+    endDate: "",
   });
 
   const [options, setOptions] = useState<Option[]>([
@@ -112,6 +113,7 @@ export default function CreateTestPage() {
           category: singleTest.category || "",
           trend: singleTest.trend || false,
           popular: singleTest.popular || false,
+          endDate: singleTest.endDate ? new Date(singleTest.endDate).toISOString().split('T')[0] : "",
         });
         
         if (singleTest.options && singleTest.options.length > 0) {
@@ -720,6 +722,23 @@ export default function CreateTestPage() {
                   onCheckedChange={(checked: boolean) => handleInputChange("popular", checked)}
                 />
               </div>
+
+              {/* End Date */}
+              <div className="space-y-2">
+                <Label htmlFor="endDate" className="text-sm font-medium text-gray-700">
+                  Bitiş Tarihi (Opsiyonel)
+                </Label>
+                <Input
+                  id="endDate"
+                  type="datetime-local"
+                  value={formData.endDate}
+                  onChange={(e) => handleInputChange("endDate", e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500">
+                  Bu tarihte test otomatik olarak pasif hale gelir
+                </p>
+              </div>
             </div>
           </div>
 
@@ -732,6 +751,7 @@ export default function CreateTestPage() {
               <li>• Her seçenek için görsel yüklemek zorunludur</li>
               <li>• Başlık ve kategori alanları zorunludur</li>
               <li>• Özel alanlar isteğe bağlıdır</li>
+              <li>• Bitiş tarihi belirlenirse test otomatik pasif olur</li>
             </ul>
           </div>
         </div>

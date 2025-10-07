@@ -227,7 +227,7 @@ export default function VotesPage() {
                     </Badge>
                   </td>
                   <td className="px-1 py-2">
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-0.5 flex-wrap">
                       <Badge variant={test.isActive ? "default" : "secondary"} className="text-[9px] px-1 py-0.5 whitespace-nowrap">
                         {test.isActive ? "Aktif" : "Pasif"}
                       </Badge>
@@ -241,7 +241,17 @@ export default function VotesPage() {
                           Popüler
                         </Badge>
                       )}
+                      {test.endDate && new Date(test.endDate) < new Date() && (
+                        <Badge variant="destructive" className="text-[9px] px-1 py-0.5 whitespace-nowrap">
+                          Süresi Dolmuş
+                        </Badge>
+                      )}
                     </div>
+                    {test.endDate && (
+                      <div className="text-[8px] text-gray-500 mt-1">
+                        Bitiş: {new Date(test.endDate).toLocaleDateString('tr-TR')}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center text-sm text-gray-900">
@@ -268,7 +278,7 @@ export default function VotesPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => router.push(`/${test._id}`)}
+                        onClick={() => router.push(`/dashboard/votes/${test._id}`)}
                         className="text-green-600 hover:text-green-700 p-2"
                       >
                         <Eye className="h-4 w-4" />

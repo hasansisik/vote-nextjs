@@ -12,6 +12,7 @@ export interface CreateTestPayload {
   category: string;
   trend?: boolean;
   popular?: boolean;
+  endDate?: string;
   options: Array<{
     title: string;
     image: string;
@@ -32,6 +33,7 @@ export interface UpdateTestPayload {
   isActive?: boolean;
   trend?: boolean;
   popular?: boolean;
+  endDate?: string;
   options?: Array<{
     title: string;
     image: string;
