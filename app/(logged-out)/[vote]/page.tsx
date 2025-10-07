@@ -171,17 +171,23 @@ export default function VotePage() {
           const differentOption = remainingOptions.find(opt => opt._id !== winner._id);
           if (differentOption) {
             console.log(`Sonraki karşılaştırma: ${winner.title} vs ${differentOption.title} (aynı seçenek önlendi)`);
-            setCurrentPair([winner, differentOption]);
+            // Seçilen seçeneğin konumunu koru - winner'ın pozisyonunu kontrol et
+            const winnerIndex = currentPair?.findIndex(opt => opt._id === winner._id) ?? 0;
+            setCurrentPair(winnerIndex === 0 ? [winner, differentOption] : [differentOption, winner]);
             setRemainingOptions(prev => prev.filter(opt => opt._id !== differentOption._id));
           } else {
             // Eğer farklı seçenek yoksa, sadece kazananı al
             console.log(`Sonraki karşılaştırma: ${winner.title} vs ${nextOption.title}`);
-            setCurrentPair([winner, nextOption]);
+            // Seçilen seçeneğin konumunu koru
+            const winnerIndex = currentPair?.findIndex(opt => opt._id === winner._id) ?? 0;
+            setCurrentPair(winnerIndex === 0 ? [winner, nextOption] : [nextOption, winner]);
             setRemainingOptions(prev => prev.slice(1));
           }
         } else {
           console.log(`Sonraki karşılaştırma: ${winner.title} vs ${nextOption.title}`);
-          setCurrentPair([winner, nextOption]);
+          // Seçilen seçeneğin konumunu koru
+          const winnerIndex = currentPair?.findIndex(opt => opt._id === winner._id) ?? 0;
+          setCurrentPair(winnerIndex === 0 ? [winner, nextOption] : [nextOption, winner]);
           setRemainingOptions(prev => prev.slice(1));
         }
         setRound(prevRound => prevRound + 1);
@@ -376,7 +382,7 @@ export default function VotePage() {
           {/* Actions */}
           <div className="flex justify-center mt-8">
             <button
-              onClick={() => router.push('/logged-out')}
+              onClick={() => router.push('/')}
               className="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
             >
               Ana Sayfaya Dön
