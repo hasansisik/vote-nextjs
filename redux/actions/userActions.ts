@@ -1599,6 +1599,28 @@ export const getPopularTests = createAsyncThunk(
   }
 );
 
+export const getTestsByCategorySlug = createAsyncThunk(
+  "user/getTestsByCategorySlug",
+  async (params: { slug: string; limit?: number; page?: number }, thunkAPI) => {
+    try {
+      const { slug, limit = 20, page = 1 } = params;
+      const queryString = new URLSearchParams({
+        limit: limit.toString(),
+        page: page.toString()
+      }).toString();
+      const url = `${server}/tests/category-slug/${slug}?${queryString}`;
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
 // Clear Error Action
 export const clearError = createAsyncThunk(
   "user/clearError",

@@ -4,92 +4,103 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { getAllTests } from '@/redux/actions/userActions';
-import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
+import { getTestsByCategorySlug } from '@/redux/actions/userActions';
+import { getActiveMenus } from '@/redux/actions/menuActions';
 
-interface Test {
-  _id: string;
-  title: string;
-  description: string;
-  category: string;
-  options: any[];
-  isActive: boolean;
+interface CardProps {
+  test: any;
+  index: number;
+  onTestClick: (testId: string, e: React.MouseEvent) => void;
+  className?: string;
 }
 
-// Kategori isimlerini header'daki isimlerle eşleştir
-const categoryMapping: { [key: string]: string[] } = {
-  'izlenmeye-deger': ['film', 'müzik', 'oyun', 'teknoloji'],
-  'garip-tarih': ['diğer'],
-  'mezarlik-vardiyasi': ['diğer'],
-  'tam-bir-inek': ['teknoloji', 'oyun'],
-  'oyun': ['oyun'],
-  'senaryosuz': ['film', 'müzik'],
-  'yasam-tarzi': ['diğer'],
-  'muzik': ['müzik'],
-  'spor': ['spor']
+const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" }) => {
+  const handleClick = (e: React.MouseEvent) => {
+    onTestClick(test._id, e);
+  };
+
+  return (
+    <div 
+      className={`cursor-pointer hover:opacity-80 transition-opacity ${className}`}
+      onClick={handleClick}
+    >
+      {/* Üst Kısım - Görsel */}
+      <div className="w-full h-32 lg:h-36 relative mb-2 rounded-lg overflow-hidden">
+        <Image
+          src={test.coverImage || `/images/v${(index % 8) + 1}.jpg`}
+          alt={test.title}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 50vw, 25vw"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = `/images/v${(index % 8) + 1}.jpg`;
+          }}
+        />
+      </div>
+      
+      {/* Alt Kısım - İçerik */}
+      <div className="px-1 py-2">
+        {/* Kategori */}
+        <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
+          {test.category}
+        </div>
+        
+        {/* Başlık */}
+        <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
+          {test.title}
+        </h3>
+        
+        {/* Açıklama */}
+        {test.description && (
+          <p className="text-xs text-gray-600 line-clamp-2 mt-1">
+            {test.description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
 };
+
 
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { allTests, testsLoading } = useAppSelector((state) => state.user);
-  const { activeCategories } = useAppSelector((state) => state.testCategory);
-  const [tests, setTests] = useState<Test[]>([]);
+  const { categoryTests, categoryInfo, categoryTestsLoading } = useAppSelector((state) => state.user);
+  const { activeMenus } = useAppSelector((state) => state.menu);
 
   // URL'den kategori parametresini al
   const categorySlug = params.menu as string;
 
-  // Load all tests and categories
+  // Load menus and category tests
   useEffect(() => {
-    dispatch(getAllTests({ isActive: true }));
-    dispatch(getActiveTestCategories());
+    dispatch(getActiveMenus());
   }, [dispatch]);
 
-  // Get category name by ID
-  const getCategoryName = (categoryId: string) => {
-    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? category.name : categoryId;
-  };
-
   useEffect(() => {
-    if (categorySlug && allTests.length > 0) {
-      loadTestsForCategory(categorySlug);
+    if (categorySlug) {
+      dispatch(getTestsByCategorySlug({ slug: categorySlug, limit: 20 }));
     }
-  }, [categorySlug, allTests]);
+  }, [dispatch, categorySlug]);
 
-  const loadTestsForCategory = (slug: string) => {
-    // Slug'ı kategori ismine çevir
-    const categoryNames = categoryMapping[slug] || [];
-    
-    if (categoryNames.length > 0) {
-      // Bu kategorilere ait testleri filtrele
-      const filteredTests = allTests.filter((test: any) => 
-        categoryNames.includes(test.category)
+  const getCategoryDisplayName = (): string => {
+    return categoryInfo?.name?.toUpperCase() || categorySlug?.toUpperCase() || 'KATEGORİ';
+  };
+
+  const getCategoryColor = (): string => {
+    // Önce menü verilerinden rengi bul
+    if (activeMenus && activeMenus.length > 0 && categoryInfo) {
+      const menu = activeMenus.find((menu: any) => 
+        menu.testCategory && menu.testCategory.name && 
+        menu.testCategory.name.toLowerCase() === categoryInfo.name.toLowerCase()
       );
-      setTests(filteredTests);
-    } else {
-      // Eğer eşleşme yoksa tüm testleri göster
-      setTests(allTests);
+      if (menu && menu.color) {
+        return 'custom-color';
+      }
     }
-  };
-
-  const getCategoryDisplayName = (slug: string): string => {
-    const displayNames: { [key: string]: string } = {
-      'izlenmeye-deger': 'İZLENMEYE DEĞER',
-      'garip-tarih': 'GARİP TARİH',
-      'mezarlik-vardiyasi': 'MEZARLIK VARDİYASI',
-      'tam-bir-inek': 'TAM BİR İNEK',
-      'oyun': 'OYUN',
-      'senaryosuz': 'SENARYOSUZ',
-      'yasam-tarzi': 'YAŞAM TARZI',
-      'muzik': 'MÜZİK',
-      'spor': 'SPOR'
-    };
-    return displayNames[slug] || slug.toUpperCase();
-  };
-
-  const getCategoryColor = (slug: string): string => {
+    
+    // Fallback renkler
     const colors: { [key: string]: string } = {
       'izlenmeye-deger': 'bg-pink-400',
       'garip-tarih': 'bg-orange-600',
@@ -101,26 +112,39 @@ export default function CategoryPage() {
       'muzik': 'bg-gray-400',
       'spor': 'bg-green-500'
     };
-    return colors[slug] || 'bg-gray-400';
+    return colors[categorySlug] || 'bg-gray-400';
+  };
+
+  const getCategoryColorStyle = (): React.CSSProperties => {
+    // Önce menü verilerinden rengi bul
+    if (activeMenus && activeMenus.length > 0 && categoryInfo) {
+      const menu = activeMenus.find((menu: any) => 
+        menu.testCategory && menu.testCategory.name && 
+        menu.testCategory.name.toLowerCase() === categoryInfo.name.toLowerCase()
+      );
+      if (menu && menu.color) {
+        return { backgroundColor: menu.color };
+      }
+    }
+    return {};
   };
 
   const handleTestClick = (testId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Test clicked:', testId);
     try {
-      router.push(`/logged-out/${testId}`);
+      router.push(`/${testId}`);
     } catch (error) {
       console.error('Navigation error:', error);
     }
   };
 
-  if (testsLoading) {
+  if (categoryTestsLoading) {
     return (
       <div className="min-h-screen">
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
           </div>
         </div>
       </div>
@@ -129,76 +153,53 @@ export default function CategoryPage() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Kategori Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
-            <div className={`w-4 h-4 rounded-full ${getCategoryColor(categorySlug)}`}></div>
+            <div 
+              className={`w-4 h-4 rounded-full ${getCategoryColor() === 'custom-color' ? '' : getCategoryColor()}`}
+              style={getCategoryColor() === 'custom-color' ? getCategoryColorStyle() : {}}
+            ></div>
             <h1 className="text-3xl font-bold text-gray-900">
-              {getCategoryDisplayName(categorySlug)}
+              {getCategoryDisplayName()}
             </h1>
           </div>
           <p className="text-gray-600 text-lg">
-            {tests.length} oylama bulundu
+            {categoryTests?.length || 0} oylama bulundu
           </p>
         </div>
 
         {/* Test Listesi */}
-        {tests.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tests.map((test) => (
-              <div
-                key={test._id}
-                onClick={(e) => handleTestClick(test._id, e)}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden group"
-              >
-                {/* Test Görseli */}
-                <div className="relative h-48 bg-gray-200">
-                  <Image
-                    src={test.options[0]?.image?.startsWith('/') ? test.options[0].image : `/images/v${(tests.indexOf(test) % 8) + 1}.jpg`}
-                    alt={test.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        {categoryTests && categoryTests.length > 0 ? (
+          <div className="max-w-7xl mx-auto px-2 lg:px-4 py-1">
+            {/* Desktop Layout - 4x4 Grid */}
+            <div className="hidden lg:block">
+              <div className="grid grid-cols-4 gap-4">
+                {categoryTests.map((test: any, index: number) => (
+                  <Card 
+                    key={test._id} 
+                    test={test}
+                    index={index}
+                    onTestClick={handleTestClick}
                   />
-                </div>
-
-                {/* Test İçeriği */}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {test.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 line-clamp-2">
-                    {test.description}
-                  </p>
-                  
-                  {/* Kategori Badge */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500 capitalize">
-                      {getCategoryName(test.category)}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">
-                        {test.options.length} seçenek
-                      </span>
-                      <svg 
-                        className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round" 
-                          strokeWidth={2} 
-                          d="M9 5l7 7-7 7" 
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            {/* Mobile Layout - 2x2 Grid */}
+            <div className="lg:hidden">
+              <div className="grid grid-cols-2 gap-2">
+                {categoryTests.map((test: any, index: number) => (
+                  <Card 
+                    key={test._id} 
+                    test={test}
+                    index={index}
+                    onTestClick={handleTestClick}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         ) : (
           <div className="text-center py-16">

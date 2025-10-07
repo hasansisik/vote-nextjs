@@ -49,6 +49,7 @@ import {
   resetTestVotes,
   getTrendTests,
   getPopularTests,
+  getTestsByCategorySlug,
 } from "../actions/userActions";
 
 interface UserState {
@@ -85,9 +86,12 @@ interface UserState {
   singleTest: any;
   trendTests: any[];
   popularTests: any[];
+  categoryTests: any[];
+  categoryInfo: any;
   testsLoading: boolean;
   trendTestsLoading: boolean;
   popularTestsLoading: boolean;
+  categoryTestsLoading: boolean;
   testsError: string | null;
 }
 
@@ -122,9 +126,12 @@ const initialState: UserState = {
   singleTest: null,
   trendTests: [],
   popularTests: [],
+  categoryTests: [],
+  categoryInfo: null,
   testsLoading: false,
   trendTestsLoading: false,
   popularTestsLoading: false,
+  categoryTestsLoading: false,
   testsError: null,
 };
 
@@ -931,6 +938,19 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(getPopularTests.rejected, (state, action) => {
       state.popularTestsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Get Tests by Category Slug
+    .addCase(getTestsByCategorySlug.pending, (state) => {
+      state.categoryTestsLoading = true;
+    })
+    .addCase(getTestsByCategorySlug.fulfilled, (state, action) => {
+      state.categoryTestsLoading = false;
+      state.categoryTests = action.payload.tests;
+      state.categoryInfo = action.payload.category;
+    })
+    .addCase(getTestsByCategorySlug.rejected, (state, action) => {
+      state.categoryTestsLoading = false;
       state.testsError = action.payload as string;
     })
     // Clear Error
