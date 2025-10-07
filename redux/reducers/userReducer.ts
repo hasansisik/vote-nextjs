@@ -48,6 +48,7 @@ import {
   deleteTest,
   resetTestVotes,
   getTrendTests,
+  getPopularTests,
 } from "../actions/userActions";
 
 interface UserState {
@@ -83,8 +84,10 @@ interface UserState {
   allTests: any[];
   singleTest: any;
   trendTests: any[];
+  popularTests: any[];
   testsLoading: boolean;
   trendTestsLoading: boolean;
+  popularTestsLoading: boolean;
   testsError: string | null;
 }
 
@@ -118,8 +121,10 @@ const initialState: UserState = {
   allTests: [],
   singleTest: null,
   trendTests: [],
+  popularTests: [],
   testsLoading: false,
   trendTestsLoading: false,
+  popularTestsLoading: false,
   testsError: null,
 };
 
@@ -914,6 +919,18 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(getTrendTests.rejected, (state, action) => {
       state.trendTestsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Get Popular Tests
+    .addCase(getPopularTests.pending, (state) => {
+      state.popularTestsLoading = true;
+    })
+    .addCase(getPopularTests.fulfilled, (state, action) => {
+      state.popularTestsLoading = false;
+      state.popularTests = action.payload.tests;
+    })
+    .addCase(getPopularTests.rejected, (state, action) => {
+      state.popularTestsLoading = false;
       state.testsError = action.payload as string;
     })
     // Clear Error

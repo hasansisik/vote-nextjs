@@ -1578,6 +1578,27 @@ export const getTrendTests = createAsyncThunk(
   }
 );
 
+export const getPopularTests = createAsyncThunk(
+  "user/getPopularTests",
+  async (params: any = {}, thunkAPI) => {
+    try {
+      const filteredParams = Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => value !== undefined)
+      ) as Record<string, string>;
+      const queryString = new URLSearchParams(filteredParams).toString();
+      const url = `${server}/tests/popular${queryString ? `?${queryString}` : ''}`;
+      const response = await axios.get(url);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
 // Clear Error Action
 export const clearError = createAsyncThunk(
   "user/clearError",

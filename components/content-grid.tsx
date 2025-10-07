@@ -1,8 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useSelector, useDispatch } from 'react-redux';
+import { getPopularTests } from '@/redux/actions/userActions';
+
 
 interface HomepageCard {
   id: number;
@@ -16,20 +19,84 @@ interface HomepageCard {
 
 interface ContentGridProps {
   title?: string;
-  cards: HomepageCard[];
+  cards?: HomepageCard[]; // Make optional since we fetch data internally
 }
 
 const ContentGrid: React.FC<ContentGridProps> = ({ 
   title = '', 
   cards = [] 
 }) => {
+  const dispatch = useDispatch();
+  const { popularTests, popularTestsLoading } = useSelector((state: any) => state.user);
+  const { activeCategories } = useSelector((state: any) => state.testCategory);
+
+  // Category name helper function
+  const getCategoryName = (category: any) => {
+    if (typeof category === 'string') {
+      // Category ID'si string olarak geliyorsa, activeCategories'den bul
+      const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
+      return categoryObj ? categoryObj.name.toUpperCase() : 'KATEGORİ';
+    }
+    return category?.name?.toUpperCase() || 'KATEGORİ';
+  };
+
+  // Popular testleri yükle
+  useEffect(() => {
+    dispatch(getPopularTests({ limit: 8 }) as any);
+  }, []);
+
+  // Popular testleri card formatına çevir
+  const popularCards = popularTests?.map((test: any, index: number) => {
+    // Use local images from public/images folder as fallback
+    const imageIndex = index % 8; // Cycle through v1.jpg to v8.jpg
+    const localImage = `/images/v${imageIndex + 1}.jpg`;
+    
+    // Görsel öncelik sırası:
+    // 1. Test'in ilk option'ının görseli (eğer local path ise)
+    // 2. Cloudinary veya başka bir CDN'den gelen görsel
+    // 3. Local fallback görsel
+    let imageUrl = localImage;
+    
+    if (test.options && test.options.length > 0 && test.options[0].image) {
+      const optionImage = test.options[0].image;
+      // Eğer görsel local path ise veya cloudinary'den geliyorsa kullan
+      if (optionImage.startsWith('/') || optionImage.includes('cloudinary.com')) {
+        imageUrl = optionImage;
+      }
+    }
+    
+    return {
+      id: index + 1,
+      testId: test._id, // Gerçek test ID'si
+      category: getCategoryName(test.category),
+      title: test.title,
+      image: imageUrl,
+      description: test.description,
+      tag: "popular"
+    };
+  }) || [];
+
   // Üst kısım için ilk 4 card (sol 3 + sağ 1 büyük)
-  const topCards = cards.slice(0, 4);
+  const topCards = popularCards.slice(0, 4);
   const topLeftCards = topCards.slice(0, 3);
   const topRightCard = topCards[3];
   
   // Alt kısım için sonraki 4 card
-  const bottomCards = cards.slice(4, 8);
+  const bottomCards = popularCards.slice(4, 8);
+
+  // Veri yükleniyorsa loading göster
+  if (popularTestsLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-2 lg:px-4 py-15">
+        <div className="flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Popüler testler yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-2 lg:px-4 py-15">
@@ -49,7 +116,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
           <div className="col-span-2 flex flex-col justify-between h-full">
             {/* Üst 3 Küçük Card - Büyük kartla aynı yükseklikte */}
             <div className="space-y-1 flex-grow">
-              {topLeftCards.map((card) => (
+              {topLeftCards.map((card: any) => (
                 <Card 
                   key={card.id} 
                   card={card} 
@@ -73,7 +140,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
         
         {/* Alt Kısım - Tüm 4 Card Yan Yana */}
         <div className="grid grid-cols-4 gap-1 mt-1">
-          {bottomCards.map((card) => (
+          {bottomCards.map((card: any) => (
             <Card 
               key={card.id} 
               card={card} 
@@ -96,7 +163,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
         
         {/* C1, C2, C3 Alt Alta */}
         <div className="space-y-1 mb-2">
-          {topLeftCards.map((card) => (
+          {topLeftCards.map((card: any) => (
             <Card 
               key={card.id} 
               card={card} 
@@ -108,7 +175,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
         
         {/* C4, C5 ve C6, C7 - 2x2 Grid */}
         <div className="grid grid-cols-2 gap-1">
-          {bottomCards.map((card) => (
+          {bottomCards.map((card: any) => (
             <Card 
               key={card.id} 
               card={card} 

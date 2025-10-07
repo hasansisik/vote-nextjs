@@ -63,7 +63,7 @@ export default function Home() {
 
   // Filter data by tags
   const popularData = homepageData.filter(item => item.tag === "popular");
-  const featuredData = homepageData.filter(item => item.tag === "featured");
+  const featuredData = homepageData; // Tüm testleri göster
 
   if (testsLoading || categoriesLoading) {
     return (
@@ -89,7 +89,6 @@ export default function Home() {
       {/* İçerik Grid */}
       <ContentGrid 
         title="EN POPÜLER OYLAMALAR"
-        cards={popularData}
       />
       
       {/* Featured Grid */}

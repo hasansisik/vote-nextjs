@@ -23,14 +23,6 @@ const FeaturedGrid: React.FC<FeaturedGridProps> = ({
   title = '', 
   cards = [] 
 }) => {
-  // Üst kısım için ilk 4 card (sol 3 + sağ 1 büyük)
-  const topCards = cards.slice(0, 4);
-  const topLeftCards = topCards.slice(0, 3);
-  const topRightCard = topCards[3];
-  
-  // Alt kısım için sonraki 4 card
-  const bottomCards = cards.slice(4, 8);
-
   return (
     <div className="max-w-7xl mx-auto px-2 lg:px-4 py-1">
       {title && (
@@ -40,40 +32,10 @@ const FeaturedGrid: React.FC<FeaturedGridProps> = ({
         </div>
       )}
       
-      {/* Desktop Layout */}
+      {/* Desktop Layout - 4x4 Grid */}
       <div className="hidden lg:block">
-        {/* Ana Grid Container */}
-        <div className="grid grid-cols-4 gap-1 h-auto pb-5">
-          
-          {/* Sol Taraf - Büyük Card */}
-          <div className="col-span-2 flex flex-col h-full">
-            {/* Üst Büyük Card */}
-            {topRightCard && (
-              <Card 
-                card={topRightCard} 
-                variant="large"
-              />
-            )}
-          </div>
-          
-          {/* Sağ Taraf - Üst 3 card */}
-          <div className="col-span-2 flex flex-col justify-between h-full">
-            {/* Üst 3 Küçük Card - Büyük kartla aynı yükseklikte */}
-            <div className="space-y-1 flex-grow">
-              {topLeftCards.map((card) => (
-                <Card 
-                  key={card.id} 
-                  card={card} 
-                  variant="small"
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        {/* Alt Kısım - Tüm 4 Card Yan Yana */}
-        <div className="grid grid-cols-4 gap-1 mt-1">
-          {bottomCards.map((card) => (
+        <div className="grid grid-cols-4 gap-4">
+          {cards.map((card) => (
             <Card 
               key={card.id} 
               card={card} 
@@ -83,32 +45,10 @@ const FeaturedGrid: React.FC<FeaturedGridProps> = ({
         </div>
       </div>
 
-      {/* Mobile Layout */}
+      {/* Mobile Layout - 2x2 Grid */}
       <div className="lg:hidden">
-        {/* Mobilde 3 Küçük Card En Üstte */}
-        <div className="space-y-1 mb-2">
-          {topLeftCards.map((card) => (
-            <Card 
-              key={card.id} 
-              card={card} 
-              variant="small"
-              className="pb-4"
-            />
-          ))}
-        </div>
-        
-        {/* Mobilde Büyük Grid */}
-        {topRightCard && (
-          <Card 
-            card={topRightCard} 
-            variant="large"
-            className="mb-2"
-          />
-        )}
-        
-        {/* C4, C5 ve C6, C7 - 2x2 Grid */}
-        <div className="grid grid-cols-2 gap-1">
-          {bottomCards.map((card) => (
+        <div className="grid grid-cols-2 gap-2">
+          {cards.map((card) => (
             <Card 
               key={card.id} 
               card={card} 
@@ -123,80 +63,17 @@ const FeaturedGrid: React.FC<FeaturedGridProps> = ({
 
 interface CardProps {
   card: HomepageCard;
-  variant: 'small' | 'medium' | 'large';
+  variant: 'medium';
   className?: string;
 }
 
-const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
+const Card: React.FC<CardProps> = ({ card, className = "" }) => {
   const router = useRouter();
   
   const handleClick = () => {
     // Gerçek test ID'sini kullan, yoksa fallback olarak card.id kullan
     const targetId = card.testId || `test_${card.id}`;
     router.push(`/${targetId}`);
-  };
-  
-  if (variant === 'small') {
-    // Üst taraf küçük kartlar - Sol görsel (C4 boyutu), sağ yazı (C5 boyutu)
-    return (
-      <div 
-        className={`cursor-pointer hover:opacity-80 transition-opacity ${className}`}
-        onClick={handleClick}
-      >
-        <div className="flex h-20 lg:h-24">
-          {/* Sol Taraf - C4 Alanı Kadar Görsel */}
-          <div className="flex-1 h-full relative flex-shrink-0 rounded-lg overflow-hidden">
-            <Image
-              src={card.image}
-              alt={card.title}
-              fill
-              className="object-cover"
-              sizes="50vw"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = `/images/v${(card.id % 8) + 1}.jpg`;
-              }}
-            />
-          </div>
-          
-          {/* Sağ Taraf - C5 Alanı Kadar Yazı */}
-          <div className="flex-1 px-1 py-2 flex flex-col justify-center">
-            {/* Kategori */}
-            <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-              {card.category}
-            </div>
-            
-            {/* Başlık */}
-            <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-2 mt-1">
-              {card.title}
-            </h3>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Alt taraf ve büyük kartlar - Üst görsel, alt yazı
-  const getImageClasses = () => {
-    switch (variant) {
-      case 'medium':
-        return 'w-full h-28 lg:h-32';
-      case 'large':
-        return 'w-full h-40 lg:h-44';
-      default:
-        return 'w-full h-28';
-    }
-  };
-
-  const getTextSize = () => {
-    switch (variant) {
-      case 'medium':
-        return 'text-sm';
-      case 'large':
-        return 'text-sm lg:text-base';
-      default:
-        return 'text-sm';
-    }
   };
 
   return (
@@ -205,13 +82,13 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
       onClick={handleClick}
     >
       {/* Üst Kısım - Görsel */}
-          <div className={`${getImageClasses()} relative mb-1 rounded-lg overflow-hidden`}>
+      <div className="w-full h-32 lg:h-36 relative mb-2 rounded-lg overflow-hidden">
         <Image
           src={card.image}
           alt={card.title}
           fill
           className="object-cover"
-          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          sizes="(max-width: 768px) 50vw, 25vw"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = `/images/v${(card.id % 8) + 1}.jpg`;
@@ -227,7 +104,7 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
         </div>
         
         {/* Başlık */}
-        <h3 className={`font-bold text-gray-900 leading-tight mt-1 ${getTextSize()}`}>
+        <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
           {card.title}
         </h3>
         
