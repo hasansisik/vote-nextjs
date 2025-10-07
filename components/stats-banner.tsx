@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
 import { getGlobalStats } from '@/redux/actions/testActions';
+import { Skeleton } from './ui/skeleton';
 
 export default function StatsBanner() {
   const dispatch = useAppDispatch();
@@ -22,7 +23,11 @@ export default function StatsBanner() {
           {/* İlk İstatistik - Toplam Test */}
           <div className="flex items-center gap-2">
             <div className="text-lg lg:text-xl font-bold text-gray-900">
-              {globalStatsLoading ? "..." : (globalStats?.totalTests || 0).toLocaleString('tr-TR')}
+              {globalStatsLoading ? (
+                <Skeleton className="h-6 w-16" />
+              ) : (
+                (globalStats?.totalTests || 0).toLocaleString('tr-TR')
+              )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Test
@@ -35,7 +40,11 @@ export default function StatsBanner() {
           {/* İkinci İstatistik - Toplam Oy */}
           <div className="flex items-center gap-2">
             <div className="text-lg lg:text-xl font-bold text-gray-900">
-              {globalStatsLoading ? "..." : (globalStats?.totalVotes || 0).toLocaleString('tr-TR')}
+              {globalStatsLoading ? (
+                <Skeleton className="h-6 w-16" />
+              ) : (
+                (globalStats?.totalVotes || 0).toLocaleString('tr-TR')
+              )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Oy
@@ -48,7 +57,11 @@ export default function StatsBanner() {
           {/* Üçüncü İstatistik - Toplam Kullanıcı */}
           <div className="flex items-center gap-2">
             <div className="text-lg lg:text-xl font-bold font-bold text-gray-900">
-              {globalStatsLoading ? "..." : (globalStats?.totalUsers || 0).toLocaleString('tr-TR')}
+              {globalStatsLoading ? (
+                <Skeleton className="h-6 w-16" />
+              ) : (
+                (globalStats?.totalUsers || 0).toLocaleString('tr-TR')
+              )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Kullanıcı
@@ -63,7 +76,11 @@ export default function StatsBanner() {
           {/* İlk İstatistik - Toplam Test */}
           <div className="flex flex-col items-center">
             <div className="text-sm font-bold text-gray-900">
-              {globalStatsLoading ? "..." : (globalStats?.totalTests || 0).toLocaleString('tr-TR')}
+              {globalStatsLoading ? (
+                <Skeleton className="h-4 w-12" />
+              ) : (
+                (globalStats?.totalTests || 0).toLocaleString('tr-TR')
+              )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Test
@@ -73,7 +90,11 @@ export default function StatsBanner() {
           {/* İkinci İstatistik - Toplam Oy */}
           <div className="flex flex-col items-center">
             <div className="text-sm font-bold text-gray-900">
-              {globalStatsLoading ? "..." : (globalStats?.totalVotes || 0).toLocaleString('tr-TR')}
+              {globalStatsLoading ? (
+                <Skeleton className="h-4 w-12" />
+              ) : (
+                (globalStats?.totalVotes || 0).toLocaleString('tr-TR')
+              )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Oy
@@ -83,7 +104,11 @@ export default function StatsBanner() {
           {/* Üçüncü İstatistik - Toplam Kullanıcı */}
           <div className="flex flex-col items-center">
             <div className="text-sm font-bold text-gray-900">
-              {globalStatsLoading ? "..." : (globalStats?.totalUsers || 0).toLocaleString('tr-TR')}
+              {globalStatsLoading ? (
+                <Skeleton className="h-4 w-12" />
+              ) : (
+                (globalStats?.totalUsers || 0).toLocaleString('tr-TR')
+              )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Kullanıcı

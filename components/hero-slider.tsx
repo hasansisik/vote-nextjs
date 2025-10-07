@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { getTrendTests } from '@/redux/actions/testActions';
+import { Skeleton } from './ui/skeleton';
 
 interface SliderContent {
   _id: string;
@@ -88,10 +89,86 @@ export default function HeroSlider() {
   // Veri yükleniyorsa loading göster
   if (trendTestsLoading) {
     return (
-      <div className="bg-black rounded-lg overflow-hidden h-full flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-          <p>Trend testler yükleniyor...</p>
+      <div className="bg-black rounded-lg overflow-hidden h-full max-w-6xl mx-auto">
+        {/* Desktop Layout Skeleton */}
+        <div className="hidden lg:flex h-full">
+          {/* Ana Slider - Sol Taraf Skeleton */}
+          <div className=" flex flex-col">
+            {/* Üst Kısım - Fotoğraf Skeleton */}
+            <div className="relative h-3/4 p-4">
+              <div className="relative w-xl h-full rounded-lg overflow-hidden">
+                <Skeleton className="w-full h-full bg-gray-700" />
+              </div>
+            </div>
+
+            {/* Alt Kısım - İçerik Skeleton */}  
+            <div className="h-1/4 p-4 relative">
+              <div className="space-y-2">
+                <Skeleton className="h-3 w-16 bg-gray-700" />
+                <Skeleton className="h-6 w-3/4 bg-gray-700" />
+                <Skeleton className="h-4 w-full bg-gray-700" />
+                <Skeleton className="h-3 w-2/3 bg-gray-700" />
+              </div>
+            </div>
+          </div>
+
+          {/* Sağ Taraf - Trend Skeleton */}
+          <div className=" bg-black p-4 flex flex-col">
+            <Skeleton className="h-6 w-116 bg-gray-700 mb-4" />
+            
+            <div className="flex-1 flex flex-col">
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="flex gap-2 p-3 rounded flex-shrink-0 mt-2">
+                  <Skeleton className="w-14 h-10 bg-gray-700" />
+                  <div className="flex-1 min-w-0 flex flex-col justify-center space-y-1">
+                    <Skeleton className="h-3 w-12 bg-gray-700" />
+                    <Skeleton className="h-4 w-full bg-gray-700" />
+                    <Skeleton className="h-3 w-3/4 bg-gray-700" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout Skeleton */}
+        <div className="lg:hidden flex flex-col h-full">
+          {/* Ana Slider Skeleton */}
+          <div className="flex-1 flex flex-col">
+            {/* Üst Kısım - Fotoğraf Skeleton */}
+            <div className="relative h-1/2 p-2">
+              <div className="relative w-full h-full rounded-lg overflow-hidden">
+                <Skeleton className="w-full h-full bg-gray-700" />
+              </div>
+            </div>
+
+            {/* Alt Kısım - İçerik Skeleton */}  
+            <div className="h-1/2 p-2 relative">
+              <div className="space-y-1">
+                <Skeleton className="h-3 w-16 bg-gray-700" />
+                <Skeleton className="h-5 w-3/4 bg-gray-700" />
+                <Skeleton className="h-3 w-full bg-gray-700" />
+                <Skeleton className="h-3 w-2/3 bg-gray-700" />
+              </div>
+            </div>
+          </div>
+
+          {/* Trend Section Skeleton - Mobile below */}
+          <div className="bg-black border-t border-gray-800 p-2">
+            <Skeleton className="h-4 w-24 bg-gray-700 mb-2" />
+            
+            <div className="flex gap-1 overflow-x-auto pb-1">
+              {[...Array(5)].map((_, index) => (
+                <div key={index} className="flex flex-col items-center gap-1 p-2 rounded flex-shrink-0" style={{ minWidth: '120px' }}>
+                  <Skeleton className="w-16 h-12 bg-gray-700" />
+                  <div className="text-center space-y-1">
+                    <Skeleton className="h-3 w-12 bg-gray-700" />
+                    <Skeleton className="h-3 w-20 bg-gray-700" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
+import { Skeleton } from "../../components/ui/skeleton";
 
 export default function Home() {
   const router = useRouter();
@@ -68,17 +69,6 @@ export default function Home() {
   // Filter data by tags
   const popularData = homepageData.filter(item => item.tag === "popular");
   const featuredData = homepageData; // Tüm testleri göster
-
-  if (testsLoading || categoriesLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="font-sans bg-white max-w-6xl mx-auto ">

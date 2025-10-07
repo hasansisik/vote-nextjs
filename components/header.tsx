@@ -16,6 +16,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import { Skeleton } from './ui/skeleton';
 import MobileMenu from './mobile-menu';
 
 export default function Header() {
@@ -219,9 +220,13 @@ export default function Header() {
           <div className="flex items-center gap-4">
             {/* Menü öğeleri - API'den gelen veriler */}
             {menuLoading ? (
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                Yükleniyor...
+              <div className="flex items-center gap-4">
+                {[...Array(6)].map((_, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <Skeleton className="w-2 h-2 rounded-full" />
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
               </div>
             ) : (
               [...(allMenus || [])].sort((a: any, b: any) => (a.order || 0) - (b.order || 0)).map((item: any, index: number) => (
