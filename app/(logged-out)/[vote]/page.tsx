@@ -233,52 +233,7 @@ export default function VotePage() {
              <p className="text-base text-gray-600 mb-2">{test.title}</p>
              <p className="text-sm text-gray-500">{test.description}</p>
              
-             {/* Statistics */}
-             {testResults && (
-               <div className="mt-4 p-4 bg-white rounded-lg shadow-md">
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                   <div>
-                     <div className="text-xl font-bold text-orange-600">
-                       {testResults.statistics?.totalVotes || 0}
-                     </div>
-                     <div className="text-xs text-gray-600">Toplam Oy</div>
-                   </div>
-                   <div>
-                     <div className="text-xl font-bold text-blue-600">
-                       {testResults.statistics?.completedSessions || 0}
-                     </div>
-                     <div className="text-xs text-gray-600">Tamamlanan Test</div>
-                   </div>
-                   <div>
-                     <div className="text-xl font-bold text-green-600">
-                       {testResults.statistics?.userSessions || 0}
-                     </div>
-                     <div className="text-xs text-gray-600">Üye Testi</div>
-                   </div>
-                   <div>
-                     <div className="text-xl font-bold text-purple-600">
-                       {testResults.statistics?.guestSessions || 0}
-                     </div>
-                     <div className="text-xs text-gray-600">Misafir Testi</div>
-                   </div>
-                 </div>
-               </div>
-             )}
              
-             {/* Final Kazanan */}
-             {finalWinner && (
-               <div className="mt-4 p-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl shadow-lg">
-                 <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
-                   🏆 KAZANAN
-                 </h2>
-                 <p className="text-lg font-semibold text-white">
-                   {finalWinner.title}
-                 </p>
-                 <p className="text-yellow-100 text-xs mt-1">
-                   (En son seçilen seçenek)
-                 </p>
-               </div>
-             )}
           </div>
 
           {/* Podium - Top 3 */}
@@ -410,14 +365,7 @@ export default function VotePage() {
                       <div className="text-xs text-gray-500 mb-1">
                         {ranking.option._id === finalWinner?._id ? 'Kazanan (Sizin Seçiminiz)' : 'Diğer Katılımcıların Tercihi'}
                       </div>
-                      <div className="w-20 bg-gray-200 rounded-full h-1.5 mt-1">
-                        <div 
-                          className={`h-full rounded-full transition-all duration-1000 ${
-                            ranking.option._id === finalWinner?._id ? 'bg-green-500' : 'bg-orange-500'
-                          }`}
-                          style={{ width: `${Math.min(ranking.score, 100)}%` }}
-                        ></div>
-                      </div>
+                     
                     </div>
                   </div>
                 ))}
