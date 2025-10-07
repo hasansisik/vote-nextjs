@@ -307,11 +307,24 @@ export const editProfile = createAsyncThunk(
       );
       return response.data;
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : error.message
-      );
+      // Translate common error messages to Turkish
+      let errorMessage = error.response?.data?.message || error.message || 'Bir hata oluştu';
+      
+      // Common error translations
+      const errorTranslations: { [key: string]: string } = {
+        'Request failed with status code 400': 'Geçersiz istek. Lütfen bilgilerinizi kontrol edin.',
+        'Request failed with status code 401': 'Yetkisiz erişim. Lütfen tekrar giriş yapın.',
+        'Request failed with status code 403': 'Bu işlem için yetkiniz bulunmamaktadır.',
+        'Request failed with status code 404': 'İstenen kaynak bulunamadı.',
+        'Request failed with status code 500': 'Sunucu hatası. Lütfen daha sonra tekrar deneyin.',
+        'Network Error': 'Ağ hatası. İnternet bağlantınızı kontrol edin.',
+        'Mevcut şifre yanlış.': 'Mevcut şifre yanlış.',
+        'Mevcut şifre gereklidir.': 'Mevcut şifre gereklidir.'
+      };
+      
+      errorMessage = errorTranslations[errorMessage] || errorMessage;
+      
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );

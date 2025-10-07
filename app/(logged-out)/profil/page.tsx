@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 
 export default function ProfilPage() {
   const dispatch = useAppDispatch();
@@ -37,8 +38,6 @@ export default function ProfilPage() {
     confirmPassword: ''
   });
 
-  const [passwordError, setPasswordError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   // Get category name by ID
   const getCategoryName = (categoryId: string) => {
@@ -105,11 +104,6 @@ export default function ProfilPage() {
       ...passwordData,
       [name]: value
     });
-
-    if (name === 'newPassword') {
-      const passwordErrorMsg = validatePassword(value);
-      setPasswordError(passwordErrorMsg);
-    }
   };
 
 
@@ -117,11 +111,17 @@ export default function ProfilPage() {
     e.preventDefault();
     
     try {
-      await dispatch(editProfile(profileData));
-      setSuccessMessage('Profil başarıyla güncellendi!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      const result = await dispatch(editProfile(profileData));
+      
+      if (editProfile.fulfilled.match(result)) {
+        toast.success('Profil başarıyla güncellendi!');
+      } else {
+        const errorMessage = (result.payload as string) || 'Profil güncellenirken bir hata oluştu';
+        toast.error(errorMessage);
+      }
     } catch (error) {
       console.error('Profile update error:', error);
+      toast.error('Profil güncellenirken bir hata oluştu');
     }
   };
 
@@ -129,36 +129,56 @@ export default function ProfilPage() {
     e.preventDefault();
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError('Yeni şifreler eşleşmiyor');
+      toast.error('Yeni şifreler eşleşmiyor');
       return;
     }
 
     const passwordErrorMsg = validatePassword(passwordData.newPassword);
     if (passwordErrorMsg) {
-      setPasswordError(passwordErrorMsg);
+      toast.error(passwordErrorMsg);
+      return;
+    }
+
+    if (!passwordData.currentPassword) {
+      toast.error('Mevcut şifre gereklidir');
       return;
     }
 
     try {
-      await dispatch(editProfile({
+      const result = await dispatch(editProfile({
         currentPassword: passwordData.currentPassword,
         password: passwordData.newPassword
       }));
-      setSuccessMessage('Şifre başarıyla değiştirildi!');
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-      setShowPasswordForm(false);
-      setTimeout(() => setSuccessMessage(''), 3000);
+      
+      if (editProfile.fulfilled.match(result)) {
+        toast.success('Şifre başarıyla değiştirildi!');
+        setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        setShowPasswordForm(false);
+      } else {
+        // Handle error from Redux
+        const errorMessage = (result.payload as string) || 'Şifre değiştirilirken bir hata oluştu';
+        toast.error(errorMessage);
+      }
     } catch (error) {
       console.error('Password change error:', error);
+      toast.error('Şifre değiştirilirken bir hata oluştu');
     }
   };
 
   const handleDeleteAccount = async () => {
     try {
-      await dispatch(deleteAccount());
-      router.push('/');
+      const result = await dispatch(deleteAccount());
+      
+      if (deleteAccount.fulfilled.match(result)) {
+        toast.success('Hesabınız başarıyla silindi');
+        router.push('/');
+      } else {
+        const errorMessage = (result.payload as string) || 'Hesap silinirken bir hata oluştu';
+        toast.error(errorMessage);
+      }
     } catch (error) {
       console.error('Delete account error:', error);
+      toast.error('Hesap silinirken bir hata oluştu');
     }
   };
 
@@ -214,19 +234,6 @@ export default function ProfilPage() {
           </div>
 
           <div className="p-6">
-            {/* Success Message */}
-            {successMessage && (
-              <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-md text-sm mb-4">
-                {successMessage}
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm mb-4">
-                {typeof error === 'string' ? error : error.message}
-              </div>
-            )}
 
             {/* Profile Information Tab */}
             {activeTab === 'profile' && (
@@ -335,10 +342,7 @@ export default function ProfilPage() {
                         required
                         className="w-full bg-white"
                       />
-                      {passwordError && (
-                        <p className="text-sm text-red-600">{passwordError}</p>
-                      )}
-                      {!passwordError && passwordData.newPassword && (
+                      {passwordData.newPassword && validatePassword(passwordData.newPassword) === '' && (
                         <p className="text-sm text-green-600">Şifre güçlü</p>
                       )}
                     </div>
@@ -361,7 +365,7 @@ export default function ProfilPage() {
                     <div className="flex gap-3">
                       <Button
                         type="submit"
-                        disabled={loading || passwordError !== '' || passwordData.newPassword !== passwordData.confirmPassword}
+                        disabled={loading || passwordData.newPassword !== passwordData.confirmPassword || validatePassword(passwordData.newPassword) !== ''}
                         size="sm"
                         className="bg-orange-600 hover:bg-orange-700 text-white"
                       >
@@ -372,7 +376,6 @@ export default function ProfilPage() {
                         onClick={() => {
                           setShowPasswordForm(false);
                           setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-                          setPasswordError('');
                         }}
                         size="sm"
                         variant="outline"

@@ -167,25 +167,6 @@ export default function KayitOlPage() {
           </p>
         </div>
 
-        {/* Error Message */}
-        {error && (() => {
-          const errorMessage = typeof error === 'string' ? error : error.message;
-          const lowerErrorMessage = errorMessage?.toLowerCase() || '';
-          
-          // Don't show user-related errors on registration page since user doesn't exist yet
-          if (lowerErrorMessage.includes('user not found') || 
-              lowerErrorMessage.includes('kullanıcı bulunamadı') ||
-              lowerErrorMessage.includes('user does not exist') ||
-              lowerErrorMessage.includes('kullanıcı mevcut değil')) {
-            return null;
-          }
-          
-          return (
-            <div className="bg-orange-50 border border-orange-200 text-orange-600 px-4 py-3 rounded-md text-sm">
-              {errorMessage}
-            </div>
-          );
-        })()}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">

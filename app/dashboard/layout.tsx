@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar"
 import { loadUser } from '@/redux/actions/userActions';
 import { Loader2 } from 'lucide-react';
+import { Toaster } from 'sonner';
 
 export default function DashboardLayout({
   children,
@@ -91,6 +92,7 @@ export default function DashboardLayout({
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           {children}
         </div>
+        <Toaster position="top-right" richColors />
       </SidebarInset>
     </SidebarProvider>
   )

@@ -116,15 +116,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Error Message */}
-        {error && (() => {
-          const errorMessage = typeof error === 'string' ? error : error.message;
-          // Don't show "user not found" error on login page
-          if (errorMessage && errorMessage.toLowerCase().includes('user not found')) {
-            return null;
-          }
-         
-        })()}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
