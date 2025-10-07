@@ -77,12 +77,12 @@ export default function Home() {
   }
 
   return (
-    <div className="font-sans bg-white">
+    <div className="font-sans bg-white max-w-6xl mx-auto ">
       {/* İstatistik Banner */}
       <StatsBanner />
       
       {/* Ana Hero Section */}
-      <div className="max-w-7xl mx-auto px-2 lg:px-6">
+      <div className=" px-2 lg:px-6">
         <HeroSection />
       </div>
       
