@@ -123,11 +123,7 @@ export default function LoginPage() {
           if (errorMessage && errorMessage.toLowerCase().includes('user not found')) {
             return null;
           }
-          return (
-            <div className="bg-orange-50 border border-orange-200 text-orange-600 px-4 py-3 rounded-md text-sm">
-              {errorMessage}
-            </div>
-          );
+         
         })()}
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>

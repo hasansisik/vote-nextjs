@@ -68,10 +68,10 @@ export default function SifremiUnuttumPage() {
           duration: 5000,
         });
         
-        // Redirect to reset password page after 3 seconds
+        // Redirect to reset password page after 1.5 seconds
         setTimeout(() => {
           router.push(`/sifre-sifirla?email=${encodeURIComponent(email)}`);
-        }, 3000);
+        }, 1500);
       }
     } catch (error) {
       console.error('Forgot password error:', error);
@@ -116,7 +116,7 @@ export default function SifremiUnuttumPage() {
                 <div className="mt-2 text-sm text-orange-700">
                   <p>
                     Spam klasörünüzü de kontrol etmeyi unutmayın. 
-                    Bağlantıya tıklayarak yeni şifrenizi oluşturabilirsiniz.
+                    E-postanızda bulunan 4 haneli kodu kullanarak yeni şifrenizi oluşturabilirsiniz.
                   </p>
                 </div>
               </div>

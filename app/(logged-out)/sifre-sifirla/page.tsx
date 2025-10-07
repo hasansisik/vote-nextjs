@@ -16,6 +16,7 @@ function SifreSifirlaContent() {
   const { loading, error, isAuthenticated } = useSelector((state: any) => state.user);
 
   const [formData, setFormData] = useState({
+    passwordToken: '',
     password: '',
     confirmPassword: '',
   });
@@ -26,7 +27,6 @@ function SifreSifirlaContent() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   const email = searchParams.get('email');
-  const token = searchParams.get('token');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -81,9 +81,18 @@ function SifreSifirlaContent() {
     e.preventDefault();
     
     // Validate required fields
-    if (!formData.password || !formData.confirmPassword) {
+    if (!formData.passwordToken || !formData.password || !formData.confirmPassword) {
       toast.error('Tüm alanları doldurun!', {
-        description: 'Lütfen yeni şifrenizi ve şifre tekrarını girin.',
+        description: 'Lütfen doğrulama kodunu, yeni şifrenizi ve şifre tekrarını girin.',
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Validate password token (should be 4 digits)
+    if (!/^\d{4}$/.test(formData.passwordToken)) {
+      toast.error('Geçersiz doğrulama kodu!', {
+        description: 'Doğrulama kodu 4 haneli olmalıdır.',
         duration: 3000,
       });
       return;
@@ -110,9 +119,9 @@ function SifreSifirlaContent() {
       return;
     }
 
-    if (!email || !token) {
+    if (!email) {
       toast.error('Geçersiz bağlantı!', {
-        description: 'Şifre sıfırlama bağlantısı geçersiz veya süresi dolmuş.',
+        description: 'E-posta adresi bulunamadı. Lütfen şifremi unuttum sayfasından tekrar başlayın.',
         duration: 5000,
       });
       return;
@@ -121,7 +130,7 @@ function SifreSifirlaContent() {
     try {
       const result = await dispatch(resetPassword({
         email,
-        passwordToken: parseInt(token),
+        passwordToken: formData.passwordToken,
         newPassword: formData.password
       }));
       
@@ -218,7 +227,7 @@ function SifreSifirlaContent() {
           <p className="mt-2 text-center text-sm text-gray-600">
             {email && (
               <>
-                <span className="font-medium text-orange-600">{email}</span> için yeni şifre oluşturun.
+                <span className="font-medium text-orange-600">{email}</span> adresine gönderilen doğrulama kodunu girin ve yeni şifre oluşturun.
               </>
             )}
           </p>
@@ -226,6 +235,29 @@ function SifreSifirlaContent() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
+            <div>
+              <label htmlFor="passwordToken" className="block text-sm font-medium text-gray-700">
+                Doğrulama Kodu
+              </label>
+              <input
+                id="passwordToken"
+                name="passwordToken"
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                value={formData.passwordToken}
+                onChange={handleChange}
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 bg-white rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm text-center text-lg tracking-widest"
+                placeholder="0000"
+                required
+                autoComplete="one-time-code"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                E-posta adresinize gönderilen 4 haneli kodu girin.
+              </p>
+            </div>
+
             <PasswordInput
               id="password"
               name="password"
@@ -258,7 +290,7 @@ function SifreSifirlaContent() {
           <div>
             <button
               type="submit"
-              disabled={loading || passwordError !== '' || !formData.password || !formData.confirmPassword}
+              disabled={loading || passwordError !== '' || !formData.passwordToken || !formData.password || !formData.confirmPassword}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (

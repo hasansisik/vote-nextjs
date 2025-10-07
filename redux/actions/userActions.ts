@@ -42,7 +42,7 @@ export interface VerifyEmailPayload {
 
 export interface ResetPasswordPayload {
   email: string;
-  passwordToken: number;
+  passwordToken: string;
   newPassword: string;
 }
 
