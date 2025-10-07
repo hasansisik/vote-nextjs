@@ -1305,6 +1305,7 @@ export const updateTheme = createAsyncThunk(
 export interface CreateTestPayload {
   title: string;
   description?: string;
+  coverImage?: string;
   headerText?: string;
   footerText?: string;
   category: string;

@@ -22,6 +22,7 @@ import { uploadImageToCloudinary } from "@/utils/cloudinary";
 import CategoryManagementModal from "@/components/CategoryManagementModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
 
 interface Option {
   title: string;
@@ -36,7 +37,7 @@ export default function CreateTestPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, testsLoading, userCreatedTests, singleTest } = useSelector((state: any) => state.user);
+  const { user, testsLoading, userCreatedTests, singleTest, testsError } = useSelector((state: any) => state.user);
   const { activeCategories, loading: categoriesLoading } = useSelector((state: any) => state.testCategory);
   
   const editId = searchParams.get('edit');
@@ -72,6 +73,16 @@ export default function CreateTestPage() {
     console.log('Active categories:', activeCategories);
     console.log('Categories loading:', categoriesLoading);
   }, [activeCategories, categoriesLoading]);
+
+  // Show error messages
+  useEffect(() => {
+    if (testsError) {
+      toast.error(testsError, {
+        duration: 5000,
+        description: "Lütfen formu kontrol edip tekrar deneyin."
+      });
+    }
+  }, [testsError]);
 
   // Load test data for edit mode
   useEffect(() => {
@@ -142,9 +153,16 @@ export default function CreateTestPage() {
     try {
       const imageUrl = await uploadImageToCloudinary(file);
       handleOptionChange(index, "image", imageUrl);
+      toast.success("Başarılı", {
+        description: "Görsel başarıyla yüklendi.",
+        duration: 2000
+      });
     } catch (error) {
       console.error("Image upload error:", error);
-      alert("Görsel yükleme hatası: " + error);
+      toast.error("Yükleme Hatası", {
+        description: "Görsel yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
+        duration: 4000
+      });
     } finally {
       setUploading(null);
     }
@@ -155,9 +173,16 @@ export default function CreateTestPage() {
     try {
       const imageUrl = await uploadImageToCloudinary(file);
       handleInputChange("coverImage", imageUrl);
+      toast.success("Başarılı", {
+        description: "Kapak görseli başarıyla yüklendi.",
+        duration: 2000
+      });
     } catch (error) {
       console.error("Cover image upload error:", error);
-      alert("Kapak görseli yükleme hatası: " + error);
+      toast.error("Yükleme Hatası", {
+        description: "Kapak görseli yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
+        duration: 4000
+      });
     } finally {
       setUploadingCover(false);
     }
@@ -228,36 +253,71 @@ export default function CreateTestPage() {
 
     // Validation
     if (!formData.title || !formData.category) {
-      alert("Başlık ve kategori gereklidir");
+      toast.error("Eksik Bilgi", {
+        description: "Başlık ve kategori alanları zorunludur.",
+        duration: 4000
+      });
       return;
     }
 
     const validOptions = options.filter(option => option.title && option.image);
     if (validOptions.length < 2) {
-      alert("En az 2 geçerli seçenek gereklidir");
+      toast.error("Yetersiz Seçenek", {
+        description: "En az 2 geçerli seçenek (başlık ve görsel ile) gereklidir.",
+        duration: 4000
+      });
+      return;
+    }
+
+    // Check for empty option titles or images
+    const emptyOptions = options.filter(option => !option.title || !option.image);
+    if (emptyOptions.length > 0) {
+      toast.error("Eksik Seçenek Bilgileri", {
+        description: "Tüm seçenekler için başlık ve görsel gereklidir.",
+        duration: 4000
+      });
       return;
     }
 
     try {
       if (isEditMode && editId) {
         // Update existing test
-        await dispatch(updateTest({
+        const result = await dispatch(updateTest({
           id: editId,
           formData: {
             ...formData,
             options: validOptions,
           }
         }));
+        
+        if (updateTest.fulfilled.match(result)) {
+          toast.success("Başarılı", {
+            description: "Oylama başarıyla güncellendi.",
+            duration: 3000
+          });
+          router.push("/dashboard/votes");
+        }
       } else {
         // Create new test
-        await dispatch(createTest({
+        const result = await dispatch(createTest({
           ...formData,
           options: validOptions,
         }));
+        
+        if (createTest.fulfilled.match(result)) {
+          toast.success("Başarılı", {
+            description: "Oylama başarıyla oluşturuldu.",
+            duration: 3000
+          });
+          router.push("/dashboard/votes");
+        }
       }
-      router.push("/dashboard/votes");
     } catch (error) {
       console.error(isEditMode ? "Update test error:" : "Create test error:", error);
+      toast.error("Hata Oluştu", {
+        description: "Bir hata oluştu. Lütfen tekrar deneyin.",
+        duration: 5000
+      });
     }
   };
 
