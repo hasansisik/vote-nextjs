@@ -5,6 +5,7 @@ import { Providers } from "../../redux/provider";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
 import AuthWrapper from "../../components/auth-wrapper";
+import ScrollToTopButton from "../../components/scroll-to-top-button";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function LoggedOutLayout({
               {children}
             </main>
             <Footer />
+            <ScrollToTopButton />
           </AuthWrapper>
         </Providers>
       </body>

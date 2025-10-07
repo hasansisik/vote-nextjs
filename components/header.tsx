@@ -129,9 +129,9 @@ export default function Header() {
                 className="p-2 hover:bg-orange-50 rounded-full transition-colors"
                 title="Profil"
               >
-                {user?.profile?.picture ? (
+                {(user?.profile?.picture || user?.picture) ? (
                   <Image
-                    src={user.profile.picture}
+                    src={user.profile?.picture || user.picture}
                     alt="Profil"
                     width={32}
                     height={32}

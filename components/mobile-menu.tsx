@@ -96,9 +96,9 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             <div className="space-y-4">
               {/* Kullanıcı profili */}
               <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                {user?.profile?.picture ? (
+                {(user?.profile?.picture || user?.picture) ? (
                   <Image
-                    src={user.profile.picture}
+                    src={user.profile?.picture || user.picture}
                     alt="Profil"
                     width={40}
                     height={40}
