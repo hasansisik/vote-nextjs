@@ -1,10 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { 
+  getNotifications, 
+  markAsRead, 
+  markAllAsRead, 
+  deleteNotification 
+} from '@/redux/actions/notificationActions';
 import { 
   Bell, 
   Check, 
@@ -19,69 +26,6 @@ import {
   User
 } from 'lucide-react';
 
-// Örnek bildirim verileri
-const notificationsData = [
-  {
-    id: 1,
-    type: 'new_vote',
-    title: 'Yeni Oylama',
-    message: 'Teknoloji kategorisinde yeni bir oylama başladı!',
-    time: '2 saat önce',
-    isRead: false,
-    icon: 'vote',
-    color: 'blue'
-  },
-  {
-    id: 2,
-    type: 'welcome',
-    title: 'Hoş Geldiniz!',
-    message: 'Sisteme katıldığınız için hoş geldiniz. İlk oylamanızı yapmaya başlayın!',
-    time: '4 saat önce',
-    isRead: false,
-    icon: 'welcome',
-    color: 'green'
-  },
-  {
-    id: 3,
-    type: 'usage_stats',
-    title: 'Kullanım İstatistikleri',
-    message: 'Bu hafta 15 oylama yaptınız ve 3 kategoride aktif oldunuz.',
-    time: '1 gün önce',
-    isRead: true,
-    icon: 'stats',
-    color: 'purple'
-  },
-  {
-    id: 4,
-    type: 'profile_update',
-    title: 'Profil Güncellendi',
-    message: 'Profil bilginizi başarıyla değiştirdiniz.',
-    time: '2 gün önce',
-    isRead: true,
-    icon: 'profile',
-    color: 'blue'
-  },
-  {
-    id: 5,
-    type: 'category_vote',
-    title: 'Kategori Oylaması',
-    message: 'Spor kategorisinde yeni bir oylama başladı!',
-    time: '3 gün önce',
-    isRead: true,
-    icon: 'category',
-    color: 'orange'
-  },
-  {
-    id: 6,
-    type: 'system_maintenance',
-    title: 'Sistem Bakımı',
-    message: 'Sistem bakımı tamamlandı. Yeni özellikler eklendi!',
-    time: '1 hafta önce',
-    isRead: true,
-    icon: 'maintenance',
-    color: 'gray'
-  }
-];
 
 const getIcon = (iconType: string) => {
   switch (iconType) {
@@ -127,36 +71,34 @@ const getColorClasses = (color: string) => {
 };
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(notificationsData);
+  const dispatch = useDispatch();
+  const { notifications, stats, loading } = useSelector((state: any) => state.notification);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const filteredNotifications = notifications.filter(notification => {
+  // Load notifications on component mount
+  useEffect(() => {
+    dispatch(getNotifications({ page: 1, limit: 50 }) as any);
+  }, [dispatch]);
+
+  const filteredNotifications = notifications.filter((notification: any) => {
     if (filter === 'unread') {
       return !notification.isRead;
     }
     return true;
   });
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = stats?.unread || 0;
 
-  const markAsRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, isRead: true }
-          : notification
-      )
-    );
+  const handleMarkAsRead = (id: string) => {
+    dispatch(markAsRead(id) as any);
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, isRead: true }))
-    );
+  const handleMarkAllAsRead = () => {
+    dispatch(markAllAsRead() as any);
   };
 
-  const deleteNotification = (id: number) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  const handleDeleteNotification = (id: string) => {
+    dispatch(deleteNotification(id) as any);
   };
 
   return (
@@ -176,7 +118,7 @@ export default function NotificationsPage() {
             </div>
             {unreadCount > 0 && (
               <Button 
-                onClick={markAllAsRead}
+                onClick={handleMarkAllAsRead}
                 variant="outline"
                 className="flex items-center gap-2"
               >
@@ -198,7 +140,7 @@ export default function NotificationsPage() {
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Tümü ({notifications.length})
+              Tümü ({notifications?.length || 0})
             </button>
             <button
               onClick={() => setFilter('unread')}
@@ -215,7 +157,14 @@ export default function NotificationsPage() {
 
         {/* Notifications List */}
         <div className="space-y-4">
-          {filteredNotifications.length === 0 ? (
+          {loading ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+                <p className="text-gray-600">Bildirimler yükleniyor...</p>
+              </CardContent>
+            </Card>
+          ) : filteredNotifications.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
                 <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -231,9 +180,9 @@ export default function NotificationsPage() {
               </CardContent>
             </Card>
           ) : (
-            filteredNotifications.map((notification) => (
+            filteredNotifications.map((notification: any) => (
               <Card 
-                key={notification.id} 
+                key={notification._id} 
                 className={`transition-all duration-200 hover:shadow-md ${
                   !notification.isRead ? 'border-l-4 border-l-orange-500 bg-white' : ''
                 }`}
@@ -265,7 +214,12 @@ export default function NotificationsPage() {
                           <div className="flex items-center gap-4 text-xs text-gray-500">
                             <div className="flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
-                              {notification.time}
+                              {new Date(notification.createdAt).toLocaleDateString('tr-TR', {
+                                day: 'numeric',
+                                month: 'long',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </div>
                           </div>
                         </div>
@@ -276,7 +230,7 @@ export default function NotificationsPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => markAsRead(notification.id)}
+                              onClick={() => handleMarkAsRead(notification._id)}
                               className="text-gray-500 hover:text-gray-700"
                             >
                               <Check className="w-4 h-4" />
@@ -285,7 +239,7 @@ export default function NotificationsPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => deleteNotification(notification.id)}
+                            onClick={() => handleDeleteNotification(notification._id)}
                             className="text-gray-500 hover:text-red-600"
                           >
                             <X className="w-4 h-4" />

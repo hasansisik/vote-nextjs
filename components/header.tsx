@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
+import { getNotificationStats } from '@/redux/actions/notificationActions';
 import { 
   User, 
   LogOut, 
@@ -25,6 +26,7 @@ export default function Header() {
   const dispatch = useDispatch();
   const { isAuthenticated, user, loading } = useSelector((state: any) => state.user);
   const { allMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
+  const { stats: notificationStats } = useSelector((state: any) => state.notification);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasScroll, setHasScroll] = useState(false);
 
@@ -32,6 +34,13 @@ export default function Header() {
   useEffect(() => {
     dispatch(getAllMenus({}) as any);
   }, [dispatch]);
+
+  // Load notification stats when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getNotificationStats() as any);
+    }
+  }, [dispatch, isAuthenticated]);
 
   // Check if navigation has scroll
   useEffect(() => {
@@ -172,9 +181,11 @@ export default function Header() {
           >
             <Bell className="w-6 h-6 text-gray-700" />
             {/* Okunmamış bildirim sayısı */}
-            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-              3
-            </span>
+            {notificationStats?.unread > 0 && (
+              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                {notificationStats.unread > 99 ? '99+' : notificationStats.unread}
+              </span>
+            )}
           </button>
 
           {/* Arama ikonu */}
