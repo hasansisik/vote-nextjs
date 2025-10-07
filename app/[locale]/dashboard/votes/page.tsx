@@ -79,8 +79,10 @@ export default function VotesPage() {
 
   const handleEditTest = async (testId: string) => {
     try {
+      console.log('Editing test with ID:', testId);
       const result = await dispatch(getSingleTest(testId) as any);
       if (result.type.endsWith('/fulfilled')) {
+        console.log('Test data loaded successfully, navigating to edit page');
         router.push(`/dashboard/votes/create?edit=${testId}`);
       } else {
         console.error('Test verileri yüklenemedi:', result.payload);
@@ -272,6 +274,7 @@ export default function VotesPage() {
                           size="sm"
                           onClick={() => handleEditTest(test._id)}
                           className="text-blue-600 hover:text-blue-700 p-2"
+                          title="Testi Düzenle"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>

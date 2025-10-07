@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/redux/hook";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useLocale } from "next-intl";
 import { createTest, updateTest, getSingleTest } from "@/redux/actions/testActions";
 import { getActiveTestCategories, createTestCategory } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export default function CreateTestPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const locale = useLocale();
   const { user } = useSelector((state: any) => state.user);
   const { singleTest, testsLoading, testsError } = useSelector((state: any) => state.test);
   const { activeCategories, loading: categoriesLoading } = useSelector((state: any) => state.testCategory);
@@ -684,7 +686,7 @@ export default function CreateTestPage() {
                   <SelectContent>
                     {activeCategories?.map((category: any) => (
                       <SelectItem key={category._id} value={category._id}>
-                        {category.name}
+                        {category.name?.[locale] || category.name?.tr || category.name || 'Kategori'}
                       </SelectItem>
                     ))}
                   </SelectContent>
