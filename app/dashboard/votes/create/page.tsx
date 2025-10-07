@@ -279,6 +279,14 @@ export default function CreateTestPage() {
       return;
     }
 
+    // Clean up customFields - remove empty fields
+    const cleanedOptions = validOptions.map(option => ({
+      ...option,
+      customFields: option.customFields?.filter(field => 
+        field.fieldName.trim() !== '' && field.fieldValue.trim() !== ''
+      ) || []
+    }));
+
     try {
       if (isEditMode && editId) {
         // Update existing test
@@ -286,7 +294,7 @@ export default function CreateTestPage() {
           id: editId,
           formData: {
             ...formData,
-            options: validOptions,
+            options: cleanedOptions,
           }
         }));
         
@@ -301,7 +309,7 @@ export default function CreateTestPage() {
         // Create new test
         const result = await dispatch(createTest({
           ...formData,
-          options: validOptions,
+          options: cleanedOptions,
         }));
         
         if (createTest.fulfilled.match(result)) {
