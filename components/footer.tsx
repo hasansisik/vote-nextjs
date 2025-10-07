@@ -4,11 +4,13 @@ import React, { useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocale } from 'next-intl';
 import { getAllMenus } from '@/redux/actions/menuActions';
 
 export default function Footer() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const locale = useLocale();
   const { allMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
 
   // Load all menus on component mount
@@ -68,7 +70,7 @@ export default function Footer() {
                         className="w-2 h-2 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: item.color || '#f97316' }}
                       ></div>
-                      {item.testCategory.name}
+{item.testCategory.name?.[locale] || item.testCategory.name?.tr || item.testCategory.name || 'Kategori'}
                     </button>
                   </li>
                 ))}
@@ -90,7 +92,7 @@ export default function Footer() {
                         className="w-2 h-2 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: item.color || '#f97316' }}
                       ></div>
-                      {item.testCategory.name}
+{item.testCategory.name?.[locale] || item.testCategory.name?.tr || item.testCategory.name || 'Kategori'}
                     </button>
                   </li>
                 ))}

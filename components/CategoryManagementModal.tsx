@@ -9,6 +9,7 @@ import {
   deleteTestCategory,
   clearTestCategoryError 
 } from '@/redux/actions/testCategoryActions';
+import { getEnabledLanguages } from '@/redux/actions/settingsActions';
 import { 
   X, 
   Plus, 
@@ -39,6 +40,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 interface CategoryManagementModalProps {
@@ -65,17 +67,31 @@ export default function CategoryManagementModal({
     message 
   } = useSelector((state: any) => state.testCategory);
 
+  const { enabledLanguages } = useSelector((state: any) => state.settings);
+
   const [isCreating, setIsCreating] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
+    name: {
+      tr: '',
+      en: '',
+      de: '',
+      fr: '',
+    },
+    description: {
+      tr: '',
+      en: '',
+      de: '',
+      fr: '',
+    },
   });
 
-  // Load categories on mount
+  // Load categories and enabled languages on mount
   useEffect(() => {
     if (isOpen) {
       dispatch(getActiveTestCategories() as any);
+      dispatch(getEnabledLanguages() as any);
     }
   }, [dispatch, isOpen]);
 
@@ -84,7 +100,18 @@ export default function CategoryManagementModal({
     setIsCreating(true);
     setEditingCategory(null);
     setFormData({
-      name: '',
+      name: {
+        tr: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
+      description: {
+        tr: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
     });
   };
 
@@ -93,7 +120,18 @@ export default function CategoryManagementModal({
     setEditingCategory(category);
     setIsCreating(true);
     setFormData({
-      name: category.name,
+      name: {
+        tr: category.name?.tr || '',
+        en: category.name?.en || '',
+        de: category.name?.de || '',
+        fr: category.name?.fr || '',
+      },
+      description: {
+        tr: category.description?.tr || '',
+        en: category.description?.en || '',
+        de: category.description?.de || '',
+        fr: category.description?.fr || '',
+      },
     });
   };
 
@@ -101,8 +139,9 @@ export default function CategoryManagementModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim()) {
-      alert('Kategori adı gereklidir');
+    // Check if Turkish name is provided (required)
+    if (!formData.name.tr?.trim()) {
+      toast.error('Türkçe kategori adı gereklidir');
       return;
     }
 
@@ -137,7 +176,18 @@ export default function CategoryManagementModal({
       setIsCreating(false);
       setEditingCategory(null);
       setFormData({
-        name: '',
+        name: {
+          tr: '',
+          en: '',
+          de: '',
+          fr: '',
+        },
+        description: {
+          tr: '',
+          en: '',
+          de: '',
+          fr: '',
+        },
       });
     } catch (error) {
       console.error('Category operation error:', error);
@@ -203,28 +253,68 @@ export default function CategoryManagementModal({
 
           {/* Create/Edit Form */}
           {isCreating && (
-            <div className="mb-6 p-4  rounded-lg">
+            <div className="mb-6 p-4 rounded-lg border border-gray-200 bg-gray-50">
               <h3 className="text-base font-medium mb-4">
                 {editingCategory ? 'Kategori Düzenle' : 'Yeni Kategori Ekle'}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    Kategori Adı *
-                  </Label>
-                  <Input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Kategori adını girin"
-                    required
-                    className="mt-1"
-                  />
-                </div>
+                {enabledLanguages && enabledLanguages.length > 0 && (
+                  <Tabs defaultValue={enabledLanguages[0]?.code} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                      {enabledLanguages.map((lang: any) => (
+                        <TabsTrigger key={lang.code} value={lang.code} className="flex items-center gap-2">
+                          <span>{lang.flag}</span>
+                          <span className="hidden sm:inline">{lang.name}</span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    
+                    {enabledLanguages.map((lang: any) => (
+                      <TabsContent key={lang.code} value={lang.code} className="space-y-4 mt-4">
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Kategori Adı ({lang.name}) {lang.code === 'tr' ? '*' : ''}
+                          </Label>
+                          <Input
+                            type="text"
+                            value={formData.name[lang.code as keyof typeof formData.name] || ''}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              name: {
+                                ...formData.name,
+                                [lang.code]: e.target.value
+                              }
+                            })}
+                            placeholder={`${lang.name} kategori adını girin`}
+                            required={lang.code === 'tr'}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Açıklama ({lang.name})
+                          </Label>
+                          <Textarea
+                            value={formData.description[lang.code as keyof typeof formData.description] || ''}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              description: {
+                                ...formData.description,
+                                [lang.code]: e.target.value
+                              }
+                            })}
+                            placeholder={`${lang.name} açıklama girin`}
+                            rows={3}
+                            className="mt-1"
+                          />
+                        </div>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                )}
 
-                {/* Color selection removed - now handled in Menu management */}
-
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-4">
                   <Button
                     type="submit"
                     disabled={loading}
@@ -244,7 +334,18 @@ export default function CategoryManagementModal({
                       setIsCreating(false);
                       setEditingCategory(null);
                       setFormData({
-                        name: '',
+                        name: {
+                          tr: '',
+                          en: '',
+                          de: '',
+                          fr: '',
+                        },
+                        description: {
+                          tr: '',
+                          en: '',
+                          de: '',
+                          fr: '',
+                        },
                       });
                     }}
                   >
@@ -288,7 +389,14 @@ export default function CategoryManagementModal({
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <div>
-                          <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
+                          <h4 className="text-sm font-medium text-gray-900">
+                            {category.name?.tr || category.name || 'Kategori'}
+                          </h4>
+                          {category.description?.tr && (
+                            <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                              {category.description.tr}
+                            </p>
+                          )}
                         </div>
                       </div>
                       

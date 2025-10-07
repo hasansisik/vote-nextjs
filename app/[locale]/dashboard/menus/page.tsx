@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,9 @@ import {
 } from '@/redux/actions/testCategoryActions';
 import { Plus, Edit, Trash2, GripVertical, Loader2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { getEnabledLanguages } from '@/redux/actions/settingsActions';
 
 const colorOptions = [
   { name: 'Kırmızı', value: '#ef4444' },
@@ -38,8 +42,10 @@ const colorOptions = [
 
 export default function MenusPage() {
   const dispatch = useDispatch();
+  const locale = useLocale();
   const { allMenus, loading, error, message } = useSelector((state: any) => state.menu);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
+  const { enabledLanguages } = useSelector((state: any) => state.settings);
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -48,11 +54,24 @@ export default function MenusPage() {
     testCategoryId: '',
     color: '',
     order: 0,
+    name: {
+      tr: '',
+      en: '',
+      de: '',
+      fr: '',
+    },
+    description: {
+      tr: '',
+      en: '',
+      de: '',
+      fr: '',
+    },
   });
 
   useEffect(() => {
     dispatch(getAllMenus({}) as any);
     dispatch(getActiveTestCategories() as any);
+    dispatch(getEnabledLanguages() as any);
   }, [dispatch]);
 
   useEffect(() => {
@@ -69,6 +88,18 @@ export default function MenusPage() {
       testCategoryId: '',
       color: '',
       order: 0, // Order will be calculated on submit
+      name: {
+        tr: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
+      description: {
+        tr: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
     });
     setIsCreating(true);
     setEditingId(null);
@@ -79,6 +110,18 @@ export default function MenusPage() {
       testCategoryId: menu.testCategory?._id || '',
       color: menu.color || '',
       order: menu.order || 0,
+      name: {
+        tr: menu.name?.tr || menu.testCategory?.name?.tr || '',
+        en: menu.name?.en || menu.testCategory?.name?.en || menu.testCategory?.name?.tr || '',
+        de: menu.name?.de || menu.testCategory?.name?.de || menu.testCategory?.name?.tr || '',
+        fr: menu.name?.fr || menu.testCategory?.name?.fr || menu.testCategory?.name?.tr || '',
+      },
+      description: {
+        tr: menu.description?.tr || '',
+        en: menu.description?.en || '',
+        de: menu.description?.de || '',
+        fr: menu.description?.fr || '',
+      },
     });
     setEditingId(menu._id);
     setIsCreating(false);
@@ -91,6 +134,18 @@ export default function MenusPage() {
       testCategoryId: '',
       color: '',
       order: 0,
+      name: {
+        tr: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
+      description: {
+        tr: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
     });
   };
 
@@ -107,11 +162,18 @@ export default function MenusPage() {
       return;
     }
 
+    if (!formData.name.tr?.trim()) {
+      toast.error('Türkçe menü adı gereklidir');
+      return;
+    }
+
     try {
       if (editingId) {
         const updateData: any = {};
         if (formData.testCategoryId) updateData.testCategoryId = formData.testCategoryId;
         if (formData.color) updateData.color = formData.color;
+        if (formData.name) updateData.name = formData.name;
+        if (formData.description) updateData.description = formData.description;
         
         await dispatch(updateMenu({ id: editingId, formData: updateData }) as any);
         setEditingId(null);
@@ -119,7 +181,9 @@ export default function MenusPage() {
         const submitData = {
           testCategoryId: formData.testCategoryId,
           color: formData.color,
-          order: allMenus.length + 1
+          order: allMenus.length + 1,
+          name: formData.name,
+          description: formData.description
         };
         await dispatch(createMenu(submitData) as any);
         setIsCreating(false);
@@ -129,6 +193,18 @@ export default function MenusPage() {
         testCategoryId: '',
         color: '',
         order: 0,
+        name: {
+          tr: '',
+          en: '',
+          de: '',
+          fr: '',
+        },
+        description: {
+          tr: '',
+          en: '',
+          de: '',
+          fr: '',
+        },
       });
       
       await dispatch(getAllMenus({}) as any);
@@ -265,13 +341,31 @@ export default function MenusPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="testCategoryId" className="text-sm font-medium">Test Kategorisi *</Label>
                   <Select
                     value={formData.testCategoryId}
-                    onValueChange={(value) => setFormData({ ...formData, testCategoryId: value })}
+                    onValueChange={(value) => {
+                      // Find selected category
+                      const selectedCategory = availableCategories.find((cat: any) => cat._id === value);
+                      if (selectedCategory) {
+                        // Auto-fill name fields with category names
+                        setFormData({ 
+                          ...formData, 
+                          testCategoryId: value,
+                          name: {
+                            tr: selectedCategory.name?.tr || '',
+                            en: selectedCategory.name?.en || selectedCategory.name?.tr || '',
+                            de: selectedCategory.name?.de || selectedCategory.name?.tr || '',
+                            fr: selectedCategory.name?.fr || selectedCategory.name?.tr || '',
+                          }
+                        });
+                      } else {
+                        setFormData({ ...formData, testCategoryId: value });
+                      }
+                    }}
                   >
                     <SelectTrigger className="h-9">
                       <SelectValue placeholder="Kategori seçin" />
@@ -279,7 +373,7 @@ export default function MenusPage() {
                     <SelectContent>
                       {availableCategories.map((category: any) => (
                         <SelectItem key={category._id} value={category._id}>
-                          {category.name}
+                          {category.name?.[locale] || category.name || 'Kategori'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -311,6 +405,66 @@ export default function MenusPage() {
                   </Select>
                 </div>
               </div>
+
+              {/* i18n Tabs */}
+              {enabledLanguages && enabledLanguages.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium">Menü Bilgileri</Label>
+                  <Tabs defaultValue={enabledLanguages[0]?.code} className="w-full">
+                    <TabsList className="grid w-full grid-cols-4">
+                      {enabledLanguages.map((lang: any) => (
+                        <TabsTrigger key={lang.code} value={lang.code} className="flex items-center gap-2">
+                          <span>{lang.flag}</span>
+                          <span className="hidden sm:inline">{lang.name}</span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    
+                    {enabledLanguages.map((lang: any) => (
+                      <TabsContent key={lang.code} value={lang.code} className="space-y-3 mt-4">
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Menü Adı ({lang.name}) {lang.code === 'tr' ? '*' : ''}
+                          </Label>
+                          <Input
+                            type="text"
+                            value={formData.name[lang.code as keyof typeof formData.name] || ''}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              name: {
+                                ...formData.name,
+                                [lang.code]: e.target.value
+                              }
+                            })}
+                            placeholder={`${lang.name} menü adını girin`}
+                            required={lang.code === 'tr'}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700">
+                            Açıklama ({lang.name})
+                          </Label>
+                          <Textarea
+                            value={formData.description[lang.code as keyof typeof formData.description] || ''}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              description: {
+                                ...formData.description,
+                                [lang.code]: e.target.value
+                              }
+                            })}
+                            placeholder={`${lang.name} açıklama girin`}
+                            rows={3}
+                            className="mt-1"
+                          />
+                        </div>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                </div>
+              )}
 
               <div className="flex gap-2 pt-2">
                 <Button type="submit" disabled={loading} size="sm">
@@ -367,7 +521,7 @@ export default function MenusPage() {
                       ></div>
                       <div>
                         <h3 className="font-medium text-gray-900 text-sm">
-                          {menu.testCategory?.name || 'Bilinmeyen Kategori'}
+                          {menu.name?.[locale] || menu.testCategory?.name?.[locale] || menu.testCategory?.name || 'Bilinmeyen Kategori'}
                         </h3>
                         <p className="text-xs text-gray-500">
                           Sıra: {menu.order || 0}

@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
 import { getNotificationStats } from '@/redux/actions/notificationActions';
+import { useLocale } from 'next-intl';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
@@ -26,6 +27,7 @@ interface MobileMenuProps {
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const router = useRouter();
   const dispatch = useDispatch();
+  const locale = useLocale();
   const { isAuthenticated, user, loading } = useSelector((state: any) => state.user);
   const { allMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
   const { stats: notificationStats } = useSelector((state: any) => state.notification);
@@ -254,7 +256,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         className="w-3 h-3 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: item.color || '#f97316' }}
                       ></div>
-                      {item.testCategory.name}
+                      {item.name?.[locale] || item.testCategory.name?.[locale] || item.testCategory.name || 'Kategori'}
                     </div>
                   </button>
                 ))
