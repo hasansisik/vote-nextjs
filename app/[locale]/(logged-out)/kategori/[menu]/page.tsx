@@ -21,10 +21,11 @@ interface CardProps {
   test: any;
   index: number;
   onTestClick: (testId: string, e: React.MouseEvent) => void;
+  getCategoryNameById: (category: any) => string;
   className?: string;
 }
 
-const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" }) => {
+const Card: React.FC<CardProps> = ({ test, index, onTestClick, getCategoryNameById, className = "" }) => {
   const handleClick = (e: React.MouseEvent) => {
     onTestClick(test._id, e);
   };
@@ -53,7 +54,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {getCategoryName(test.category)}
+          {getCategoryNameById(test.category)}
         </div>
         
         {/* Başlık */}
@@ -78,12 +79,23 @@ export default function CategoryPage() {
   const dispatch = useAppDispatch();
   const { categoryTests, categoryInfo, categoryTestsLoading, categoryPagination } = useAppSelector((state) => state.test);
   const { activeMenus } = useAppSelector((state) => state.menu);
+  const { activeCategories } = useAppSelector((state) => state.testCategory);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 20;
+
+  // Category name helper function
+  const getCategoryNameById = (category: any) => {
+    if (typeof category === 'string') {
+      // Category ID'si string olarak geliyorsa, activeCategories'den bul
+      const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
+      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
+    }
+    return getCategoryName(category).toUpperCase() || 'KATEGORİ';
+  };
 
   // URL'den kategori parametresini al
   const categorySlug = params.menu as string;
@@ -226,6 +238,7 @@ export default function CategoryPage() {
                       test={test}
                       index={index}
                       onTestClick={handleTestClick}
+                      getCategoryNameById={getCategoryNameById}
                     />
                   ))}
                 </div>
@@ -240,6 +253,7 @@ export default function CategoryPage() {
                       test={test}
                       index={index}
                       onTestClick={handleTestClick}
+                      getCategoryNameById={getCategoryNameById}
                     />
                   ))}
                 </div>
