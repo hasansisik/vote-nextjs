@@ -1308,6 +1308,8 @@ export interface CreateTestPayload {
   headerText?: string;
   footerText?: string;
   category: string;
+  trend?: boolean;
+  popular?: boolean;
   options: Array<{
     title: string;
     image: string;
@@ -1326,6 +1328,8 @@ export interface UpdateTestPayload {
   footerText?: string;
   category?: string;
   isActive?: boolean;
+  trend?: boolean;
+  popular?: boolean;
   options?: Array<{
     title: string;
     image: string;
@@ -1542,6 +1546,27 @@ export const resetTestVotes = createAsyncThunk(
         {},
         config
       );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const getTrendTests = createAsyncThunk(
+  "user/getTrendTests",
+  async (params: any = {}, thunkAPI) => {
+    try {
+      const filteredParams = Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => value !== undefined)
+      ) as Record<string, string>;
+      const queryString = new URLSearchParams(filteredParams).toString();
+      const url = `${server}/tests/trend${queryString ? `?${queryString}` : ''}`;
+      const response = await axios.get(url);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(

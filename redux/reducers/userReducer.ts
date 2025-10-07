@@ -47,6 +47,7 @@ import {
   updateTest,
   deleteTest,
   resetTestVotes,
+  getTrendTests,
 } from "../actions/userActions";
 
 interface UserState {
@@ -81,7 +82,9 @@ interface UserState {
   tests: any[];
   allTests: any[];
   singleTest: any;
+  trendTests: any[];
   testsLoading: boolean;
+  trendTestsLoading: boolean;
   testsError: string | null;
 }
 
@@ -114,7 +117,9 @@ const initialState: UserState = {
   tests: [],
   allTests: [],
   singleTest: null,
+  trendTests: [],
   testsLoading: false,
+  trendTestsLoading: false,
   testsError: null,
 };
 
@@ -897,6 +902,18 @@ export const userReducer = createReducer(initialState, (builder) => {
     })
     .addCase(resetTestVotes.rejected, (state, action) => {
       state.testsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Get Trend Tests
+    .addCase(getTrendTests.pending, (state) => {
+      state.trendTestsLoading = true;
+    })
+    .addCase(getTrendTests.fulfilled, (state, action) => {
+      state.trendTestsLoading = false;
+      state.trendTests = action.payload.tests;
+    })
+    .addCase(getTrendTests.rejected, (state, action) => {
+      state.trendTestsLoading = false;
       state.testsError = action.payload as string;
     })
     // Clear Error

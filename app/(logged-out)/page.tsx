@@ -15,7 +15,7 @@ export default function Home() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { allTests, testsLoading } = useAppSelector((state) => state.user);
-  const { activeCategories } = useAppSelector((state) => state.testCategory);
+  const { activeCategories, loading: categoriesLoading } = useAppSelector((state) => state.testCategory);
 
   useEffect(() => {
     dispatch(getAllTests({}));
@@ -65,7 +65,7 @@ export default function Home() {
   const popularData = homepageData.filter(item => item.tag === "popular");
   const featuredData = homepageData.filter(item => item.tag === "featured");
 
-  if (testsLoading) {
+  if (testsLoading || categoriesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

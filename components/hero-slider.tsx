@@ -1,76 +1,104 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useSelector, useDispatch } from 'react-redux';
+import { getTrendTests } from '@/redux/actions/userActions';
 
 interface SliderContent {
-  id: number;
-  category: string;
+  _id: string;
+  category: string | { _id: string; name: string };
   title: string;
   description: string;
-  image: string;
-  votes: string;
+  coverImage: string;
+  totalVotes: number;
+  trend?: boolean;
+  popular?: boolean;
+  createdBy?: { _id: string; name: string; surname: string };
+  createdAt?: string;
 }
-
-const sliderData: SliderContent[] = [
-  {
-    id: 1,
-    category: "SPOR",
-    title: "Dünyanın En İyi Futbolcusu",
-    description: "Tüm zamanların en büyük futbol efsanesini seç!",
-    image: "/images/v1.jpg",
-    votes: "125,000"
-  },
-  {
-    id: 2,
-    category: "YEMEK",
-    title: "Dünyanın En Lezzetli Yemeği",
-    description: "Hangi yemek tüm dünyanın gözdesi?",
-    image: "/images/v2.jpg",
-    votes: "89,500"
-  },
-  {
-    id: 3,
-    category: "ÜLKE",
-    title: "Dünyanın En Güzel Ülkesi",
-    description: "Doğa güzelliği ve kültürün birleştiği yer.",
-    image: "/images/v3.jpg",
-    votes: "156,200"
-  },
-  {
-    id: 4,
-    category: "ŞEHİR",
-    title: "Türkiye'nin En Güzel Şehri",
-    description: "Anadolu'nun en şirin şehrini belirle!",
-    image: "/images/v4.jpg",
-    votes: "78,900"
-  },
-  {
-    id: 5,
-    category: "FİLM",
-    title: "Tüm Zamanların En İyi Filmi",
-    description: "Sinemanın en büyük başyapıtı hangisi?",
-    image: "/images/v5.jpg",
-    votes: "203,800"
-  }
-];
 
 export default function HeroSlider() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { trendTests, trendTestsLoading } = useSelector((state: any) => state.user);
+  const { activeCategories } = useSelector((state: any) => state.testCategory);
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Category name helper function
+  const getCategoryName = (category: any) => {
+    if (typeof category === 'string') {
+      // Category ID'si string olarak geliyorsa, activeCategories'den bul
+      const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
+      return categoryObj ? categoryObj.name.toUpperCase() : 'KATEGORİ';
+    }
+    return category?.name?.toUpperCase() || 'KATEGORİ';
+  };
+
+  // Sadece trend testleri yükle - kategoriler ana sayfada zaten yükleniyor
+  useEffect(() => {
+    dispatch(getTrendTests({ limit: 5 }) as any);
+  }, []); // Empty dependency array - sadece component mount olduğunda çalışsın
+
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % sliderData.length);
+    if (displayData && displayData.length > 0) {
+      setCurrentSlide((prev) => (prev + 1) % displayData.length);
+    }
   };
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + sliderData.length) % sliderData.length);
+    if (displayData && displayData.length > 0) {
+      setCurrentSlide((prev) => (prev - 1 + displayData.length) % displayData.length);
+    }
   };
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
   };
+
+  // Fallback veri - eğer trend testleri yoksa
+  const fallbackData = [
+    {
+      _id: 'fallback-1',
+      category: 'SPOR',
+      title: 'Dünyanın En İyi Futbolcusu',
+      description: 'Tüm zamanların en büyük futbol efsanesini seç!',
+      coverImage: '/images/v1.jpg',
+      totalVotes: 125000
+    },
+    {
+      _id: 'fallback-2',
+      category: 'YEMEK',
+      title: 'Dünyanın En Lezzetli Yemeği',
+      description: 'Hangi yemek tüm dünyanın gözdesi?',
+      coverImage: '/images/v2.jpg',
+      totalVotes: 89500
+    },
+    {
+      _id: 'fallback-3',
+      category: 'ÜLKE',
+      title: 'Dünyanın En Güzel Ülkesi',
+      description: 'Doğa güzelliği ve kültürün birleştiği yer.',
+      coverImage: '/images/v3.jpg',
+      totalVotes: 156200
+    }
+  ];
+
+  // Veri yükleniyorsa loading göster
+  if (trendTestsLoading) {
+    return (
+      <div className="bg-black rounded-lg overflow-hidden h-full flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Trend testler yükleniyor...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Veri yoksa veya boşsa fallback kullan
+  const displayData: SliderContent[] = (trendTests && trendTests.length > 0) ? trendTests : fallbackData;
 
   return (
     <div className="bg-black rounded-lg overflow-hidden h-full">
@@ -79,14 +107,14 @@ export default function HeroSlider() {
         {/* Ana Slider - Sol Taraf */}
         <div 
           className="w-2/3 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => router.push(`/test_${currentSlide + 1}`)}
+          onClick={() => router.push(`/${displayData[currentSlide]._id}`)}
         >
           {/* Üst Kısım - Fotoğraf */}
           <div className="relative h-3/4 p-4">
             <div className="relative w-full h-full rounded-lg overflow-hidden">
               <Image
-                src={sliderData[currentSlide].image}
-                alt={sliderData[currentSlide].title}
+                src={displayData[currentSlide].coverImage || '/images/v1.jpg'}
+                alt={displayData[currentSlide].title}
                 fill
                 className="object-cover"
                 priority
@@ -99,23 +127,23 @@ export default function HeroSlider() {
             <div className="text-white space-y-2">
               {/* Kategori */}
               <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">
-                {sliderData[currentSlide].category}
+                {getCategoryName(displayData[currentSlide].category)}
               </div>
               
               {/* Başlık */}
               <h2 className="text-lg lg:text-xl font-bold leading-tight">
-                {sliderData[currentSlide].title}
+                {displayData[currentSlide].title}
               </h2>
               
               {/* Açıklama */}
               <p className="text-xs text-gray-300 leading-relaxed">
-                {sliderData[currentSlide].description}
+                {displayData[currentSlide].description}
               </p>
             </div>
             
             {/* Slider Dots - Siyah alanda */}
             <div className="absolute bottom-4 right-4 flex space-x-2 z-20">
-              {sliderData.map((_, index) => (
+              {displayData.map((_: any, index: number) => (
                 <button
                   key={index}
                   onClick={(e) => {
@@ -139,25 +167,28 @@ export default function HeroSlider() {
             ŞU AN TREND
           </h3>
           
-          <div className="flex-1 flex flex-col justify-between">
-            {sliderData.map((item, index) => (
-              <div 
-                key={item.id} 
-                className={`flex gap-2 p-3 rounded cursor-pointer transition-all flex-shrink-0 ${
-                  index === currentSlide 
-                    ? 'bg-gray-700/30 border-l-2 border-gray-400' 
-                    : 'hover:bg-gray-800'
-                }`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  router.push(`/test_${index + 1}`);
-                }}
-                style={{ height: 'calc(20% - 4px)' }}
-              >
+          <div className="flex-1 flex flex-col">
+            {displayData.map((item: any, index: number) => {
+              return (
+                <div 
+                  key={item._id} 
+                  className={`flex gap-2 p-3 rounded cursor-pointer transition-all flex-shrink-0 ${
+                    index === currentSlide 
+                      ? 'bg-gray-700/30 border-l-2 border-gray-400' 
+                      : 'hover:bg-gray-800'
+                  } ${
+                    index === 0 ? 'mt-0' : 'mt-2'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/${item._id}`);
+                  }}
+                  style={{ height: 'calc(20% - 4px)' }}
+                >
                 {/* Thumbnail */}
                 <div className="w-14 h-10 flex-shrink-0 relative">
                   <Image
-                    src={item.image}
+                    src={item.coverImage || '/images/v1.jpg'}
                     alt={item.title}
                     fill
                     className="object-cover rounded-sm"
@@ -168,7 +199,7 @@ export default function HeroSlider() {
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   {/* Kategori */}
                   <div className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
-                    {item.category}
+                    {getCategoryName(item.category)}
                   </div>
                   
                   {/* Başlık */}
@@ -182,7 +213,8 @@ export default function HeroSlider() {
                   </p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -192,14 +224,14 @@ export default function HeroSlider() {
         {/* Ana Slider */}
         <div 
           className="flex-1 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => router.push(`/test_${currentSlide + 1}`)}
+          onClick={() => router.push(`/${displayData[currentSlide]._id}`)}
         >
           {/* Üst Kısım - Fotoğraf */}
           <div className="relative h-1/2 p-2">
             <div className="relative w-full h-full rounded-lg overflow-hidden">
               <Image
-                src={sliderData[currentSlide].image}
-                alt={sliderData[currentSlide].title}
+                src={displayData[currentSlide].coverImage || '/images/v1.jpg'}
+                alt={displayData[currentSlide].title}
                 fill
                 className="object-cover"
                 priority
@@ -212,23 +244,23 @@ export default function HeroSlider() {
             <div className="text-white space-y-1">
               {/* Kategori */}
               <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">
-                {sliderData[currentSlide].category}
+                {getCategoryName(displayData[currentSlide].category)}
               </div>
               
               {/* Başlık */}
               <h2 className="text-base font-bold leading-tight">
-                {sliderData[currentSlide].title}
+                {displayData[currentSlide].title}
               </h2>
               
               {/* Açıklama */}
               <p className="text-xs text-gray-300 leading-relaxed">
-                {sliderData[currentSlide].description}
+                {displayData[currentSlide].description}
               </p>
             </div>
             
             {/* Slider Dots */}
             <div className="absolute bottom-2 right-2 flex space-x-1 z-20">
-              {sliderData.map((_, index) => (
+              {displayData.map((_: any, index: number) => (
                 <button
                   key={index}
                   onClick={(e) => {
@@ -253,9 +285,9 @@ export default function HeroSlider() {
           </h3>
           
           <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-            {sliderData.map((item, index) => (
+            {displayData.map((item: any, index: number) => (
               <div 
-                key={item.id} 
+                key={item._id} 
                 className={`flex flex-col items-center gap-1 p-2 rounded cursor-pointer transition-all flex-shrink-0 ${
                   index === currentSlide 
                     ? 'bg-gray-700/30' 
@@ -263,14 +295,14 @@ export default function HeroSlider() {
                 }`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  router.push(`/test_${index + 1}`);
+                  router.push(`/${item._id}`);
                 }}
                 style={{ minWidth: '120px' }}
               >
                 {/* Thumbnail */}
                 <div className="w-16 h-12 relative">
                   <Image
-                    src={item.image}
+                    src={item.coverImage || '/images/v1.jpg'}
                     alt={item.title}
                     fill
                     className="object-cover rounded-sm"
@@ -281,7 +313,7 @@ export default function HeroSlider() {
                 <div className="text-center">
                   {/* Kategori */}
                   <div className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
-                    {item.category}
+                    {getCategoryName(item.category)}
                   </div>
                   
                   {/* Başlık */}

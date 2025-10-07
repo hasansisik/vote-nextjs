@@ -214,10 +214,22 @@ export default function VotesPage() {
                       {getCategoryName(test.category)}
                     </Badge>
                   </td>
-                  <td className="px-4 py-4">
-                    <Badge variant={test.isActive ? "default" : "secondary"} className="text-xs">
-                      {test.isActive ? "Aktif" : "Pasif"}
-                    </Badge>
+                  <td className="px-1 py-2">
+                    <div className="flex items-center gap-0.5">
+                      <Badge variant={test.isActive ? "default" : "secondary"} className="text-[9px] px-1 py-0.5 whitespace-nowrap">
+                        {test.isActive ? "Aktif" : "Pasif"}
+                      </Badge>
+                      {test.trend && (
+                        <Badge variant="outline" className="text-[9px] px-1 py-0.5 text-orange-600 border-orange-600 whitespace-nowrap">
+                          Trend
+                        </Badge>
+                      )}
+                      {test.popular && (
+                        <Badge variant="outline" className="text-[9px] px-1 py-0.5 text-blue-600 border-blue-600 whitespace-nowrap">
+                          Popüler
+                        </Badge>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex items-center text-sm text-gray-900">

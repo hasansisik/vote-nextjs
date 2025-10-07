@@ -21,6 +21,7 @@ import {
 import { uploadImageToCloudinary } from "@/utils/cloudinary";
 import CategoryManagementModal from "@/components/CategoryManagementModal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 interface Option {
   title: string;
@@ -48,6 +49,8 @@ export default function CreateTestPage() {
     headerText: "",
     footerText: "",
     category: "",
+    trend: false,
+    popular: false,
   });
 
   const [options, setOptions] = useState<Option[]>([
@@ -82,6 +85,8 @@ export default function CreateTestPage() {
           headerText: singleTest.headerText || "",
           footerText: singleTest.footerText || "",
           category: singleTest.category || "",
+          trend: singleTest.trend || false,
+          popular: singleTest.popular || false,
         });
         
         if (singleTest.options && singleTest.options.length > 0) {
@@ -103,6 +108,8 @@ export default function CreateTestPage() {
               headerText: testToEdit.headerText || "",
               footerText: testToEdit.footerText || "",
               category: testToEdit.category || "",
+              trend: testToEdit.trend || false,
+              popular: testToEdit.popular || false,
             });
             
             if (testToEdit.options && testToEdit.options.length > 0) {
@@ -118,7 +125,7 @@ export default function CreateTestPage() {
     }
   }, [isEditMode, editId, singleTest, userCreatedTests]);
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -574,7 +581,7 @@ export default function CreateTestPage() {
           {/* Publish Box */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Yayınla</h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="category" className="text-sm font-medium text-gray-700">
                   Kategori *
@@ -590,14 +597,43 @@ export default function CreateTestPage() {
                   <SelectContent>
                     {activeCategories?.map((category: any) => (
                       <SelectItem key={category._id} value={category._id}>
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-                          <span>{category.name}</span>
-                        </div>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Trend Switch */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Trend
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    Bu testi trend listesinde göster
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.trend}
+                  onCheckedChange={(checked: boolean) => handleInputChange("trend", checked)}
+                />
+              </div>
+
+              {/* Popular Switch */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Popüler
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    Bu testi popüler listesinde göster
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.popular}
+                  onCheckedChange={(checked: boolean) => handleInputChange("popular", checked)}
+                />
               </div>
             </div>
           </div>
