@@ -8,7 +8,7 @@ import {
   getAllTests,
   deleteTest,
   resetTestVotes,
-} from '@/redux/actions/userActions';
+} from '@/redux/actions/testActions';
 import {
   getActiveTestCategories,
 } from '@/redux/actions/testCategoryActions';
@@ -19,7 +19,8 @@ import { toast } from 'react-hot-toast';
 export default function DashboardPage() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { allTests, testsLoading, testsError, user } = useSelector((state: any) => state.user);
+  const { user } = useSelector((state: any) => state.user);
+  const { allTests, testsLoading, testsError } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   useEffect(() => {

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { getTestsByCategorySlug } from '@/redux/actions/userActions';
+import { getTestsByCategorySlug } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
 import {
   Pagination,
@@ -75,7 +75,7 @@ export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { categoryTests, categoryInfo, categoryTestsLoading, categoryPagination } = useAppSelector((state) => state.user);
+  const { categoryTests, categoryInfo, categoryTestsLoading, categoryPagination } = useAppSelector((state) => state.test);
   const { activeMenus } = useAppSelector((state) => state.menu);
 
   // Pagination state

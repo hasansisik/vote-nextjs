@@ -8,13 +8,13 @@ import ContentGrid from "../../components/content-grid";
 import FeaturedGrid from "../../components/featured-grid";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
-import { getAllTests } from "@/redux/actions/userActions";
+import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
 
 export default function Home() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { allTests, testsLoading } = useAppSelector((state) => state.user);
+  const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeCategories, loading: categoriesLoading } = useAppSelector((state) => state.testCategory);
 
   useEffect(() => {

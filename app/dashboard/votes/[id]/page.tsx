@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
-import { getAllTests, deleteTest } from "@/redux/actions/userActions";
+import { getAllTests, deleteTest } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +30,8 @@ export default async function TestDetailPage({ params }: { params: Promise<{ id:
 function TestDetailPageClient({ testId }: { testId: string }) {
   const dispatch = useDispatch();
   const router = useRouter();
-  const { allTests, testsLoading, testsError, user } = useSelector((state: any) => state.user);
+  const { user } = useSelector((state: any) => state.user);
+  const { allTests, testsLoading, testsError } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const [test, setTest] = useState<any>(null);
 

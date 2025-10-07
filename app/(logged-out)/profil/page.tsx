@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
 import { useRouter } from 'next/navigation';
-import { editProfile, deleteAccount, clearError, getUserVotedTests } from '@/redux/actions/userActions';
+import { editProfile, deleteAccount, clearError } from '@/redux/actions/userActions';
+import { getUserVotedTests } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import ProfilePhotoUpload from '@/components/profile-photo-upload';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 export default function ProfilPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { user, loading, error, isAuthenticated, userVotedTests, userVotedTestsLoading, userVotedTestsError } = useSelector((state: any) => state.user);
+  const { user, loading, error, isAuthenticated } = useSelector((state: any) => state.user);
+  const { userVotedTests, userVotedTestsLoading, userVotedTestsError } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   const [activeTab, setActiveTab] = useState('profile');

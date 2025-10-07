@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/redux/hook";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createTest, updateTest, getSingleTest } from "@/redux/actions/userActions";
+import { createTest, updateTest, getSingleTest } from "@/redux/actions/testActions";
 import { getActiveTestCategories, createTestCategory } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

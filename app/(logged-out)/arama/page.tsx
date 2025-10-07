@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { getAllTests } from '@/redux/actions/userActions';
+import { getAllTests } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
 import {
   Pagination,
@@ -100,7 +100,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
 export default function AramaPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { allTests, testsLoading } = useAppSelector((state) => state.user);
+  const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeMenus } = useAppSelector((state) => state.menu);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredTests, setFilteredTests] = useState<Test[]>([]);

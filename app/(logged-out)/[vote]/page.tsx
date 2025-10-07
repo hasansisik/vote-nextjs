@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { getAllTests, voteOnTest, getTestResults } from '@/redux/actions/userActions';
+import { getAllTests, voteOnTest, getTestResults } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 
 interface CustomField {
@@ -40,7 +40,7 @@ export default function VotePage() {
   const dispatch = useAppDispatch();
   const voteId = params?.vote as string;
   
-  const { allTests, testsLoading, testResults } = useAppSelector((state) => state.user);
+  const { allTests, testsLoading, testResults } = useAppSelector((state) => state.test);
   const { activeCategories } = useAppSelector((state) => state.testCategory);
   const [test, setTest] = useState<Test | null>(null);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);

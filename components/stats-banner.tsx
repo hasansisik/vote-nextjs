@@ -3,11 +3,11 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
-import { getGlobalStats } from '@/redux/actions/userActions';
+import { getGlobalStats } from '@/redux/actions/testActions';
 
 export default function StatsBanner() {
   const dispatch = useAppDispatch();
-  const { globalStats, globalStatsLoading } = useSelector((state: any) => state.user);
+  const { globalStats, globalStatsLoading } = useSelector((state: any) => state.test);
 
   useEffect(() => {
     dispatch(getGlobalStats());

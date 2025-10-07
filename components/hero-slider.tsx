@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
-import { getTrendTests } from '@/redux/actions/userActions';
+import { getTrendTests } from '@/redux/actions/testActions';
 
 interface SliderContent {
   _id: string;
@@ -22,7 +22,7 @@ interface SliderContent {
 export default function HeroSlider() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { trendTests, trendTestsLoading } = useSelector((state: any) => state.user);
+  const { trendTests, trendTestsLoading } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const [currentSlide, setCurrentSlide] = useState(0);
 

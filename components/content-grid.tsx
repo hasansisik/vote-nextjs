@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
-import { getPopularTests } from '@/redux/actions/userActions';
+import { getPopularTests } from '@/redux/actions/testActions';
 
 
 interface HomepageCard {
@@ -27,7 +27,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
   cards = [] 
 }) => {
   const dispatch = useDispatch();
-  const { popularTests, popularTestsLoading } = useSelector((state: any) => state.user);
+  const { popularTests, popularTestsLoading } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   // Category name helper function
