@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { getTrendTests } from '@/redux/actions/testActions';
 import { Skeleton } from './ui/skeleton';
+import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 
 interface SliderContent {
   _id: string;
@@ -28,13 +29,13 @@ export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Category name helper function
-  const getCategoryName = (category: any) => {
+  const getCategoryNameById = (category: any) => {
     if (typeof category === 'string') {
       // Category ID'si string olarak geliyorsa, activeCategories'den bul
       const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
-      return categoryObj ? categoryObj.name.toUpperCase() : 'KATEGORİ';
+      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
     }
-    return category?.name?.toUpperCase() || 'KATEGORİ';
+    return getCategoryName(category).toUpperCase() || 'KATEGORİ';
   };
 
   // Sadece trend testleri yükle - kategoriler ana sayfada zaten yükleniyor
@@ -204,17 +205,17 @@ export default function HeroSlider() {
             <div className="text-white space-y-2">
               {/* Kategori */}
               <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">
-                {getCategoryName(displayData[currentSlide].category)}
+                {getCategoryNameById(displayData[currentSlide].category)}
               </div>
               
               {/* Başlık */}
               <h2 className="text-lg lg:text-xl font-bold leading-tight">
-                {displayData[currentSlide].title}
+                {getTestTitle(displayData[currentSlide])}
               </h2>
               
               {/* Açıklama */}
               <p className="text-xs text-gray-300 leading-relaxed">
-                {displayData[currentSlide].description}
+                {getTestDescription(displayData[currentSlide])}
               </p>
             </div>
             
@@ -276,17 +277,17 @@ export default function HeroSlider() {
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   {/* Kategori */}
                   <div className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
-                    {getCategoryName(item.category)}
+                    {getCategoryNameById(item.category)}
                   </div>
                   
                   {/* Başlık */}
                   <h4 className="text-xs font-bold text-white leading-tight mb-1">
-                    {item.title}
+                    {getTestTitle(item)}
                   </h4>
                   
                   {/* Açıklama */}
                   <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">
-                    {item.description}
+                    {getTestDescription(item)}
                   </p>
                 </div>
               </div>
@@ -321,17 +322,17 @@ export default function HeroSlider() {
             <div className="text-white space-y-1">
               {/* Kategori */}
               <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">
-                {getCategoryName(displayData[currentSlide].category)}
+                {getCategoryNameById(displayData[currentSlide].category)}
               </div>
               
               {/* Başlık */}
               <h2 className="text-base font-bold leading-tight">
-                {displayData[currentSlide].title}
+                {getTestTitle(displayData[currentSlide])}
               </h2>
               
               {/* Açıklama */}
               <p className="text-xs text-gray-300 leading-relaxed">
-                {displayData[currentSlide].description}
+                {getTestDescription(displayData[currentSlide])}
               </p>
             </div>
             
@@ -390,12 +391,12 @@ export default function HeroSlider() {
                 <div className="text-center">
                   {/* Kategori */}
                   <div className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
-                    {getCategoryName(item.category)}
+                    {getCategoryNameById(item.category)}
                   </div>
                   
                   {/* Başlık */}
                   <h4 className="text-xs font-bold text-white leading-tight">
-                    {item.title}
+                    {getTestTitle(item)}
                   </h4>
                 </div>
               </div>

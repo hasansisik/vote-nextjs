@@ -15,6 +15,7 @@ import {
 import { Plus, Edit, Trash2, RotateCcw, Eye, Loader2, BarChart3, Users, Calendar, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
+import { getTestTitle, getCategoryName } from '@/lib/multiLanguageUtils';
 
 export default function DashboardPage() {
   const dispatch = useDispatch();
@@ -53,9 +54,9 @@ export default function DashboardPage() {
     return 'bg-gray-100 text-gray-800';
   };
 
-  const getCategoryName = (categorySlug: string) => {
+  const getCategoryNameBySlug = (categorySlug: string) => {
     const category = activeCategories.find((cat: any) => cat.slug === categorySlug);
-    return category ? category.name : categorySlug;
+    return getCategoryName(category) || categorySlug;
   };
 
   const handleCategoryClick = (categorySlug: string) => {
@@ -205,9 +206,9 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3">
                       <div className={`w-3 h-3 rounded-full ${getCategoryColor(test.category).split(' ')[0]}`}></div>
                       <div>
-                        <h3 className="font-semibold">{test.title}</h3>
+                        <h3 className="font-semibold">{getTestTitle(test)}</h3>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>{getCategoryName(test.category)}</span>
+                          <span>{getCategoryNameBySlug(test.category)}</span>
                           <span>•</span>
                           <span>{test.totalVotes || 0} oy</span>
                           <span>•</span>

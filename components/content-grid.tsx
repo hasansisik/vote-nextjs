@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { getPopularTests } from '@/redux/actions/testActions';
+import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 
 
 interface HomepageCard {
@@ -31,13 +32,13 @@ const ContentGrid: React.FC<ContentGridProps> = ({
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   // Category name helper function
-  const getCategoryName = (category: any) => {
+  const getCategoryNameById = (category: any) => {
     if (typeof category === 'string') {
       // Category ID'si string olarak geliyorsa, activeCategories'den bul
       const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
-      return categoryObj ? categoryObj.name.toUpperCase() : 'KATEGORİ';
+      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
     }
-    return category?.name?.toUpperCase() || 'KATEGORİ';
+    return getCategoryName(category).toUpperCase() || 'KATEGORİ';
   };
 
   // Popular testleri yükle
@@ -72,10 +73,10 @@ const ContentGrid: React.FC<ContentGridProps> = ({
     return {
       id: index + 1,
       testId: test._id, // Gerçek test ID'si
-      category: getCategoryName(test.category),
-      title: test.title,
+      category: getCategoryNameById(test.category),
+      title: getTestTitle(test),
       image: imageUrl,
-      description: test.description,
+      description: getTestDescription(test),
       tag: "popular"
     };
   }) || [];

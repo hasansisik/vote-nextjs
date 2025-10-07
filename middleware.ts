@@ -8,7 +8,14 @@ const intlMiddleware = createMiddleware(routing);
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Handle internationalization first
+  // Dashboard routes that should bypass locale prefix completely
+  if (pathname.startsWith('/dashboard')) {
+    // Allow access to dashboard without locale prefix
+    // Authentication will be handled by the dashboard layout
+    return NextResponse.next();
+  }
+
+  // Handle internationalization for all other routes
   const intlResponse = intlMiddleware(request);
   
   // Public routes that don't require authentication (without locale prefix)
@@ -35,7 +42,8 @@ export function middleware(request: NextRequest) {
     '/bildirimler',
     '/kategori',
     '/menu',
-    '/profil'
+    '/profil',
+    '/dashboard' // Dashboard routes should not have locale prefix
   ];
 
   // Extract pathname without locale

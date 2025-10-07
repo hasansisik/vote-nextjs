@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useRouter } from '@/i18n/routing';
+import { useRouter } from 'next/navigation';
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -20,7 +20,6 @@ import {
 } from "@/components/ui/sidebar"
 import { loadUser } from '@/redux/actions/userActions';
 import { Loader2 } from 'lucide-react';
-import { Toaster } from 'sonner';
 
 export default function DashboardLayout({
   children,
@@ -32,7 +31,9 @@ export default function DashboardLayout({
   const { user, loading, isAuthenticated } = useSelector((state: any) => state.user);
 
   useEffect(() => {
-    // Check if user is authenticated
+    // Check if user is authenticated (only on client side)
+    if (typeof window === 'undefined') return;
+    
     const token = localStorage.getItem('accessToken');
     
     if (!token) {
@@ -40,13 +41,18 @@ export default function DashboardLayout({
       return;
     }
 
-    // If no user data but token exists, load user
-    if (!user && !loading) {
-      dispatch(loadUser() as any);
-    }
-  }, [dispatch, router, user, loading]);
+    // Always try to load user if token exists
+    dispatch(loadUser() as any).then((result: any) => {
+      if (result.type === 'user/loadUser/rejected') {
+        // If loadUser fails, redirect to login
+        router.push('/giris');
+      }
+    }).catch((error: any) => {
+      router.push('/giris');
+    });
+  }, []); // Run only once on mount
 
-  // Show loading while checking authentication
+  // Show loading only when actually loading
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -56,11 +62,6 @@ export default function DashboardLayout({
         </div>
       </div>
     );
-  }
-
-  // If not authenticated, don't render anything (redirect will happen)
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (
@@ -89,11 +90,10 @@ export default function DashboardLayout({
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {children}
-        </div>
-        <Toaster position="top-right" richColors />
-      </SidebarInset>
+         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+           {children}
+         </div>
+       </SidebarInset>
     </SidebarProvider>
   )
 }

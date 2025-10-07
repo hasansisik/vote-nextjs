@@ -19,6 +19,7 @@ import {
   BarChart3,
   Eye
 } from "lucide-react";
+import { getTestTitle, getTestDescription, getOptionTitle } from '@/lib/multiLanguageUtils';
 
 export default function TestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   return <TestDetailPageWrapper params={params} />;
@@ -148,7 +149,7 @@ function TestDetailPageClient({ testId }: { testId: string }) {
               Geri
             </Button>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">{test.title}</h1>
+              <h1 className="text-xl font-semibold text-gray-900">{getTestTitle(test)}</h1>
               <p className="text-xs text-gray-600">
                 Oylama detayları ve sonuçları
               </p>
@@ -207,7 +208,7 @@ function TestDetailPageClient({ testId }: { testId: string }) {
               <div className="w-full h-80 overflow-hidden">
                 <img
                   src={test.coverImage}
-                  alt={test.title}
+                  alt={getTestTitle(test)}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -257,9 +258,9 @@ function TestDetailPageClient({ testId }: { testId: string }) {
                   </div>
                 </div>
               )}
-              <h1 className="text-2xl font-bold text-gray-900">{test.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{getTestTitle(test)}</h1>
               {test.description && (
-                <p className="text-base text-gray-600 leading-relaxed">{test.description}</p>
+                <p className="text-base text-gray-600 leading-relaxed">{getTestDescription(test)}</p>
               )}
             </div>
           </div>
@@ -295,7 +296,7 @@ function TestDetailPageClient({ testId }: { testId: string }) {
                         <div className="w-20 h-20 rounded-lg overflow-hidden">
                           <img
                             src={option.image}
-                            alt={option.title}
+                            alt={getOptionTitle(option)}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -307,7 +308,7 @@ function TestDetailPageClient({ testId }: { testId: string }) {
                         {index === 0 && (
                           <Trophy className="h-6 w-6 text-yellow-500" />
                         )}
-                        <h3 className="text-base font-semibold text-gray-900">{option.title}</h3>
+                        <h3 className="text-base font-semibold text-gray-900">{getOptionTitle(option)}</h3>
                         {index === 0 && (
                           <Badge className="bg-yellow-100 text-yellow-800">
                             Kazanan

@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 
 interface HomepageCard {
   id: number;
@@ -105,13 +106,13 @@ const Card: React.FC<CardProps> = ({ card, className = "" }) => {
         
         {/* Başlık */}
         <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
-          {card.title}
+          {typeof card.title === 'string' ? card.title : getTestTitle(card)}
         </h3>
         
         {/* Açıklama */}
         {card.description && (
           <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-            {card.description}
+            {typeof card.description === 'string' ? card.description : getTestDescription(card)}
           </p>
         )}
       </div>

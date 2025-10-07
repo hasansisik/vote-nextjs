@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/redux/hook";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useLocale } from "next-intl";
 import { createTest, updateTest, getSingleTest } from "@/redux/actions/testActions";
 import { getActiveTestCategories, createTestCategory } from "@/redux/actions/testCategoryActions";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { getCategoryName } from '@/lib/multiLanguageUtils';
 
 interface Option {
   title: {
@@ -55,7 +55,6 @@ export default function CreateTestPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const locale = useLocale();
   const { user } = useSelector((state: any) => state.user);
   const { singleTest, testsLoading, testsError } = useSelector((state: any) => state.test);
   const { activeCategories, loading: categoriesLoading } = useSelector((state: any) => state.testCategory);
@@ -190,7 +189,7 @@ export default function CreateTestPage() {
       setFormData(prev => ({
         ...prev,
         [field]: {
-          ...prev[field as keyof typeof prev],
+          ...(prev[field as keyof typeof prev] as any),
           [language]: value
         }
       }));
@@ -207,7 +206,7 @@ export default function CreateTestPage() {
             return { 
               ...option, 
               [field]: { 
-                ...option[field as keyof Option], 
+                ...(option[field as keyof Option] as any), 
                 [language]: value 
               } 
             };
@@ -803,7 +802,7 @@ export default function CreateTestPage() {
                   <SelectContent>
                     {activeCategories?.map((category: any) => (
                       <SelectItem key={category._id} value={category._id}>
-                        {category.name?.[locale] || category.name?.tr || category.name || 'Kategori'}
+                        {getCategoryName(category)}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 
 export default function VotesPage() {
   const dispatch = useDispatch();
@@ -99,10 +100,12 @@ export default function VotesPage() {
     return "bg-gray-100 text-gray-800";
   };
 
-  const getCategoryName = (categoryId: string) => {
+  const getCategoryNameById = (categoryId: string) => {
     if (!categoryId) return 'Kategori Yok';
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? category.name : 'Bilinmeyen Kategori';
+    if (!category) return 'Bilinmeyen Kategori';
+    
+    return getCategoryName(category);
   };
 
   if (user?.role !== 'admin') {
@@ -206,18 +209,18 @@ export default function VotesPage() {
                         <div className="flex-shrink-0 h-10 w-10 rounded-lg overflow-hidden">
                           <img
                             src={test.coverImage}
-                            alt={test.title}
+                            alt={getTestTitle(test)}
                             className="h-full w-full object-cover"
                           />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-medium text-gray-900 truncate">
-                          {test.title}
+                          {getTestTitle(test)}
                         </h3>
                         {test.description && (
                           <p className="text-xs text-gray-500 truncate mt-1">
-                            {test.description}
+                            {getTestDescription(test)}
                           </p>
                         )}
                       </div>
@@ -225,7 +228,7 @@ export default function VotesPage() {
                   </td>
                   <td className="px-4 py-4">
                     <Badge className={`${getCategoryColor(test.category)} text-xs`}>
-                      {activeCategories?.length > 0 ? getCategoryName(test.category) : 'Yükleniyor...'}
+                      {activeCategories?.length > 0 ? getCategoryNameById(test.category) : 'Yükleniyor...'}
                     </Badge>
                   </td>
                   <td className="px-1 py-2">
