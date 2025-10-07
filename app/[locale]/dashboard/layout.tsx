@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,

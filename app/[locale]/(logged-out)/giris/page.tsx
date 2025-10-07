@@ -4,15 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { login, clearError } from '@/redux/actions/userActions';
 import { toast } from 'sonner';
 import { PasswordInput } from '@/components/ui/password-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 export default function LoginPage() {
+  const t = useTranslations('LoginPage');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { loading, error, isAuthenticated } = useSelector((state: any) => state.user);
@@ -26,13 +29,13 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      toast.success('Giriş başarılı!', {
-        description: 'Hesabınıza başarıyla giriş yaptınız.',
+      toast.success(t('loginSuccess'), {
+        description: t('loginSuccessDescription'),
         duration: 3000,
       });
       router.push('/');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, t]);
 
   useEffect(() => {
     if (error) {
@@ -42,12 +45,12 @@ export default function LoginPage() {
         return;
       }
       
-      toast.error('Giriş hatası!', {
+      toast.error(t('loginError'), {
         description: errorMessage,
         duration: 5000,
       });
     }
-  }, [error]);
+  }, [error, t]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -78,8 +81,8 @@ export default function LoginPage() {
         const errorPayload = result.payload as any;
         
         if (errorPayload?.requiresVerification) {
-          toast.info('E-posta doğrulaması gerekli', {
-            description: 'Hesabınızı aktifleştirmek için e-posta adresinizi doğrulayın.',
+          toast.info(t('verificationRequired'), {
+            description: t('verificationRequiredDescription'),
             duration: 5000,
           });
           // Redirect to verification page
@@ -98,7 +101,7 @@ export default function LoginPage() {
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
               src="/images/logo-vote.png"
-              alt="Vote Logo"
+              alt={t('logoAlt')}
               width={200}
               height={80}
               className="h-20 w-auto"
@@ -106,13 +109,13 @@ export default function LoginPage() {
             />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Hesabınıza giriş yapın
+            {t('title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Hesabınız yok mu?{' '}
-            <a href="/kayit-ol" className="font-medium text-orange-600 hover:text-orange-500">
-              Kayıt olun
-            </a>
+            {t('subtitle')}{' '}
+            <Link href="/kayit-ol" className="font-medium text-orange-600 hover:text-orange-500">
+              {t('signupLink')}
+            </Link>
           </p>
         </div>
 
@@ -121,7 +124,7 @@ export default function LoginPage() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email-address" className="text-sm font-medium text-gray-700">
-                E-posta adresi
+                {t('emailLabel')}
               </Label>
               <Input
                 id="email-address"
@@ -131,17 +134,17 @@ export default function LoginPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="E-posta adresinizi girin"
+                placeholder={t('emailPlaceholder')}
                 className="w-full bg-white"
               />
             </div>
             <PasswordInput
               id="password"
               name="password"
-              label="Şifre"
+              label={t('passwordLabel')}
               value={formData.password}
               onChange={handleChange}
-              placeholder="Şifrenizi girin"
+              placeholder={t('passwordPlaceholder')}
               required
               autoComplete="current-password"
               showPassword={showPassword}
@@ -152,9 +155,9 @@ export default function LoginPage() {
 
           <div className="flex justify-end">
             <div className="text-sm">
-              <a href="/sifremi-unuttum" className="font-medium text-orange-600 hover:text-orange-500">
-                Şifrenizi mi unuttunuz?
-              </a>
+              <Link href="/sifremi-unuttum" className="font-medium text-orange-600 hover:text-orange-500">
+                {t('forgotPassword')}
+              </Link>
             </div>
           </div>
 
@@ -170,14 +173,14 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Giriş yapılıyor...
+                  {t('loginButtonLoading')}
                 </>
               ) : (
                 <>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  Giriş Yap
+                  {t('loginButton')}
                 </>
               )}
             </Button>

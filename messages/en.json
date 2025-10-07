@@ -1,0 +1,21 @@
+{
+  "LoginPage": {
+    "title": "Sign in to your account",
+    "subtitle": "Don't have an account?",
+    "signupLink": "Sign up",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "Enter your email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot your password?",
+    "loginButton": "Sign In",
+    "loginButtonLoading": "Signing in...",
+    "loginSuccess": "Login successful!",
+    "loginSuccessDescription": "You have successfully logged in to your account.",
+    "loginError": "Login error!",
+    "verificationRequired": "Email verification required",
+    "verificationRequiredDescription": "Please verify your email address to activate your account.",
+    "logoAlt": "Vote Logo"
+  }
+}
+

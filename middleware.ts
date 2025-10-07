@@ -1,33 +1,54 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import { NextRequest, NextResponse } from 'next/server';
+import { routing } from './i18n/routing';
+
+// Create the next-intl middleware
+const intlMiddleware = createMiddleware(routing);
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Handle internationalization first
+  const intlResponse = intlMiddleware(request);
   
-  // Public routes that don't require authentication
+  // Public routes that don't require authentication (without locale prefix)
   const publicRoutes = [
     '/',
     '/giris',
-    '/kayit',
+    '/kayit-ol',
     '/sifre-sifirla',
+    '/sifremi-unuttum',
+    '/dogrulama',
     '/email-dogrula',
+    '/hakkimizda',
+    '/gizlilik-politikasi',
+    '/kullanim-sartlari',
     '/api',
     '/_next',
     '/favicon.ico',
     '/oylamalar',
     '/kategoriler',
     '/test',
-    '/category'
+    '/category',
+    '/vote',
+    '/arama',
+    '/bildirimler',
+    '/kategori',
+    '/menu',
+    '/profil'
   ];
+
+  // Extract pathname without locale
+  const pathnameWithoutLocale = pathname.replace(/^\/(tr|en|de|fr)/, '') || '/';
 
   // Check if the current path is a public route
   const isPublicRoute = publicRoutes.some(route => 
-    pathname === route || pathname.startsWith(route)
+    pathnameWithoutLocale === route || pathnameWithoutLocale.startsWith(route)
   );
 
   // If it's a public route, allow access
   if (isPublicRoute) {
-    return NextResponse.next();
+    return intlResponse;
   }
 
   // Check if user is authenticated by looking for accessToken in cookies
@@ -35,12 +56,13 @@ export function middleware(request: NextRequest) {
 
   // If no token and trying to access protected route, redirect to login
   if (!accessToken && !isPublicRoute) {
-    const loginUrl = new URL('/giris', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
+    const locale = pathname.match(/^\/(tr|en|de|fr)/)?.[1] || 'tr';
+    const loginUrl = new URL(`/${locale}/giris`, request.url);
+    loginUrl.searchParams.set('redirect', pathnameWithoutLocale);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  return intlResponse;
 }
 
 export const config = {

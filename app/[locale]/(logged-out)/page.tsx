@@ -2,18 +2,15 @@
 
 import { useEffect, useMemo } from "react";
 import Image from "next/image";
-import StatsBanner from "../../components/stats-banner";
-import HeroSection from "../../components/hero-section";
-import ContentGrid from "../../components/content-grid";
-import FeaturedGrid from "../../components/featured-grid";
-import { useRouter } from "next/navigation";
+import StatsBanner from "@/components/stats-banner";
+import HeroSection from "@/components/hero-section";
+import ContentGrid from "@/components/content-grid";
+import FeaturedGrid from "@/components/featured-grid";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
-import { Skeleton } from "../../components/ui/skeleton";
 
 export default function Home() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeCategories, loading: categoriesLoading } = useAppSelector((state) => state.testCategory);

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import MobileMenu from './mobile-menu';
+import { LanguageSwitcher } from './language-switcher';
 
 export default function Header() {
   const router = useRouter();
@@ -232,6 +233,9 @@ export default function Header() {
                   />
                 </svg>
               </button>
+
+              {/* Dil Seçici */}
+              <LanguageSwitcher />
 
               {/* Giriş Yap ve Kayıt Ol butonları - sadece giriş yapmamış kullanıcılar için */}
               {!isAuthenticated && (

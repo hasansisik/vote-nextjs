@@ -1,0 +1,21 @@
+{
+  "LoginPage": {
+    "title": "Connectez-vous à votre compte",
+    "subtitle": "Vous n'avez pas de compte?",
+    "signupLink": "S'inscrire",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "Entrez votre adresse e-mail",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "loginButton": "Se connecter",
+    "loginButtonLoading": "Connexion en cours...",
+    "loginSuccess": "Connexion réussie!",
+    "loginSuccessDescription": "Vous vous êtes connecté avec succès à votre compte.",
+    "loginError": "Erreur de connexion!",
+    "verificationRequired": "Vérification de l'e-mail requise",
+    "verificationRequiredDescription": "Veuillez vérifier votre adresse e-mail pour activer votre compte.",
+    "logoAlt": "Logo Vote"
+  }
+}
+

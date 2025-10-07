@@ -1,0 +1,21 @@
+{
+  "LoginPage": {
+    "title": "Hesabınıza giriş yapın",
+    "subtitle": "Hesabınız yok mu?",
+    "signupLink": "Kayıt olun",
+    "emailLabel": "E-posta adresi",
+    "emailPlaceholder": "E-posta adresinizi girin",
+    "passwordLabel": "Şifre",
+    "passwordPlaceholder": "Şifrenizi girin",
+    "forgotPassword": "Şifrenizi mi unuttunuz?",
+    "loginButton": "Giriş Yap",
+    "loginButtonLoading": "Giriş yapılıyor...",
+    "loginSuccess": "Giriş başarılı!",
+    "loginSuccessDescription": "Hesabınıza başarıyla giriş yaptınız.",
+    "loginError": "Giriş hatası!",
+    "verificationRequired": "E-posta doğrulaması gerekli",
+    "verificationRequiredDescription": "Hesabınızı aktifleştirmek için e-posta adresinizi doğrulayın.",
+    "logoAlt": "Vote Logo"
+  }
+}
+

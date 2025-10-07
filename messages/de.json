@@ -1,0 +1,21 @@
+{
+  "LoginPage": {
+    "title": "Bei Ihrem Konto anmelden",
+    "subtitle": "Sie haben noch kein Konto?",
+    "signupLink": "Registrieren",
+    "emailLabel": "E-Mail-Adresse",
+    "emailPlaceholder": "Geben Sie Ihre E-Mail-Adresse ein",
+    "passwordLabel": "Passwort",
+    "passwordPlaceholder": "Geben Sie Ihr Passwort ein",
+    "forgotPassword": "Passwort vergessen?",
+    "loginButton": "Anmelden",
+    "loginButtonLoading": "Wird angemeldet...",
+    "loginSuccess": "Anmeldung erfolgreich!",
+    "loginSuccessDescription": "Sie haben sich erfolgreich bei Ihrem Konto angemeldet.",
+    "loginError": "Anmeldefehler!",
+    "verificationRequired": "E-Mail-Verifizierung erforderlich",
+    "verificationRequiredDescription": "Bitte verifizieren Sie Ihre E-Mail-Adresse, um Ihr Konto zu aktivieren.",
+    "logoAlt": "Vote Logo"
+  }
+}
+
