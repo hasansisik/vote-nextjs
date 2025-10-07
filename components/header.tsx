@@ -42,17 +42,6 @@ export default function Header() {
     }
   }, [dispatch, isAuthenticated]);
 
-  // Periodic notification stats update every 15 seconds
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    const interval = setInterval(() => {
-      dispatch(getNotificationStats() as any);
-    });
-
-    return () => clearInterval(interval);
-  }, [dispatch, isAuthenticated]);
-
   // Check if navigation has scroll
   useEffect(() => {
     const checkScroll = () => {
