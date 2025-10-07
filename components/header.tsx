@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
-import { getNotificationStats } from '@/redux/actions/notificationActions';
+import { getNotificationStats, getNotifications } from '@/redux/actions/notificationActions';
 import { 
   User, 
   LogOut, 
@@ -35,12 +35,21 @@ export default function Header() {
     dispatch(getAllMenus({}) as any);
   }, [dispatch]);
 
-  // Load notification stats when user is authenticated
+  // Load notification stats when user is authenticated or on component mount
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(getNotificationStats() as any);
+      dispatch(getNotifications({ page: 1, limit: 50 }) as any);
     }
   }, [dispatch, isAuthenticated]);
+
+  // Load notification stats on component mount (for page refresh scenarios)
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getNotificationStats() as any);
+      dispatch(getNotifications({ page: 1, limit: 50 }) as any);
+    }
+  }, []);
 
   // Check if navigation has scroll
   useEffect(() => {
