@@ -21,7 +21,7 @@ export default function ProfilPage() {
   const { userVotedTests, userVotedTestsLoading, userVotedTestsError } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('votes');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
@@ -194,9 +194,9 @@ export default function ProfilPage() {
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
               {[
+                { id: 'votes', name: 'Kullanılan Oylar' },
                 { id: 'profile', name: 'Profil Bilgileri' },
-                { id: 'password', name: 'Şifre Değiştir' },
-                { id: 'votes', name: 'Oyladığım Testler' }
+                { id: 'password', name: 'Şifre Değiştir' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -389,7 +389,7 @@ export default function ProfilPage() {
             {activeTab === 'votes' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Oyladığım Testler</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Kullanılan Oylar</h3>
                   <span className="text-sm text-gray-500">
                     {userVotedTests?.length || 0} test
                   </span>
