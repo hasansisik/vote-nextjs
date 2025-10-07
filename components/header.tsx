@@ -137,8 +137,8 @@ export default function Header() {
           className="absolute left-1/2 transform -translate-x-1/2 hover:opacity-80 transition-opacity"
         >
           <Image
-            src="/images/logo-vote.png"
-            alt="Ranker Logo"
+            src="/_next/static/logo-vote.png"
+            alt="Logo"
             width={150}
             height={60}
             className="h-12 w-auto"

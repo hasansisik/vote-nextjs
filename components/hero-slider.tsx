@@ -59,33 +59,6 @@ export default function HeroSlider() {
     setCurrentSlide(index);
   };
 
-  // Fallback veri - eğer trend testleri yoksa
-  const fallbackData = [
-    {
-      _id: 'fallback-1',
-      category: 'SPOR',
-      title: 'Dünyanın En İyi Futbolcusu',
-      description: 'Tüm zamanların en büyük futbol efsanesini seç!',
-      coverImage: '/images/v1.jpg',
-      totalVotes: 125000
-    },
-    {
-      _id: 'fallback-2',
-      category: 'YEMEK',
-      title: 'Dünyanın En Lezzetli Yemeği',
-      description: 'Hangi yemek tüm dünyanın gözdesi?',
-      coverImage: '/images/v2.jpg',
-      totalVotes: 89500
-    },
-    {
-      _id: 'fallback-3',
-      category: 'ÜLKE',
-      title: 'Dünyanın En Güzel Ülkesi',
-      description: 'Doğa güzelliği ve kültürün birleştiği yer.',
-      coverImage: '/images/v3.jpg',
-      totalVotes: 156200
-    }
-  ];
 
   // Veri yükleniyorsa loading göster
   if (trendTestsLoading) {
@@ -175,8 +148,13 @@ export default function HeroSlider() {
     );
   }
 
-  // Veri yoksa veya boşsa fallback kullan
-  const displayData: SliderContent[] = (trendTests && trendTests.length > 0) ? trendTests : fallbackData;
+  // Veri yoksa veya boşsa boş array kullan
+  const displayData: SliderContent[] = trendTests || [];
+
+  // Eğer veri yoksa hiçbir şey gösterme
+  if (!displayData || displayData.length === 0) {
+    return null;
+  }
 
   return (
     <div className="bg-black rounded-lg overflow-hidden h-full">
@@ -191,7 +169,7 @@ export default function HeroSlider() {
           <div className="relative h-3/4 p-4">
             <div className="relative w-full h-full rounded-lg overflow-hidden">
               <Image
-                src={displayData[currentSlide].coverImage || '/images/v1.jpg'}
+                src={displayData[currentSlide].coverImage }
                 alt={displayData[currentSlide].title}
                 fill
                 className="object-cover"
@@ -266,7 +244,7 @@ export default function HeroSlider() {
                 {/* Thumbnail */}
                 <div className="w-14 h-10 flex-shrink-0 relative">
                   <Image
-                    src={item.coverImage || '/images/v1.jpg'}
+                    src={item.coverImage }
                     alt={item.title}
                     fill
                     className="object-cover rounded-sm"
@@ -308,7 +286,7 @@ export default function HeroSlider() {
           <div className="relative h-1/2 p-2">
             <div className="relative w-full h-full rounded-lg overflow-hidden">
               <Image
-                src={displayData[currentSlide].coverImage || '/images/v1.jpg'}
+                src={displayData[currentSlide].coverImage }
                 alt={displayData[currentSlide].title}
                 fill
                 className="object-cover"
@@ -380,7 +358,7 @@ export default function HeroSlider() {
                 {/* Thumbnail */}
                 <div className="w-16 h-12 relative">
                   <Image
-                    src={item.coverImage || '/images/v1.jpg'}
+                    src={item.coverImage }
                     alt={item.title}
                     fill
                     className="object-cover rounded-sm"

@@ -37,7 +37,7 @@ export default function Footer() {
               className="mb-4 hover:opacity-80 transition-opacity"
             >
               <Image
-                src="/images/logo-vote.png"
+                src="/_next/static/logo-vote.png"
                 alt="Vote Logo"
                 width={120}
                 height={48}

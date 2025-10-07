@@ -148,7 +148,7 @@ export default function KayitOlPage() {
         <div>
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
-              src="/images/logo-vote.png"
+              src="/_next/static/logo-vote.png"
               alt="Vote Logo"
               width={200}
               height={80}

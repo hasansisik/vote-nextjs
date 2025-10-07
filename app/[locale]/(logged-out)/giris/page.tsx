@@ -100,7 +100,7 @@ export default function LoginPage() {
         <div>
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
-              src="/images/logo-vote.png"
+              src="/_next/static/logo-vote.png"
               alt={t('logoAlt')}
               width={200}
               height={80}
