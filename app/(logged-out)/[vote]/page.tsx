@@ -68,14 +68,14 @@ export default function VotePage() {
 
   // Test'i yükle
   useEffect(() => {
-    if (allTests.length > 0) {
+    if (allTests.length > 0 && voteId) {
       const foundTest = allTests.find((t: any) => t._id === voteId);
-      if (foundTest) {
+      if (foundTest && !test) { // Sadece test yoksa yükle
         setTest(foundTest);
         initializeVoting(foundTest);
       }
     }
-  }, [voteId, allTests]);
+  }, [voteId, allTests, test]);
 
   // Test bittiğinde final rankings oluştur
   useEffect(() => {
@@ -166,12 +166,19 @@ export default function VotePage() {
         const nextOption = remainingOptions[0];
         
         // Aynı seçeneklerin gelmemesini kontrol et
-        if (winner._id === nextOption._id && remainingOptions.length > 1) {
-          // Aynı seçenek çıkarsa bir sonrakini al ve ikisini de kaldır
-          const alternativeOption = remainingOptions[1];
-          console.log(`Sonraki karşılaştırma: ${winner.title} vs ${alternativeOption.title} (aynı seçenek önlendi)`);
-          setCurrentPair([winner, alternativeOption]);
-          setRemainingOptions(prev => prev.slice(2));
+        if (winner._id === nextOption._id) {
+          // Aynı seçenek çıkarsa, farklı bir seçenek bul
+          const differentOption = remainingOptions.find(opt => opt._id !== winner._id);
+          if (differentOption) {
+            console.log(`Sonraki karşılaştırma: ${winner.title} vs ${differentOption.title} (aynı seçenek önlendi)`);
+            setCurrentPair([winner, differentOption]);
+            setRemainingOptions(prev => prev.filter(opt => opt._id !== differentOption._id));
+          } else {
+            // Eğer farklı seçenek yoksa, sadece kazananı al
+            console.log(`Sonraki karşılaştırma: ${winner.title} vs ${nextOption.title}`);
+            setCurrentPair([winner, nextOption]);
+            setRemainingOptions(prev => prev.slice(1));
+          }
         } else {
           console.log(`Sonraki karşılaştırma: ${winner.title} vs ${nextOption.title}`);
           setCurrentPair([winner, nextOption]);
@@ -219,40 +226,40 @@ export default function VotePage() {
     return (
       <div className="min-h-screen bg-gray-50 p-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          <div className="text-center mb-6">
+             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                {getCategoryName(test.category).toUpperCase()} SIRALAMASI
              </h1>
-             <p className="text-lg text-gray-600 mb-2">{test.title}</p>
-             <p className="text-base text-gray-500">{test.description}</p>
+             <p className="text-base text-gray-600 mb-2">{test.title}</p>
+             <p className="text-sm text-gray-500">{test.description}</p>
              
              {/* Statistics */}
              {testResults && (
                <div className="mt-4 p-4 bg-white rounded-lg shadow-md">
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                    <div>
-                     <div className="text-2xl font-bold text-orange-600">
+                     <div className="text-xl font-bold text-orange-600">
                        {testResults.statistics?.totalVotes || 0}
                      </div>
-                     <div className="text-sm text-gray-600">Toplam Oy</div>
+                     <div className="text-xs text-gray-600">Toplam Oy</div>
                    </div>
                    <div>
-                     <div className="text-2xl font-bold text-blue-600">
+                     <div className="text-xl font-bold text-blue-600">
                        {testResults.statistics?.completedSessions || 0}
                      </div>
-                     <div className="text-sm text-gray-600">Tamamlanan Test</div>
+                     <div className="text-xs text-gray-600">Tamamlanan Test</div>
                    </div>
                    <div>
-                     <div className="text-2xl font-bold text-green-600">
+                     <div className="text-xl font-bold text-green-600">
                        {testResults.statistics?.userSessions || 0}
                      </div>
-                     <div className="text-sm text-gray-600">Üye Testi</div>
+                     <div className="text-xs text-gray-600">Üye Testi</div>
                    </div>
                    <div>
-                     <div className="text-2xl font-bold text-purple-600">
+                     <div className="text-xl font-bold text-purple-600">
                        {testResults.statistics?.guestSessions || 0}
                      </div>
-                     <div className="text-sm text-gray-600">Misafir Testi</div>
+                     <div className="text-xs text-gray-600">Misafir Testi</div>
                    </div>
                  </div>
                </div>
@@ -260,14 +267,14 @@ export default function VotePage() {
              
              {/* Final Kazanan */}
              {finalWinner && (
-               <div className="mt-6 p-4 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-2xl shadow-lg">
-                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+               <div className="mt-4 p-3 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-xl shadow-lg">
+                 <h2 className="text-xl md:text-2xl font-bold text-white mb-1">
                    🏆 KAZANAN
                  </h2>
-                 <p className="text-xl font-semibold text-white">
+                 <p className="text-lg font-semibold text-white">
                    {finalWinner.title}
                  </p>
-                 <p className="text-yellow-100 text-sm mt-1">
+                 <p className="text-yellow-100 text-xs mt-1">
                    (En son seçilen seçenek)
                  </p>
                </div>
@@ -307,7 +314,7 @@ export default function VotePage() {
                     )}
                     
                     {/* Image */}
-                    <div className={`relative ${index === 0 ? 'h-72' : 'h-56'}`}>
+                    <div className={`relative ${index === 0 ? 'h-48' : 'h-40'}`}>
                       <Image
                         src={ranking.option.image}
                         alt={ranking.option.title}
@@ -319,22 +326,22 @@ export default function VotePage() {
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
-                    <h3 className={`font-bold text-gray-900 mb-3 ${index === 0 ? 'text-3xl' : 'text-2xl'}`}>
+                  <div className="p-4">
+                    <h3 className={`font-bold text-gray-900 mb-2 ${index === 0 ? 'text-xl' : 'text-lg'}`}>
                       {ranking.option.title}
                     </h3>
                     
                     {/* Score */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-600">
+                    <div className="mb-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-medium text-gray-600">
                           {ranking.option._id === finalWinner?._id ? 'Kazanan (Sizin Seçiminiz)' : 'Diğer Katılımcıların Tercihi'}
                         </span>
-                        <span className="text-2xl font-bold text-orange-600">
+                        <span className="text-lg font-bold text-orange-600">
                           {ranking.score.toFixed(1)}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                         <div 
                           className={`h-full transition-all duration-1000 ${
                             ranking.option._id === finalWinner?._id ? 'bg-green-500' :
@@ -346,8 +353,8 @@ export default function VotePage() {
                     </div>
 
                     {/* Custom Fields */}
-                    <div className="space-y-1 text-sm">
-                      {ranking.option.customFields.slice(0, 3).map((field, idx) => (
+                    <div className="space-y-1 text-xs">
+                      {ranking.option.customFields.slice(0, 2).map((field, idx) => (
                         <div key={idx} className="flex justify-between">
                           <span className="text-gray-600">{field.fieldName}:</span>
                           <span className="font-medium text-gray-900">{field.fieldValue}</span>
@@ -362,23 +369,23 @@ export default function VotePage() {
 
           {/* Rest of Rankings */}
           {finalRankings.length > 3 && (
-            <div className="bg-white rounded-2xl shadow-xl p-6 mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Diğer Sıralamalar</h2>
-              <div className="space-y-3">
+            <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Diğer Sıralamalar</h2>
+              <div className="space-y-2">
                 {finalRankings.slice(3).map((ranking, index) => (
                   <div 
                     key={ranking.option._id}
-                    className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     {/* Position */}
-                    <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
                       ranking.option._id === finalWinner?._id ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'
                     }`}>
                       {ranking.option._id === finalWinner?._id ? '🏆' : index + 4}
                     </div>
 
                     {/* Image */}
-                    <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden">
+                    <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden">
                       <Image
                         src={ranking.option.image}
                         alt={ranking.option.title}
@@ -389,21 +396,21 @@ export default function VotePage() {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 truncate">{ranking.option.title}</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-bold text-gray-900 truncate text-sm">{ranking.option.title}</h4>
+                      <p className="text-xs text-gray-600">
                         {ranking.option.customFields[0]?.fieldValue}
                       </p>
                     </div>
 
                     {/* Score */}
                     <div className="flex-shrink-0 text-right">
-                      <div className="text-xl font-bold text-orange-600">
+                      <div className="text-lg font-bold text-orange-600">
                         {ranking.score.toFixed(1)}%
                       </div>
                       <div className="text-xs text-gray-500 mb-1">
                         {ranking.option._id === finalWinner?._id ? 'Kazanan (Sizin Seçiminiz)' : 'Diğer Katılımcıların Tercihi'}
                       </div>
-                      <div className="w-24 bg-gray-200 rounded-full h-2 mt-1">
+                      <div className="w-20 bg-gray-200 rounded-full h-1.5 mt-1">
                         <div 
                           className={`h-full rounded-full transition-all duration-1000 ${
                             ranking.option._id === finalWinner?._id ? 'bg-green-500' : 'bg-orange-500'
@@ -440,7 +447,7 @@ export default function VotePage() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3">
            <div className="flex items-center justify-between mb-3">
-             <h1 className="text-lg md:text-xl font-bold text-gray-900">
+             <h1 className="text-base md:text-lg font-bold text-gray-900">
                {test.title}
              </h1>
             <button
@@ -469,7 +476,7 @@ export default function VotePage() {
           </div>
           
           <div className="text-center">
-            <p className="text-sm text-gray-600 mb-1">{test.description}</p>
+            <p className="text-xs text-gray-600 mb-1">{test.description}</p>
             <p className="text-xs text-gray-500">{test.headerText}</p>
           </div>
         </div>
@@ -488,7 +495,7 @@ export default function VotePage() {
               } ${selectedOption && selectedOption !== option._id ? 'opacity-50' : ''}`}
             >
               {/* Image */}
-              <div className="relative h-96 md:h-[28rem]">
+              <div className="relative h-64 md:h-80">
                 <Image
                   src={option.image}
                   alt={option.title}
@@ -498,15 +505,15 @@ export default function VotePage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
                 
                 {/* Title */}
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-lg md:text-xl font-bold text-white mb-2">
                     {option.title}
                   </h3>
                   
                   {/* Custom Fields */}
                   <div className="space-y-1">
-                    {option.customFields.slice(0, 4).map((field, idx) => (
-                      <div key={idx} className="flex items-center text-sm">
+                    {option.customFields.slice(0, 3).map((field, idx) => (
+                      <div key={idx} className="flex items-center text-xs">
                         <span className="text-gray-300 font-medium">{field.fieldName}:</span>
                         <span className="ml-2 text-white">{field.fieldValue}</span>
                       </div>
