@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/redux/hook";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -51,7 +51,7 @@ interface Option {
   }>;
 }
 
-export default function CreateTestPage() {
+function CreateTestPageContent() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -893,5 +893,13 @@ export default function CreateTestPage() {
         aspectRatio={1} // Square aspect ratio
       />
     </div>
+  );
+}
+
+export default function CreateTestPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreateTestPageContent />
+    </Suspense>
   );
 }

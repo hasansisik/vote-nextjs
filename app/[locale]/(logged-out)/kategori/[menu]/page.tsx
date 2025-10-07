@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getTestsByCategorySlug } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
+import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 import {
   Pagination,
   PaginationContent,
@@ -37,7 +38,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
       <div className="w-full h-32 lg:h-36 relative mb-2 rounded-lg overflow-hidden">
         <Image
           src={test.coverImage || `/images/v${(index % 8) + 1}.jpg`}
-          alt={test.title}
+          alt={getTestTitle(test)}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 50vw, 25vw"
@@ -52,18 +53,18 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {test.category}
+          {getCategoryName(test.category)}
         </div>
         
         {/* Başlık */}
         <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
-          {test.title}
+          {getTestTitle(test)}
         </h3>
         
         {/* Açıklama */}
         {test.description && (
           <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-            {test.description}
+            {getTestDescription(test)}
           </p>
         )}
       </div>

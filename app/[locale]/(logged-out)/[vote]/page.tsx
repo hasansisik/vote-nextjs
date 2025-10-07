@@ -8,6 +8,7 @@ import { getAllTests, voteOnTest, getTestResults } from '@/redux/actions/testAct
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import ShareDialog from '@/components/ShareDialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue } from '@/lib/multiLanguageUtils';
 
 interface CustomField {
   fieldName: string;
@@ -57,9 +58,9 @@ export default function VotePage() {
   const [finalWinner, setFinalWinner] = useState<Option | null>(null);
 
   // Get category name by ID
-  const getCategoryName = (categoryId: string) => {
+  const getCategoryNameById = (categoryId: string) => {
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? category.name : categoryId;
+    return category ? getCategoryName(category) : categoryId;
   };
 
 
@@ -272,10 +273,10 @@ export default function VotePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-6">
              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-               {getCategoryName(test.category).toUpperCase()} SIRALAMASI
+               {getCategoryNameById(test.category).toUpperCase()} SIRALAMASI
              </h1>
-             <p className="text-base text-gray-600 mb-2">{test.title}</p>
-             <p className="text-sm text-gray-500">{test.description}</p>
+             <p className="text-base text-gray-600 mb-2">{getTestTitle(test)}</p>
+             <p className="text-sm text-gray-500">{getTestDescription(test)}</p>
              
              
           </div>
@@ -316,7 +317,7 @@ export default function VotePage() {
                     <div className={`relative ${index === 0 ? 'h-48' : 'h-40'}`}>
                       <Image
                         src={ranking.option.image}
-                        alt={ranking.option.title}
+                        alt={getOptionTitle(ranking.option)}
                         fill
                         className="object-cover w-full h-full"
                       />
@@ -327,7 +328,7 @@ export default function VotePage() {
                   {/* Content */}
                   <div className="p-4">
                     <h3 className={`font-bold text-gray-900 mb-2 ${index === 0 ? 'text-xl' : 'text-lg'}`}>
-                      {ranking.option.title}
+                      {getOptionTitle(ranking.option)}
                     </h3>
                     
                     {/* Score */}
@@ -355,8 +356,8 @@ export default function VotePage() {
                     <div className="space-y-1 text-xs">
                       {ranking.option.customFields.slice(0, 2).map((field, idx) => (
                         <div key={idx} className="flex justify-between">
-                          <span className="text-gray-600">{field.fieldName}:</span>
-                          <span className="font-medium text-gray-900">{field.fieldValue}</span>
+                          <span className="text-gray-600">{getCustomFieldName(field)}:</span>
+                          <span className="font-medium text-gray-900">{getCustomFieldValue(field)}</span>
                         </div>
                       ))}
                     </div>
@@ -387,7 +388,7 @@ export default function VotePage() {
                     <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden">
                       <Image
                         src={ranking.option.image}
-                        alt={ranking.option.title}
+                        alt={getOptionTitle(ranking.option)}
                         fill
                         className="object-cover w-full h-full"
                       />
@@ -395,9 +396,9 @@ export default function VotePage() {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 truncate text-sm">{ranking.option.title}</h4>
+                      <h4 className="font-bold text-gray-900 truncate text-sm">{getOptionTitle(ranking.option)}</h4>
                       <p className="text-xs text-gray-600">
-                        {ranking.option.customFields[0]?.fieldValue}
+                        {ranking.option.customFields[0] ? getCustomFieldValue(ranking.option.customFields[0]) : ''}
                       </p>
                     </div>
 
@@ -420,9 +421,9 @@ export default function VotePage() {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <ShareDialog
-              testTitle={test.title}
-              testDescription={test.description}
-              categoryName={getCategoryName(test.category)}
+              testTitle={getTestTitle(test)}
+              testDescription={getTestDescription(test)}
+              categoryName={getCategoryNameById(test.category)}
               finalRankings={finalRankings}
               finalWinner={finalWinner}
             >
@@ -452,7 +453,7 @@ export default function VotePage() {
         <div className="max-w-4xl mx-auto px-4 py-3">
            <div className="flex items-center justify-between mb-3">
              <h1 className="text-base md:text-lg font-bold text-gray-900">
-               {test.title}
+               {getTestTitle(test)}
              </h1>
              
              <button
@@ -481,8 +482,8 @@ export default function VotePage() {
           </div>
           
           <div className="text-center">
-            <p className="text-xs text-gray-600 mb-1">{test.description}</p>
-            <p className="text-xs text-gray-500">{test.headerText}</p>
+            <p className="text-xs text-gray-600 mb-1">{getTestDescription(test)}</p>
+            <p className="text-xs text-gray-500">{getTestTitle(test)}</p>
           </div>
         </div>
       </div>
@@ -503,7 +504,7 @@ export default function VotePage() {
               <div className="relative h-64 md:h-80">
                 <Image
                   src={option.image}
-                  alt={option.title}
+                  alt={getOptionTitle(option)}
                   fill
                   className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                 />
@@ -512,15 +513,15 @@ export default function VotePage() {
                 {/* Title */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-lg md:text-xl font-bold text-white mb-2">
-                    {option.title}
+                    {getOptionTitle(option)}
                   </h3>
                   
                   {/* Custom Fields */}
                   <div className="space-y-1">
                     {option.customFields.slice(0, 3).map((field, idx) => (
                       <div key={idx} className="flex items-center text-xs">
-                        <span className="text-gray-300 font-medium">{field.fieldName}:</span>
-                        <span className="ml-2 text-white">{field.fieldValue}</span>
+                        <span className="text-gray-300 font-medium">{getCustomFieldName(field)}:</span>
+                        <span className="ml-2 text-white">{getCustomFieldValue(field)}</span>
                       </div>
                     ))}
                   </div>
@@ -554,7 +555,7 @@ export default function VotePage() {
         <div className="mt-8 text-center">
           <div 
             className="text-gray-600"
-            dangerouslySetInnerHTML={{ __html: test.footerText }}
+            dangerouslySetInnerHTML={{ __html: getTestDescription(test) }}
           />
         </div>
       </div>

@@ -4,15 +4,35 @@ import { server } from "@/config";
 
 // Test Category Action Types
 export interface CreateTestCategoryPayload {
-  name: string;
-  description?: string;
+  name: {
+    tr: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
+  description?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   icon?: string;
   order?: number;
 }
 
 export interface UpdateTestCategoryPayload {
-  name?: string;
-  description?: string;
+  name?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
+  description?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   icon?: string;
   isActive?: boolean;
   order?: number;

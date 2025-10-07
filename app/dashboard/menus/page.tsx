@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -42,7 +41,6 @@ const colorOptions = [
 
 export default function MenusPage() {
   const dispatch = useDispatch();
-  const locale = useLocale();
   const { allMenus, loading, error, message } = useSelector((state: any) => state.menu);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const { enabledLanguages } = useSelector((state: any) => state.settings);
@@ -373,7 +371,7 @@ export default function MenusPage() {
                     <SelectContent>
                       {availableCategories.map((category: any) => (
                         <SelectItem key={category._id} value={category._id}>
-                          {category.name?.[locale] || category.name || 'Kategori'}
+                          {category.name?.tr || category.name || 'Kategori'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -521,7 +519,7 @@ export default function MenusPage() {
                       ></div>
                       <div>
                         <h3 className="font-medium text-gray-900 text-sm">
-                          {menu.name?.[locale] || menu.testCategory?.name?.[locale] || menu.testCategory?.name || 'Bilinmeyen Kategori'}
+                          {menu.name?.tr || menu.testCategory?.name?.tr || menu.testCategory?.name || 'Bilinmeyen Kategori'}
                         </h3>
                         <p className="text-xs text-gray-500">
                           Sıra: {menu.order || 0}

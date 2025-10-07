@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { editProfile, deleteAccount, clearError } from '@/redux/actions/userActions';
 import { getUserVotedTests } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
+import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldValue } from '@/lib/multiLanguageUtils';
 import ProfilePhotoUpload from '@/components/profile-photo-upload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,9 +41,9 @@ export default function ProfilPage() {
 
 
   // Get category name by ID
-  const getCategoryName = (categoryId: string) => {
+  const getCategoryNameById = (categoryId: string) => {
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? category.name : categoryId;
+    return category ? getCategoryName(category) : categoryId;
   };
 
   useEffect(() => {
@@ -416,7 +417,7 @@ export default function ProfilPage() {
                             {votedTest.test.coverImage ? (
                               <Image
                                 src={votedTest.test.coverImage}
-                                alt={votedTest.test.title}
+                                alt={getTestTitle(votedTest.test)}
                                 width={80}
                                 height={80}
                                 className="rounded-lg object-cover"
@@ -431,17 +432,17 @@ export default function ProfilPage() {
                           {/* Test Info */}
                           <div className="flex-1 min-w-0">
                             <h4 className="font-semibold text-gray-900 truncate">
-                              {votedTest.test.title}
+                              {getTestTitle(votedTest.test)}
                             </h4>
                             <p className="text-sm text-gray-600 mt-1 overflow-hidden" style={{
                               display: '-webkit-box',
                               WebkitLineClamp: 2,
                               WebkitBoxOrient: 'vertical'
                             }}>
-                              {votedTest.test.description}
+                              {getTestDescription(votedTest.test)}
                             </p>
                             <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                              <span>Kategori: {getCategoryName(votedTest.test.category)}</span>
+                              <span>Kategori: {getCategoryNameById(votedTest.test.category)}</span>
                               <span>•</span>
                               <span>Toplam Oy: {votedTest.test.totalVotes}</span>
                               <span>•</span>
@@ -458,18 +459,18 @@ export default function ProfilPage() {
                               <div className="flex items-center gap-2">
                                 <Image
                                   src={votedTest.selectedOption.image}
-                                  alt={votedTest.selectedOption.title}
+                                  alt={getOptionTitle(votedTest.selectedOption)}
                                   width={40}
                                   height={40}
                                   className="rounded object-cover"
                                 />
                                 <div className="text-sm text-gray-700 max-w-32">
                                   <div className="font-medium truncate">
-                                    {votedTest.selectedOption.title}
+                                    {getOptionTitle(votedTest.selectedOption)}
                                   </div>
                                   {votedTest.selectedOption.customFields && votedTest.selectedOption.customFields.length > 0 && (
                                     <div className="text-xs text-gray-500 truncate">
-                                      {votedTest.selectedOption.customFields[0].fieldValue}
+                                      {getCustomFieldValue(votedTest.selectedOption.customFields[0])}
                                     </div>
                                   )}
                                 </div>

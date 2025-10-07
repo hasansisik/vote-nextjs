@@ -12,12 +12,16 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { getOptionTitle, getCustomFieldValue } from '@/lib/multiLanguageUtils';
 
 interface Option {
   _id: string;
-  title: string;
+  title: string | { tr: string; en?: string; de?: string; fr?: string; };
   image: string;
-  customFields: Array<{ fieldName: string; fieldValue: string }>;
+  customFields: Array<{ 
+    fieldName: string | { tr: string; en?: string; de?: string; fr?: string; };
+    fieldValue: string | { tr: string; en?: string; de?: string; fr?: string; };
+  }>;
   votes: number;
   winRate: number;
 }
@@ -41,8 +45,8 @@ export default function ShareDialog({
 }: ShareDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const shareText = `${testTitle} oylama sonuçları!\n\nSeçimin: ${finalWinner?.title}\n\nSıralama:\n${finalRankings.slice(0, 5).map((ranking, index) => 
-    `${index + 1}. ${ranking.option.title} - %${ranking.score.toFixed(1)}`
+  const shareText = `${testTitle} oylama sonuçları!\n\nSeçimin: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\nSıralama:\n${finalRankings.slice(0, 5).map((ranking, index) => 
+    `${index + 1}. ${getOptionTitle(ranking.option)} - %${ranking.score.toFixed(1)}`
   ).join('\n')}\n\n#Oylama #${categoryName}`;
 
   const shareUrl = window.location.href;
@@ -135,7 +139,7 @@ export default function ShareDialog({
                   <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-lg">
                     <Image
                       src={finalWinner.image}
-                      alt={finalWinner.title}
+                      alt={getOptionTitle(finalWinner)}
                       fill
                       className="object-cover"
                     />
@@ -176,7 +180,7 @@ export default function ShareDialog({
                   </div>
                   <div className="flex-1">
                     <h4 className="text-base font-bold text-orange-800 ">Seçimin</h4>
-                    <p className="text-md font-semibold text-orange-900">{finalWinner.title}</p>
+                    <p className="text-md font-semibold text-orange-900">{getOptionTitle(finalWinner)}</p>
                     <p className="text-sm text-orange-700">Tebrikler! Bu sizin tercihiniz.</p>
                   </div>
                 </div>
@@ -207,16 +211,16 @@ export default function ShareDialog({
                       <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 shadow-sm">
                         <Image
                           src={ranking.option.image}
-                          alt={ranking.option.title}
+                          alt={getOptionTitle(ranking.option)}
                           fill
                           className="object-cover"
                         />
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <h5 className="font-bold text-gray-900 text-lg">{ranking.option.title}</h5>
+                        <h5 className="font-bold text-gray-900 text-lg">{getOptionTitle(ranking.option)}</h5>
                         <p className="text-sm text-gray-600">
-                          {ranking.option.customFields[0]?.fieldValue}
+                          {ranking.option.customFields[0] ? getCustomFieldValue(ranking.option.customFields[0]) : ''}
                         </p>
                       </div>
 
