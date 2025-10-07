@@ -6,6 +6,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests, voteOnTest, getTestResults } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
+import ShareDialog from '@/components/ShareDialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface CustomField {
   fieldName: string;
@@ -60,6 +62,8 @@ export default function VotePage() {
     return category ? category.name : categoryId;
   };
 
+
+
   // Load tests and categories
   useEffect(() => {
     dispatch(getAllTests({ isActive: true }));
@@ -72,7 +76,7 @@ export default function VotePage() {
       const foundTest = allTests.find((t: any) => t._id === voteId);
       if (foundTest && !test) { // Sadece test yoksa yükle
         setTest(foundTest);
-        initializeVoting(foundTest);
+        initializeVoting(foundTest); // Direkt testi başlat
       }
     }
   }, [voteId, allTests, test]);
@@ -218,14 +222,48 @@ export default function VotePage() {
 
   if (testsLoading || !test || !currentPair) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600">Yükleniyor...</p>
+      <div className="min-h-screen bg-gray-50">
+        {/* Header Skeleton */}
+        <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+          <div className="max-w-4xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-between mb-3">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-6 w-6 rounded" />
+            </div>
+            
+            {/* Progress Bar Skeleton */}
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1">
+                <Skeleton className="h-1.5 w-full rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-8" />
+            </div>
+            
+            <div className="text-center">
+              <Skeleton className="h-3 w-64 mx-auto mb-1" />
+              <Skeleton className="h-3 w-48 mx-auto" />
+            </div>
+          </div>
+        </div>
+
+        {/* Voting Cards Skeleton */}
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Left Card Skeleton */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <Skeleton className="h-64 md:h-80 w-full" />
+            </div>
+            
+            {/* Right Card Skeleton */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <Skeleton className="h-64 md:h-80 w-full" />
+            </div>
+          </div>
         </div>
       </div>
     );
   }
+
 
   // Final ekranı - Yüzdesel Sıralama
   if (isComplete) {
@@ -380,7 +418,22 @@ export default function VotePage() {
           )}
 
           {/* Actions */}
-          <div className="flex justify-center mt-8">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+            <ShareDialog
+              testTitle={test.title}
+              testDescription={test.description}
+              categoryName={getCategoryName(test.category)}
+              finalRankings={finalRankings}
+              finalWinner={finalWinner}
+            >
+              <button className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                </svg>
+                Sonuçları Paylaş
+              </button>
+            </ShareDialog>
+            
             <button
               onClick={() => router.push('/')}
               className="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
@@ -404,14 +457,15 @@ export default function VotePage() {
              <h1 className="text-base md:text-lg font-bold text-gray-900">
                {test.title}
              </h1>
-            <button
-              onClick={() => router.push('/')}
-              className="text-gray-600 hover:text-gray-900 p-1"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+             
+             <button
+               onClick={() => router.push('/')}
+               className="text-gray-600 hover:text-gray-900 p-1"
+             >
+               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+               </svg>
+             </button>
           </div>
           
           {/* Progress Bar */}
