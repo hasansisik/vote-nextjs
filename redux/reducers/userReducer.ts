@@ -88,6 +88,7 @@ interface UserState {
   popularTests: any[];
   categoryTests: any[];
   categoryInfo: any;
+  categoryPagination: any;
   testsLoading: boolean;
   trendTestsLoading: boolean;
   popularTestsLoading: boolean;
@@ -128,6 +129,7 @@ const initialState: UserState = {
   popularTests: [],
   categoryTests: [],
   categoryInfo: null,
+  categoryPagination: null,
   testsLoading: false,
   trendTestsLoading: false,
   popularTestsLoading: false,
@@ -948,6 +950,10 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.categoryTestsLoading = false;
       state.categoryTests = action.payload.tests;
       state.categoryInfo = action.payload.category;
+      // Store pagination info
+      if (action.payload.pagination) {
+        state.categoryPagination = action.payload.pagination;
+      }
     })
     .addCase(getTestsByCategorySlug.rejected, (state, action) => {
       state.categoryTestsLoading = false;

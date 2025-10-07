@@ -6,6 +6,15 @@ import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getTestsByCategorySlug } from '@/redux/actions/userActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 interface CardProps {
   test: any;
@@ -62,13 +71,18 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
   );
 };
 
-
 export default function CategoryPage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { categoryTests, categoryInfo, categoryTestsLoading } = useAppSelector((state) => state.user);
+  const { categoryTests, categoryInfo, categoryTestsLoading, categoryPagination } = useAppSelector((state) => state.user);
   const { activeMenus } = useAppSelector((state) => state.menu);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 20;
 
   // URL'den kategori parametresini al
   const categorySlug = params.menu as string;
@@ -80,9 +94,18 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (categorySlug) {
-      dispatch(getTestsByCategorySlug({ slug: categorySlug, limit: 20 }));
+      setCurrentPage(1); // Reset to first page when category changes
+      dispatch(getTestsByCategorySlug({ slug: categorySlug, limit: itemsPerPage, page: 1 }));
     }
-  }, [dispatch, categorySlug]);
+  }, [dispatch, categorySlug, itemsPerPage]);
+
+  // Update pagination info when data changes
+  useEffect(() => {
+    if (categoryPagination) {
+      setTotalPages(categoryPagination.totalPages || 1);
+      setTotalItems(categoryPagination.totalItems || 0);
+    }
+  }, [categoryPagination]);
 
   const getCategoryDisplayName = (): string => {
     return categoryInfo?.name?.toUpperCase() || categorySlug?.toUpperCase() || 'KATEGORİ';
@@ -139,6 +162,25 @@ export default function CategoryPage() {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    dispatch(getTestsByCategorySlug({ slug: categorySlug, limit: itemsPerPage, page }));
+    // Scroll to top when page changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      handlePageChange(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
   if (categoryTestsLoading) {
     return (
       <div className="min-h-screen">
@@ -172,35 +214,101 @@ export default function CategoryPage() {
 
         {/* Test Listesi */}
         {categoryTests && categoryTests.length > 0 ? (
-          <div className="max-w-7xl mx-auto px-2 lg:px-4 py-1">
-            {/* Desktop Layout - 4x4 Grid */}
-            <div className="hidden lg:block">
-              <div className="grid grid-cols-4 gap-4">
-                {categoryTests.map((test: any, index: number) => (
-                  <Card 
-                    key={test._id} 
-                    test={test}
-                    index={index}
-                    onTestClick={handleTestClick}
-                  />
-                ))}
+          <>
+            <div className="max-w-7xl mx-auto px-2 lg:px-4 py-1">
+              {/* Desktop Layout - 4x4 Grid */}
+              <div className="hidden lg:block">
+                <div className="grid grid-cols-4 gap-4">
+                  {categoryTests.map((test: any, index: number) => (
+                    <Card 
+                      key={test._id} 
+                      test={test}
+                      index={index}
+                      onTestClick={handleTestClick}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile Layout - 2x2 Grid */}
+              <div className="lg:hidden">
+                <div className="grid grid-cols-2 gap-2">
+                  {categoryTests.map((test: any, index: number) => (
+                    <Card 
+                      key={test._id} 
+                      test={test}
+                      index={index}
+                      onTestClick={handleTestClick}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Mobile Layout - 2x2 Grid */}
-            <div className="lg:hidden">
-              <div className="grid grid-cols-2 gap-2">
-                {categoryTests.map((test: any, index: number) => (
-                  <Card 
-                    key={test._id} 
-                    test={test}
-                    index={index}
-                    onTestClick={handleTestClick}
-                  />
-                ))}
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8">
+                <Pagination>
+                  <PaginationContent>
+                    {/* Previous Button */}
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={handlePrevPage}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      >
+                        <span className="hidden sm:block">Önceki</span>
+                      </PaginationPrevious>
+                    </PaginationItem>
+
+                    {/* Page Numbers */}
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(pageNum)}
+                            isActive={currentPage === pageNum}
+                            className="cursor-pointer"
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+
+                    {/* Ellipsis for more pages */}
+                    {totalPages > 5 && currentPage < totalPages - 2 && (
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                    )}
+
+                    {/* Next Button */}
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={handleNextPage}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      >
+                        <span className="hidden sm:block">Sonraki</span>
+                      </PaginationNext>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
-            </div>
-          </div>
+            )}
+
+           
+          </>
         ) : (
           <div className="text-center py-16">
             <div className="text-gray-400 mb-4">
