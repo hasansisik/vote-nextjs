@@ -42,6 +42,17 @@ export default function Header() {
     }
   }, [dispatch, isAuthenticated]);
 
+  // Periodic notification stats update every 15 seconds
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const interval = setInterval(() => {
+      dispatch(getNotificationStats() as any);
+    });
+
+    return () => clearInterval(interval);
+  }, [dispatch, isAuthenticated]);
+
   // Check if navigation has scroll
   useEffect(() => {
     const checkScroll = () => {
@@ -136,108 +147,125 @@ export default function Header() {
 
         {/* Sağdaki ikonlar - desktop için */}
         <div className="hidden md:flex items-center gap-4">
-          {/* Kullanıcı profili - sadece giriş yapmış kullanıcılar için */}
-          {isAuthenticated && (
-            <div className="flex items-center gap-3">
-              <button 
-                onClick={handleProfileClick}
-                className="p-2 hover:bg-orange-50 rounded-full transition-colors"
-                title="Profil"
-              >
-                {(user?.profile?.picture || user?.picture) ? (
-                  <Image
-                    src={user.profile?.picture || user.picture}
-                    alt="Profil"
-                    width={32}
-                    height={32}
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <svg 
-                      className="w-5 h-5 text-gray-600" 
-                      fill="none" 
-                      stroke="currentColor" 
-                      viewBox="0 0 24 24"
-                    >
-                      <path 
-                        strokeLinecap="round" 
-                        strokeLinejoin="round" 
-                        strokeWidth={2} 
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+          {/* Loading state for user authentication */}
+          {loading ? (
+            <>
+              {/* User profile skeleton */}
+              <Skeleton className="w-8 h-8 rounded-full" />
+              {/* Notification skeleton */}
+              <Skeleton className="w-10 h-10 rounded-full" />
+              {/* Search skeleton */}
+              <Skeleton className="w-10 h-10 rounded-full" />
+              {/* Button skeletons */}
+              <Skeleton className="w-20 h-8 rounded-lg" />
+              <Skeleton className="w-20 h-8 rounded-lg" />
+            </>
+          ) : (
+            <>
+              {/* Kullanıcı profili - sadece giriş yapmış kullanıcılar için */}
+              {isAuthenticated && (
+                <div className="flex items-center gap-3">
+                  <button 
+                    onClick={handleProfileClick}
+                    className="p-2 hover:bg-orange-50 rounded-full transition-colors"
+                    title="Profil"
+                  >
+                    {(user?.profile?.picture || user?.picture) ? (
+                      <Image
+                        src={user.profile?.picture || user.picture}
+                        alt="Profil"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full object-cover"
                       />
-                    </svg>
-                  </div>
+                    ) : (
+                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                        <svg 
+                          className="w-5 h-5 text-gray-600" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path 
+                            strokeLinecap="round" 
+                            strokeLinejoin="round" 
+                            strokeWidth={2} 
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {/* Bildirimler ikonu */}
+              <button 
+                onClick={handleNotificationsClick}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                title="Bildirimler"
+              >
+                <Bell className="w-6 h-6 text-gray-700" />
+                {/* Okunmamış bildirim sayısı */}
+                {notificationStats?.unread > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                    {notificationStats.unread > 99 ? '99+' : notificationStats.unread}
+                  </span>
                 )}
               </button>
-            </div>
-          )}
 
-          {/* Bildirimler ikonu */}
-          <button 
-            onClick={handleNotificationsClick}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-            title="Bildirimler"
-          >
-            <Bell className="w-6 h-6 text-gray-700" />
-            {/* Okunmamış bildirim sayısı */}
-            {notificationStats?.unread > 0 && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                {notificationStats.unread > 99 ? '99+' : notificationStats.unread}
-              </span>
-            )}
-          </button>
-
-          {/* Arama ikonu */}
-          <button 
-            onClick={handleSearchClick}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            title="Ara"
-          >
-            <svg 
-              className="w-6 h-6 text-gray-700" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-              />
-            </svg>
-          </button>
-
-          {/* Giriş Yap ve Kayıt Ol butonları - sadece giriş yapmamış kullanıcılar için */}
-          {!isAuthenticated && (
-            <>
+              {/* Arama ikonu */}
               <button 
-                onClick={handleLogin}
-                className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                title="Giriş Yap"
+                onClick={handleSearchClick}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                title="Ara"
               >
-                Giriş Yap
+                <svg 
+                  className="w-6 h-6 text-gray-700" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                  />
+                </svg>
               </button>
-              <button 
-                onClick={handleRegister}
-                className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
-                title="Kayıt Ol"
-              >
-                Kayıt Ol
-              </button>
+
+              {/* Giriş Yap ve Kayıt Ol butonları - sadece giriş yapmamış kullanıcılar için */}
+              {!isAuthenticated && (
+                <>
+                  <button 
+                    onClick={handleLogin}
+                    className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                    title="Giriş Yap"
+                  >
+                    Giriş Yap
+                  </button>
+                  <button 
+                    onClick={handleRegister}
+                    className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
+                    title="Kayıt Ol"
+                  >
+                    Kayıt Ol
+                  </button>
+                </>
+              )}
+
+              {/* Çıkış Yap butonu - sadece giriş yapmış kullanıcılar için */}
+              {isAuthenticated && (
+                <button 
+                  onClick={handleLogout}
+                  className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
+                  title="Çıkış Yap"
+                >
+                  Çıkış Yap
+                </button>
+              )}
             </>
-          )}
-
-          {/* Çıkış Yap butonu - sadece giriş yapmış kullanıcılar için */}
-          {isAuthenticated && (
-            <button 
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
-              title="Çıkış Yap"
-            >
-              Çıkış Yap
-            </button>
           )}
         </div>
       </div>

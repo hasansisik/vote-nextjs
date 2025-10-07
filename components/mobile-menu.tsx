@@ -6,13 +6,16 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
+import { getNotificationStats } from '@/redux/actions/notificationActions';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   User, 
   LogOut, 
   LogIn, 
   UserPlus, 
-  Search
+  Search,
+  Bell
 } from 'lucide-react';
 
 interface MobileMenuProps {
@@ -23,13 +26,21 @@ interface MobileMenuProps {
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector((state: any) => state.user);
+  const { isAuthenticated, user, loading } = useSelector((state: any) => state.user);
   const { allMenus, loading: menuLoading } = useSelector((state: any) => state.menu);
+  const { stats: notificationStats } = useSelector((state: any) => state.notification);
 
   // Load all menus on component mount
   useEffect(() => {
     dispatch(getAllMenus({}) as any);
   }, [dispatch]);
+
+  // Load notification stats when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(getNotificationStats() as any);
+    }
+  }, [dispatch, isAuthenticated]);
 
   const handleLogoClick = () => {
     router.push('/');
@@ -71,6 +82,11 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     }
   };
 
+  const handleMobileNotifications = () => {
+    router.push('/bildirimler');
+    onClose();
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="left" className="w-80">
@@ -92,7 +108,24 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
 
           {/* Kullanıcı bölümü */}
-          {isAuthenticated ? (
+          {loading ? (
+            <div className="space-y-4">
+              {/* User profile skeleton */}
+              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              {/* Button skeletons */}
+              <div className="space-y-2">
+                <Skeleton className="h-12 w-full rounded-lg" />
+                <Skeleton className="h-12 w-full rounded-lg" />
+                <Skeleton className="h-12 w-full rounded-lg" />
+              </div>
+            </div>
+          ) : isAuthenticated ? (
             <div className="space-y-4">
               {/* Kullanıcı profili */}
               <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
@@ -127,7 +160,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 </div>
               </div>
 
-              {/* Profil ve Çıkış butonları */}
+              {/* Profil, Bildirimler ve Çıkış butonları */}
               <div className="space-y-2">
                 <button 
                   onClick={handleProfileClick}
@@ -136,6 +169,21 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
                     <User className="w-5 h-5 text-gray-600" />
                     Profil
+                  </div>
+                </button>
+                <button 
+                  onClick={handleMobileNotifications}
+                  className="w-full text-left rounded-lg transition-colors"
+                >
+                  <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg relative">
+                    <Bell className="w-5 h-5 text-gray-600" />
+                    Bildirimler
+                    {/* Okunmamış bildirim sayısı */}
+                    {notificationStats?.unread > 0 && (
+                      <span className="ml-auto bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        {notificationStats.unread > 99 ? '99+' : notificationStats.unread}
+                      </span>
+                    )}
                   </div>
                 </button>
                 <button 
