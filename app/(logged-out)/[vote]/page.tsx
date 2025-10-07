@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { getAllTests } from '@/redux/actions/userActions';
+import { getAllTests, voteOnTest, getTestResults } from '@/redux/actions/userActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 
 interface CustomField {
@@ -40,7 +40,7 @@ export default function VotePage() {
   const dispatch = useAppDispatch();
   const voteId = params?.vote as string;
   
-  const { allTests, testsLoading } = useAppSelector((state) => state.user);
+  const { allTests, testsLoading, testResults } = useAppSelector((state) => state.user);
   const { activeCategories } = useAppSelector((state) => state.testCategory);
   const [test, setTest] = useState<Test | null>(null);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
@@ -80,18 +80,45 @@ export default function VotePage() {
   // Test bittiğinde final rankings oluştur
   useEffect(() => {
     if (isComplete && test && finalWinner) {
-      // Diğer katılımcıların tercihlerine göre yüzdelendirme yap
-      // Bu örnekte mock data'daki winRate değerlerini kullanıyoruz
-      // Gerçek uygulamada API'den diğer katılımcıların oyları gelecek
+      // Test results'ı getir
+      dispatch(getTestResults(voteId));
+    }
+  }, [isComplete, test, finalWinner, voteId, dispatch]);
+
+  // Test results değiştiğinde final rankings oluştur
+  useEffect(() => {
+    if (testResults && testResults.results) {
+      console.log('Test results alındı:', testResults);
+      const rankings = testResults.results.map((result: any) => ({
+        option: {
+          _id: result._id,
+          title: result.title,
+          image: result.image,
+          customFields: result.customFields,
+          votes: result.votes,
+          winRate: result.winRate
+        },
+        score: result.percentage || result.winRate // Yüzde değerini kullan
+      }));
       
-      const rankings = test.options.map(option => ({
-        option,
-        score: option.winRate // Mock data'daki winRate değerini kullan
-      })).sort((a, b) => b.score - a.score);
+      setFinalRankings(rankings);
+    } else if (isComplete && test && finalWinner) {
+      // Eğer test results henüz gelmediyse, test options'ından ranking oluştur
+      const rankings = test.options.map((option: any) => ({
+        option: {
+          _id: option._id,
+          title: option.title,
+          image: option.image,
+          customFields: option.customFields,
+          votes: option.votes,
+          winRate: option.winRate
+        },
+        score: option.winRate || 0
+      })).sort((a: any, b: any) => b.score - a.score);
       
       setFinalRankings(rankings);
     }
-  }, [isComplete, test, finalWinner]);
+  }, [testResults, isComplete, test, finalWinner]);
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
@@ -156,6 +183,20 @@ export default function VotePage() {
         console.log(`Final kazanan (en son seçilen): ${winner.title}! Test tamamlandı.`);
         setFinalWinner(winner); // En son seçilen seçeneği final kazanan olarak kaydet
         setIsComplete(true);
+        
+        // Vote'u backend'e gönder
+        console.log('Vote gönderiliyor:', { testId: voteId, optionId: winner._id });
+        
+        dispatch(voteOnTest({
+          testId: voteId,
+          optionId: winner._id
+        })).unwrap().then((result) => {
+          console.log('Vote başarılı!', result);
+          // Vote başarılı olduktan sonra test results'ı yenile
+          dispatch(getTestResults(voteId));
+        }).catch((error) => {
+          console.error('Vote hatası:', error);
+        });
       }
       
       setSelectedOption(null);
@@ -184,6 +225,38 @@ export default function VotePage() {
              </h1>
              <p className="text-lg text-gray-600 mb-2">{test.title}</p>
              <p className="text-base text-gray-500">{test.description}</p>
+             
+             {/* Statistics */}
+             {testResults && (
+               <div className="mt-4 p-4 bg-white rounded-lg shadow-md">
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                   <div>
+                     <div className="text-2xl font-bold text-orange-600">
+                       {testResults.statistics?.totalVotes || 0}
+                     </div>
+                     <div className="text-sm text-gray-600">Toplam Oy</div>
+                   </div>
+                   <div>
+                     <div className="text-2xl font-bold text-blue-600">
+                       {testResults.statistics?.completedSessions || 0}
+                     </div>
+                     <div className="text-sm text-gray-600">Tamamlanan Test</div>
+                   </div>
+                   <div>
+                     <div className="text-2xl font-bold text-green-600">
+                       {testResults.statistics?.userSessions || 0}
+                     </div>
+                     <div className="text-sm text-gray-600">Üye Testi</div>
+                   </div>
+                   <div>
+                     <div className="text-2xl font-bold text-purple-600">
+                       {testResults.statistics?.guestSessions || 0}
+                     </div>
+                     <div className="text-sm text-gray-600">Misafir Testi</div>
+                   </div>
+                 </div>
+               </div>
+             )}
              
              {/* Final Kazanan */}
              {finalWinner && (
@@ -267,7 +340,7 @@ export default function VotePage() {
                             ranking.option._id === finalWinner?._id ? 'bg-green-500' :
                             index === 0 ? 'bg-yellow-500' : index === 1 ? 'bg-gray-400' : 'bg-orange-600'
                           }`}
-                          style={{ width: `${ranking.score}%` }}
+                          style={{ width: `${Math.min(ranking.score, 100)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -335,7 +408,7 @@ export default function VotePage() {
                           className={`h-full rounded-full transition-all duration-1000 ${
                             ranking.option._id === finalWinner?._id ? 'bg-green-500' : 'bg-orange-500'
                           }`}
-                          style={{ width: `${ranking.score}%` }}
+                          style={{ width: `${Math.min(ranking.score, 100)}%` }}
                         ></div>
                       </div>
                     </div>
@@ -346,28 +419,15 @@ export default function VotePage() {
           )}
 
           {/* Actions */}
-          <div className="flex gap-4 justify-center mt-8">
+          <div className="flex justify-center mt-8">
             <button
               onClick={() => router.push('/logged-out')}
-              className="px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              className="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
             >
               Ana Sayfaya Dön
             </button>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-8 py-3 border-2 border-gray-900 text-gray-900 rounded-lg hover:bg-gray-900 hover:text-white transition-colors font-medium"
-            >
-              Tekrar Oyla
-            </button>
           </div>
 
-          {/* Footer Text */}
-          <div className="text-center mt-8 p-6 bg-white rounded-2xl shadow-lg">
-            <div 
-              className="text-lg text-gray-700 font-medium"
-              dangerouslySetInnerHTML={{ __html: test.footerText }}
-            />
-          </div>
         </div>
       </div>
     );

@@ -1345,6 +1345,16 @@ export interface VoteTestPayload {
   optionId: string;
 }
 
+export interface VoteSessionPayload {
+  testId: string;
+  sessionId: string;
+  optionId: string;
+}
+
+export interface StartVoteSessionPayload {
+  testId: string;
+}
+
 export const createTest = createAsyncThunk(
   "user/createTest",
   async (formData: CreateTestPayload, thunkAPI) => {
@@ -1611,6 +1621,227 @@ export const getTestsByCategorySlug = createAsyncThunk(
       const url = `${server}/tests/category-slug/${slug}?${queryString}`;
       const response = await axios.get(url);
       return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const getUserVotedTests = createAsyncThunk(
+  "user/getUserVotedTests",
+  async (_, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        return thunkAPI.rejectWithValue("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
+      }
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.get(`${server}/tests/user/voted`, config);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+// Vote Session Actions
+export const startVoteSession = createAsyncThunk(
+  "user/startVoteSession",
+  async (payload: StartVoteSessionPayload, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      };
+      const response = await axios.post(
+        `${server}/vote-sessions/${payload.testId}/start`,
+        {},
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const getVoteSession = createAsyncThunk(
+  "user/getVoteSession",
+  async ({ testId, sessionId }: { testId: string; sessionId: string }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const config = {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      };
+      const response = await axios.get(
+        `${server}/vote-sessions/${testId}/session/${sessionId}`,
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const voteOnOption = createAsyncThunk(
+  "user/voteOnOption",
+  async (payload: VoteSessionPayload, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      };
+      const response = await axios.post(
+        `${server}/vote-sessions/${payload.testId}/session/${payload.sessionId}/vote`,
+        { optionId: payload.optionId },
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const voteOnTest = createAsyncThunk(
+  "user/voteOnTest",
+  async (payload: VoteTestPayload, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      };
+      
+      const response = await axios.post(
+        `${server}/tests/${payload.testId}/vote`,
+        { optionId: payload.optionId },
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const getTestResults = createAsyncThunk(
+  "user/getTestResults",
+  async (testId: string, thunkAPI) => {
+    try {
+      const response = await axios.get(`${server}/tests/${testId}/results`);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const getTestResultsWithStats = createAsyncThunk(
+  "user/getTestResultsWithStats",
+  async (testId: string, thunkAPI) => {
+    try {
+      const response = await axios.get(`${server}/vote-sessions/${testId}/results`);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const getUserVoteSessions = createAsyncThunk(
+  "user/getUserVoteSessions",
+  async (testId: string | undefined, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        return thunkAPI.rejectWithValue("Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.");
+      }
+      
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const url = testId 
+        ? `${server}/vote-sessions/user/sessions/${testId}`
+        : `${server}/vote-sessions/user/sessions`;
+      const response = await axios.get(url, config);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const deleteVoteSession = createAsyncThunk(
+  "user/deleteVoteSession",
+  async ({ testId, sessionId }: { testId: string; sessionId: string }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const config = {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      };
+      const response = await axios.delete(
+        `${server}/vote-sessions/${testId}/session/${sessionId}`,
+        config
+      );
+      return { testId, sessionId, message: response.data.message };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
         error.response && error.response.data.message

@@ -76,7 +76,7 @@ export default function AramaPage() {
   ];
 
   const handleTestClick = (testId: string) => {
-    router.push(`/logged-out/${testId}`);
+    router.push(`/${testId}`);
   };
 
   return (
@@ -87,7 +87,7 @@ export default function AramaPage() {
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-bold text-gray-900">Test Ara</h1>
             <button
-              onClick={() => router.push('/logged-out')}
+              onClick={() => router.push('/')}
               className="text-gray-600 hover:text-gray-900"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

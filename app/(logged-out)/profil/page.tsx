@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
 import { useRouter } from 'next/navigation';
-import { editProfile, deleteAccount, clearError } from '@/redux/actions/userActions';
+import { editProfile, deleteAccount, clearError, getUserVotedTests } from '@/redux/actions/userActions';
+import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import ProfilePhotoUpload from '@/components/profile-photo-upload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,8 @@ import { Textarea } from '@/components/ui/textarea';
 export default function ProfilPage() {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const { user, loading, error, isAuthenticated } = useSelector((state: any) => state.user);
+  const { user, loading, error, isAuthenticated, userVotedTests, userVotedTestsLoading, userVotedTestsError } = useSelector((state: any) => state.user);
+  const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   const [activeTab, setActiveTab] = useState('profile');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -36,6 +38,12 @@ export default function ProfilPage() {
   const [passwordError, setPasswordError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Get category name by ID
+  const getCategoryName = (categoryId: string) => {
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    return category ? category.name : categoryId;
+  };
+
   useEffect(() => {
     if (!isAuthenticated) {
       router.push('/giris');
@@ -50,6 +58,18 @@ export default function ProfilPage() {
       });
     }
   }, [user, isAuthenticated, router]);
+
+  // Load categories when component mounts
+  useEffect(() => {
+    dispatch(getActiveTestCategories());
+  }, [dispatch]);
+
+  // Load voted tests when votes tab is active
+  useEffect(() => {
+    if (activeTab === 'votes' && isAuthenticated) {
+      dispatch(getUserVotedTests());
+    }
+  }, [activeTab, isAuthenticated, dispatch]);
 
   const validatePassword = (password: string) => {
     const minLength = password.length >= 8;
@@ -366,9 +386,127 @@ export default function ProfilPage() {
             {/* Voted Tests Tab */}
             {activeTab === 'votes' && (
               <div>
-                <p className="text-gray-600 text-center py-8">
-                  Oyladığınız testler burada görünecek. Henüz oy verdiğiniz test bulunmuyor.
-                </p>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Oyladığım Testler</h3>
+                  <span className="text-sm text-gray-500">
+                    {userVotedTests?.length || 0} test
+                  </span>
+                </div>
+
+                {userVotedTestsLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+                  </div>
+                ) : userVotedTestsError ? (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+                    {userVotedTestsError}
+                  </div>
+                ) : userVotedTests && userVotedTests.length > 0 ? (
+                  <div className="space-y-4">
+                    {userVotedTests.map((votedTest: any) => (
+                      <div key={votedTest._id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <div className="flex items-start gap-4">
+                          {/* Test Image */}
+                          <div className="flex-shrink-0">
+                            {votedTest.test.coverImage ? (
+                              <Image
+                                src={votedTest.test.coverImage}
+                                alt={votedTest.test.title}
+                                width={80}
+                                height={80}
+                                className="rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <span className="text-gray-400 text-xs">Resim Yok</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Test Info */}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-gray-900 truncate">
+                              {votedTest.test.title}
+                            </h4>
+                            <p className="text-sm text-gray-600 mt-1 overflow-hidden" style={{
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical'
+                            }}>
+                              {votedTest.test.description}
+                            </p>
+                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                              <span>Kategori: {getCategoryName(votedTest.test.category)}</span>
+                              <span>•</span>
+                              <span>Toplam Oy: {votedTest.test.totalVotes}</span>
+                              <span>•</span>
+                              <span>Oyladığınız: {new Date(votedTest.votedAt).toLocaleDateString('tr-TR')}</span>
+                            </div>
+                          </div>
+
+                          {/* Selected Option */}
+                          {votedTest.selectedOption && (
+                            <div className="flex-shrink-0 text-right">
+                              <div className="text-sm font-medium text-gray-900 mb-1">
+                                Seçtiğiniz Seçenek
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Image
+                                  src={votedTest.selectedOption.image}
+                                  alt={votedTest.selectedOption.title}
+                                  width={40}
+                                  height={40}
+                                  className="rounded object-cover"
+                                />
+                                <div className="text-sm text-gray-700 max-w-32">
+                                  <div className="font-medium truncate">
+                                    {votedTest.selectedOption.title}
+                                  </div>
+                                  {votedTest.selectedOption.customFields && votedTest.selectedOption.customFields.length > 0 && (
+                                    <div className="text-xs text-gray-500 truncate">
+                                      {votedTest.selectedOption.customFields[0].fieldValue}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Action Button */}
+                        <div className="mt-4 flex justify-end">
+                          <Button
+                            onClick={() => router.push(`/${votedTest.test._id}`)}
+                            size="sm"
+                            variant="outline"
+                            className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                          >
+                            Testi Tekrar Görüntüle
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz oy verdiğiniz test yok</h3>
+                    <p className="text-gray-600 mb-4">
+                      Testlere oy vermeye başladığınızda, oyladığınız testler burada görünecek.
+                    </p>
+                    <Button
+                      onClick={() => router.push('/')}
+                      size="sm"
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      Testlere Göz At
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>

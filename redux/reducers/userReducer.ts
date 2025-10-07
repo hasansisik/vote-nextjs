@@ -50,6 +50,15 @@ import {
   getTrendTests,
   getPopularTests,
   getTestsByCategorySlug,
+  getUserVotedTests,
+  voteOnTest,
+  getTestResults,
+  startVoteSession,
+  getVoteSession,
+  voteOnOption,
+  getTestResultsWithStats,
+  getUserVoteSessions,
+  deleteVoteSession,
 } from "../actions/userActions";
 
 interface UserState {
@@ -95,6 +104,17 @@ interface UserState {
   popularTestsLoading: boolean;
   categoryTestsLoading: boolean;
   testsError: string | null;
+  currentVoteSession: any;
+  voteSessionLoading: boolean;
+  voteSessionError: string | null;
+  testResultsWithStats: any;
+  userVoteSessions: any[];
+  userVoteSessionsLoading: boolean;
+  userVoteSessionsError: string | null;
+  userVotedTests: any[];
+  userVotedTestsLoading: boolean;
+  userVotedTestsError: string | null;
+  testResults: any;
 }
 
 const initialState: UserState = {
@@ -137,6 +157,17 @@ const initialState: UserState = {
   popularTestsLoading: false,
   categoryTestsLoading: false,
   testsError: null,
+  currentVoteSession: null,
+  voteSessionLoading: false,
+  voteSessionError: null,
+  testResultsWithStats: null,
+  userVoteSessions: [],
+  userVoteSessionsLoading: false,
+  userVoteSessionsError: null,
+  userVotedTests: [],
+  userVotedTestsLoading: false,
+  userVotedTestsError: null,
+  testResults: null,
 };
 
 export const userReducer = createReducer(initialState, (builder) => {
@@ -962,6 +993,120 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.categoryTestsLoading = false;
       state.testsError = action.payload as string;
     })
+    // Get User Voted Tests
+    .addCase(getUserVotedTests.pending, (state) => {
+      state.userVotedTestsLoading = true;
+    })
+    .addCase(getUserVotedTests.fulfilled, (state, action) => {
+      state.userVotedTestsLoading = false;
+      state.userVotedTests = action.payload.votedTests;
+    })
+    .addCase(getUserVotedTests.rejected, (state, action) => {
+      state.userVotedTestsLoading = false;
+      state.userVotedTestsError = action.payload as string;
+    })
+    // Vote on Test
+    .addCase(voteOnTest.pending, (state) => {
+      state.testsLoading = true;
+    })
+    .addCase(voteOnTest.fulfilled, (state, action) => {
+      state.testsLoading = false;
+      state.message = action.payload.message;
+    })
+    .addCase(voteOnTest.rejected, (state, action) => {
+      state.testsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Get Test Results
+    .addCase(getTestResults.pending, (state) => {
+      state.testsLoading = true;
+    })
+    .addCase(getTestResults.fulfilled, (state, action) => {
+      state.testsLoading = false;
+      state.testResults = action.payload;
+    })
+    .addCase(getTestResults.rejected, (state, action) => {
+      state.testsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Start Vote Session
+    .addCase(startVoteSession.pending, (state) => {
+      state.voteSessionLoading = true;
+      state.voteSessionError = null;
+    })
+    .addCase(startVoteSession.fulfilled, (state, action) => {
+      state.voteSessionLoading = false;
+      state.currentVoteSession = action.payload.session;
+      state.voteSessionError = null;
+    })
+    .addCase(startVoteSession.rejected, (state, action) => {
+      state.voteSessionLoading = false;
+      state.voteSessionError = action.payload as string;
+    })
+    // Get Vote Session
+    .addCase(getVoteSession.pending, (state) => {
+      state.voteSessionLoading = true;
+    })
+    .addCase(getVoteSession.fulfilled, (state, action) => {
+      state.voteSessionLoading = false;
+      state.currentVoteSession = action.payload.session;
+    })
+    .addCase(getVoteSession.rejected, (state, action) => {
+      state.voteSessionLoading = false;
+      state.voteSessionError = action.payload as string;
+    })
+    // Vote on Option
+    .addCase(voteOnOption.pending, (state) => {
+      state.voteSessionLoading = true;
+    })
+    .addCase(voteOnOption.fulfilled, (state, action) => {
+      state.voteSessionLoading = false;
+      state.currentVoteSession = action.payload.session;
+      state.message = action.payload.message;
+    })
+    .addCase(voteOnOption.rejected, (state, action) => {
+      state.voteSessionLoading = false;
+      state.voteSessionError = action.payload as string;
+    })
+    // Get Test Results with Stats
+    .addCase(getTestResultsWithStats.pending, (state) => {
+      state.testsLoading = true;
+    })
+    .addCase(getTestResultsWithStats.fulfilled, (state, action) => {
+      state.testsLoading = false;
+      state.testResultsWithStats = action.payload;
+    })
+    .addCase(getTestResultsWithStats.rejected, (state, action) => {
+      state.testsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Get User Vote Sessions
+    .addCase(getUserVoteSessions.pending, (state) => {
+      state.userVoteSessionsLoading = true;
+    })
+    .addCase(getUserVoteSessions.fulfilled, (state, action) => {
+      state.userVoteSessionsLoading = false;
+      state.userVoteSessions = action.payload.sessions;
+    })
+    .addCase(getUserVoteSessions.rejected, (state, action) => {
+      state.userVoteSessionsLoading = false;
+      state.userVoteSessionsError = action.payload as string;
+    })
+    // Delete Vote Session
+    .addCase(deleteVoteSession.pending, (state) => {
+      state.voteSessionLoading = true;
+    })
+    .addCase(deleteVoteSession.fulfilled, (state, action) => {
+      state.voteSessionLoading = false;
+      state.userVoteSessions = state.userVoteSessions.filter(
+        session => session.sessionId !== action.payload.sessionId
+      );
+      state.message = action.payload.message;
+    })
+    .addCase(deleteVoteSession.rejected, (state, action) => {
+      state.voteSessionLoading = false;
+      state.voteSessionError = action.payload as string;
+    })
     // Clear Error
     .addCase(clearError.fulfilled, (state) => {
       state.error = null;
@@ -971,6 +1116,9 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.usersError = null;
       state.messagesError = null;
       state.testsError = null;
+      state.voteSessionError = null;
+      state.userVoteSessionsError = null;
+      state.userVotedTestsError = null;
     });
 });
 
