@@ -14,7 +14,8 @@ import {
   Search, 
   Play,
   Menu,
-  X
+  X,
+  Bell
 } from 'lucide-react';
 import { Skeleton } from './ui/skeleton';
 import MobileMenu from './mobile-menu';
@@ -61,6 +62,10 @@ export default function Header() {
 
   const handleSearchClick = () => {
     router.push('/arama');
+  };
+
+  const handleNotificationsClick = () => {
+    router.push('/bildirimler');
   };
 
   const handleCategoryClick = (categorySlug: string) => {
@@ -158,6 +163,19 @@ export default function Header() {
               </button>
             </div>
           )}
+
+          {/* Bildirimler ikonu */}
+          <button 
+            onClick={handleNotificationsClick}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+            title="Bildirimler"
+          >
+            <Bell className="w-6 h-6 text-gray-700" />
+            {/* Okunmamış bildirim sayısı */}
+            <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+              3
+            </span>
+          </button>
 
           {/* Arama ikonu */}
           <button 

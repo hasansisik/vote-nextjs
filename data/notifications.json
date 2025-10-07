@@ -1,0 +1,96 @@
+{
+  "notifications": [
+    {
+      "id": 1,
+      "type": "new_vote",
+      "title": "Yeni Oylama",
+      "message": "Teknoloji kategorisinde yeni bir oylama başladı!",
+      "time": "2 saat önce",
+      "timestamp": "2024-01-15T10:30:00Z",
+      "isRead": false,
+      "icon": "vote",
+      "color": "blue",
+      "priority": "high",
+      "actionUrl": "/kategori/teknoloji"
+    },
+    {
+      "id": 2,
+      "type": "welcome",
+      "title": "Hoş Geldiniz!",
+      "message": "Sisteme katıldığınız için hoş geldiniz. İlk oylamanızı yapmaya başlayın!",
+      "time": "4 saat önce",
+      "timestamp": "2024-01-15T08:30:00Z",
+      "isRead": false,
+      "icon": "welcome",
+      "color": "green",
+      "priority": "high",
+      "actionUrl": "/"
+    },
+    {
+      "id": 3,
+      "type": "usage_stats",
+      "title": "Kullanım İstatistikleri",
+      "message": "Bu hafta 15 oylama yaptınız ve 3 kategoride aktif oldunuz.",
+      "time": "1 gün önce",
+      "timestamp": "2024-01-14T15:45:00Z",
+      "isRead": true,
+      "icon": "stats",
+      "color": "purple",
+      "priority": "medium",
+      "actionUrl": "/profil"
+    },
+    {
+      "id": 4,
+      "type": "profile_update",
+      "title": "Profil Güncellendi",
+      "message": "Profil bilginizi başarıyla değiştirdiniz.",
+      "time": "2 gün önce",
+      "timestamp": "2024-01-13T12:20:00Z",
+      "isRead": true,
+      "icon": "profile",
+      "color": "blue",
+      "priority": "low",
+      "actionUrl": "/profil"
+    },
+    {
+      "id": 5,
+      "type": "category_vote",
+      "title": "Kategori Oylaması",
+      "message": "Spor kategorisinde yeni bir oylama başladı!",
+      "time": "3 gün önce",
+      "timestamp": "2024-01-12T09:00:00Z",
+      "isRead": true,
+      "icon": "category",
+      "color": "orange",
+      "priority": "medium",
+      "actionUrl": "/kategori/spor"
+    },
+    {
+      "id": 6,
+      "type": "system_maintenance",
+      "title": "Sistem Bakımı",
+      "message": "Sistem bakımı tamamlandı. Yeni özellikler eklendi!",
+      "time": "1 hafta önce",
+      "timestamp": "2024-01-08T11:15:00Z",
+      "isRead": true,
+      "icon": "maintenance",
+      "color": "gray",
+      "priority": "low",
+      "actionUrl": "/hakkimizda"
+    }
+  ],
+  "settings": {
+    "emailNotifications": true,
+    "pushNotifications": true,
+    "voteNotifications": true,
+    "commentNotifications": true,
+    "followNotifications": true,
+    "systemNotifications": false
+  },
+  "stats": {
+    "totalNotifications": 6,
+    "unreadCount": 2,
+    "readCount": 4,
+    "lastChecked": "2024-01-15T12:00:00Z"
+  }
+}
