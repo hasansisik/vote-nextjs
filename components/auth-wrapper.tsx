@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { loadUser } from '@/redux/actions/userActions';
 
 export default function AuthWrapper({ children }: { children: React.ReactNode }) {
-  const dispatch = useDispatch();
-  const { loading, isAuthenticated, user } = useSelector((state: any) => state.user);
+  const dispatch = useAppDispatch();
+  const { loading, isAuthenticated, user } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     // Check if there's a token in localStorage

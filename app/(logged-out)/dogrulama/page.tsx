@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 
-export default function DogrulamaPage() {
+function DogrulamaContent() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -268,5 +268,32 @@ export default function DogrulamaPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function DogrulamaPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="mx-auto flex items-center justify-center mb-4">
+            <Image
+              src="/images/logo-vote.png"
+              alt="Vote Logo"
+              width={200}
+              height={80}
+              className="h-20 w-auto"
+              priority
+            />
+          </div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-600">Yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <DogrulamaContent />
+    </Suspense>
   );
 }
