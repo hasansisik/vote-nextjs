@@ -127,6 +127,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         isActive: false,
         items: [],
       });
+
+      // Add settings section for admin users
+      baseNavMain.push({
+        title: "Sistem Ayarları",
+        url: "/dashboard/settings",
+        icon: Settings2,
+        isActive: false,
+        items: [],
+      });
     }
 
     // Quick access projects

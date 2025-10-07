@@ -5,6 +5,7 @@ import { menuReducer } from "./reducers/menuReducer";
 import { testCategoryReducer } from "./reducers/testCategoryReducer";
 import { testReducer } from "./reducers/testReducer";
 import { notificationReducer } from "./reducers/notificationReducer";
+import { settingsReducer } from "./reducers/settingsReducer";
 
 const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
     testCategory: testCategoryReducer,
     test: testReducer,
     notification: notificationReducer,
+    settings: settingsReducer,
   },
 });
 
