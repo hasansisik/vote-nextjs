@@ -1,42 +1,41 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-
-interface StatsData {
-  totalVotes: string;
-  totalVoters: string;
-  totalRankings: string;
-}
+import React, { useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useAppDispatch } from '@/redux/hook';
+import { getGlobalStats } from '@/redux/actions/userActions';
 
 export default function StatsBanner() {
-  const [statsData, setStatsData] = useState<StatsData>({
-    totalVotes: "0",
-    totalVoters: "0", 
-    totalRankings: "0"
-  });
+  const dispatch = useAppDispatch();
+  const { globalStats, globalStatsLoading } = useSelector((state: any) => state.user);
 
-  // Mock data - gerçek API'dan gelecek
   useEffect(() => {
-    // Simulated API call
-    setTimeout(() => {
-      setStatsData({
-        totalVotes: "2.8 MİLYAR",
-        totalVoters: "156.342",
-        totalRankings: "1.247"
-      });
-    }, 500);
-  }, []);
+    dispatch(getGlobalStats());
+  }, [dispatch]);
 
   return (
-    <div className="bg-white border-t border-b border-gray-200 py-3">
+    <div className="bg-white  py-3">
       <div className="max-w-7xl mx-auto px-4 lg:px-6">
         {/* Desktop Layout */}
         <div className="hidden lg:flex items-center justify-center gap-6 lg:gap-12">
           
-          {/* İlk İstatistik - Toplam Oy */}
+          {/* İlk İstatistik - Toplam Test */}
           <div className="flex items-center gap-2">
             <div className="text-lg lg:text-xl font-bold text-gray-900">
-              {statsData.totalVotes}
+              {globalStatsLoading ? "..." : (globalStats?.totalTests || 0).toLocaleString('tr-TR')}
+            </div>
+            <div className="text-xs text-gray-700 italic uppercase tracking-wide">
+              Test
+            </div>
+          </div>
+
+          {/* Ayırıcı çizgi */}
+          <div className="w-px h-6 bg-gray-300"></div>
+
+          {/* İkinci İstatistik - Toplam Oy */}
+          <div className="flex items-center gap-2">
+            <div className="text-lg lg:text-xl font-bold text-gray-900">
+              {globalStatsLoading ? "..." : (globalStats?.totalVotes || 0).toLocaleString('tr-TR')}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Oy
@@ -46,26 +45,13 @@ export default function StatsBanner() {
           {/* Ayırıcı çizgi */}
           <div className="w-px h-6 bg-gray-300"></div>
 
-          {/* İkinci İstatistik - Toplam Oy Veren */}
-          <div className="flex items-center gap-2">
-            <div className="text-lg lg:text-xl font-bold text-gray-900">
-              {statsData.totalVoters.toLocaleString('tr-TR')}
-            </div>
-            <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Oy Veren
-            </div>
-          </div>
-
-          {/* Ayırıcı çizgi */}
-          <div className="w-px h-6 bg-gray-300"></div>
-
-          {/* Üçüncü İstatistik - Toplam Sıralama */}
+          {/* Üçüncü İstatistik - Toplam Kullanıcı */}
           <div className="flex items-center gap-2">
             <div className="text-lg lg:text-xl font-bold font-bold text-gray-900">
-              {statsData.totalRankings.toLocaleString('tr-TR')}
+              {globalStatsLoading ? "..." : (globalStats?.totalUsers || 0).toLocaleString('tr-TR')}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Sıralama
+              Kullanıcı
             </div>
           </div>
 
@@ -74,33 +60,33 @@ export default function StatsBanner() {
         {/* Mobile Layout */}
         <div className="lg:hidden flex items-center justify-center gap-8">
           
-          {/* İlk İstatistik - Toplam Oy */}
+          {/* İlk İstatistik - Toplam Test */}
           <div className="flex flex-col items-center">
             <div className="text-sm font-bold text-gray-900">
-              {statsData.totalVotes}
+              {globalStatsLoading ? "..." : (globalStats?.totalTests || 0).toLocaleString('tr-TR')}
+            </div>
+            <div className="text-xs text-gray-700 italic uppercase tracking-wide">
+              Test
+            </div>
+          </div>
+
+          {/* İkinci İstatistik - Toplam Oy */}
+          <div className="flex flex-col items-center">
+            <div className="text-sm font-bold text-gray-900">
+              {globalStatsLoading ? "..." : (globalStats?.totalVotes || 0).toLocaleString('tr-TR')}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
               Oy
             </div>
           </div>
 
-          {/* İkinci İstatistik - Toplam Oy Veren */}
+          {/* Üçüncü İstatistik - Toplam Kullanıcı */}
           <div className="flex flex-col items-center">
             <div className="text-sm font-bold text-gray-900">
-              {statsData.totalVoters.toLocaleString('tr-TR')}
+              {globalStatsLoading ? "..." : (globalStats?.totalUsers || 0).toLocaleString('tr-TR')}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Oy Veren
-            </div>
-          </div>
-
-          {/* Üçüncü İstatistik - Toplam Sıralama */}
-          <div className="flex flex-col items-center">
-            <div className="text-sm font-bold text-gray-900">
-              {statsData.totalRankings.toLocaleString('tr-TR')}
-            </div>
-            <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Sıralama
+              Kullanıcı
             </div>
           </div>
 

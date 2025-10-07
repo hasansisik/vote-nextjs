@@ -59,6 +59,7 @@ import {
   getTestResultsWithStats,
   getUserVoteSessions,
   deleteVoteSession,
+  getGlobalStats
 } from "../actions/userActions";
 
 interface UserState {
@@ -115,6 +116,9 @@ interface UserState {
   userVotedTestsLoading: boolean;
   userVotedTestsError: string | null;
   testResults: any;
+  globalStats: any;
+  globalStatsLoading: boolean;
+  globalStatsError: string | null;
 }
 
 const initialState: UserState = {
@@ -168,6 +172,9 @@ const initialState: UserState = {
   userVotedTestsLoading: false,
   userVotedTestsError: null,
   testResults: null,
+  globalStats: null,
+  globalStatsLoading: false,
+  globalStatsError: null,
 };
 
 export const userReducer = createReducer(initialState, (builder) => {
@@ -1119,6 +1126,20 @@ export const userReducer = createReducer(initialState, (builder) => {
       state.voteSessionError = null;
       state.userVoteSessionsError = null;
       state.userVotedTestsError = null;
+      state.globalStatsError = null;
+    })
+    
+    // Get Global Stats
+    .addCase(getGlobalStats.pending, (state) => {
+      state.globalStatsLoading = true;
+    })
+    .addCase(getGlobalStats.fulfilled, (state, action) => {
+      state.globalStatsLoading = false;
+      state.globalStats = action.payload.stats;
+    })
+    .addCase(getGlobalStats.rejected, (state, action) => {
+      state.globalStatsLoading = false;
+      state.globalStatsError = action.payload as string;
     });
 });
 

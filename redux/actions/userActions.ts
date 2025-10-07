@@ -1860,3 +1860,20 @@ export const clearError = createAsyncThunk(
   }
 );
 
+// Get Global Stats Action
+export const getGlobalStats = createAsyncThunk(
+  "user/getGlobalStats",
+  async (_, thunkAPI) => {
+    try {
+      const response = await axios.get(`${server}/tests/stats`);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
