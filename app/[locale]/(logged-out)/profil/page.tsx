@@ -444,7 +444,7 @@ export default function ProfilPage() {
                               {getTestDescription(votedTest.test)}
                             </p>
                             <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                              <span>{t('category')}: {getCategoryNameById(votedTest.test.category)}</span>
+                              <span>{t('category')}: {votedTest.test.categories && votedTest.test.categories.length > 0 ? getCategoryNameById(votedTest.test.categories[0]) : 'Kategori Yok'}</span>
                               <span>•</span>
                               <span>{t('totalVotes')}: {votedTest.test.totalVotes}</span>
                               <span>•</span>

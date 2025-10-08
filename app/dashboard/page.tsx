@@ -204,11 +204,11 @@ export default function DashboardPage() {
                 <div key={test._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${getCategoryColor(test.category).split(' ')[0]}`}></div>
+                      <div className={`w-3 h-3 rounded-full ${getCategoryColor(test.categories?.[0] || '').split(' ')[0]}`}></div>
                       <div>
                         <h3 className="font-semibold">{getTestTitle(test)}</h3>
                         <div className="flex items-center gap-2 text-sm text-gray-500">
-                          <span>{getCategoryNameBySlug(test.category)}</span>
+                          <span>{test.categories && test.categories.length > 0 ? getCategoryNameBySlug(test.categories[0]) : 'Kategori Yok'}</span>
                           <span>•</span>
                           <span>{test.totalVotes || 0} oy</span>
                           <span>•</span>

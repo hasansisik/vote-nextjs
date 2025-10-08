@@ -75,6 +75,10 @@ interface CardProps {
 const Card: React.FC<CardProps> = ({ card, className = "" }) => {
   const router = useRouter();
   
+  // Debug: Log card data
+  console.log('Card data:', card);
+  console.log('Card categories:', card.categories);
+  
   const handleClick = () => {
     // Slug varsa slug'ı kullan, yoksa ID'yi kullan
     const targetId = card.slug || card.testId || `test_${card.id}`;
@@ -105,7 +109,7 @@ const Card: React.FC<CardProps> = ({ card, className = "" }) => {
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {card.categories && card.categories.length > 0 ? card.categories[0] : 'Kategori'}
+          {card.categories && card.categories.length > 0 ? card.categories[0] : 'GENEL'}
         </div>
         
         {/* Başlık */}

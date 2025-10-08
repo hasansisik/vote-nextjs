@@ -9,7 +9,7 @@ import { getAllTests, voteOnTest, getTestResults, getSingleTestBySlug, voteOnTes
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import ShareDialog from '@/components/ShareDialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue, getText } from '@/lib/multiLanguageUtils';
 // Utility functions for slug/ID detection
 const isObjectId = (str: string): boolean => {
   return /^[0-9a-fA-F]{24}$/.test(str);
@@ -618,12 +618,30 @@ export default function VotePage() {
         </div>
 
         {/* Footer Text */}
-        <div className="mt-8 text-center">
-          <div 
-            className="text-gray-600"
-            dangerouslySetInnerHTML={{ __html: getTestDescription(test) }}
-          />
-        </div>
+        {test.footerText && getText(test.footerText, 'tr') && (
+          <div className="mt-8 text-center">
+            {(() => {
+              const footerText = getText(test.footerText, 'tr');
+              // HTML tag kontrolü
+              const hasHtmlTags = /<[^>]*>/g.test(footerText);
+              
+              if (hasHtmlTags) {
+                return (
+                  <div 
+                    className="text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: footerText }}
+                  />
+                );
+              } else {
+                return (
+                  <div className="text-gray-600">
+                    {footerText}
+                  </div>
+                );
+              }
+            })()}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -217,11 +217,8 @@ export default function AramaPage() {
           return test.categories.includes(selectedCategory);
         }
         
-        // Handle single category (backward compatibility)
-        const testCategoryId = typeof test.category === 'string' 
-          ? test.category 
-          : test.category?._id || test.category?.id;
-        return testCategoryId === selectedCategory;
+        // Handle single category (backward compatibility) - should not happen with new data structure
+        return false;
       });
     }
 

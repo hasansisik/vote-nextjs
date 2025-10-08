@@ -187,7 +187,13 @@ export default function CategoryPage() {
     e.preventDefault();
     e.stopPropagation();
     try {
-      router.push(`/${testId}`);
+      // Find the test to get its slug
+      const test = categoryTests?.find((t: any) => t._id === testId);
+      const targetId = test?.slug || testId;
+      console.log('Category Page - Test ID:', testId);
+      console.log('Category Page - Test slug:', test?.slug);
+      console.log('Category Page - Target ID:', targetId);
+      router.push(`/${targetId}`);
     } catch (error) {
       console.error('Navigation error:', error);
     }

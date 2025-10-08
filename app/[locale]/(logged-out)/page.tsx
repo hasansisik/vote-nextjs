@@ -24,7 +24,7 @@ export default function Home() {
   }, [dispatch]);
 
   // Get category name by ID
-  const getCategoryName = (categoryId: string) => {
+  const getCategoryNameById = (categoryId: string) => {
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
     if (category && category.name) {
       // Handle multilingual name structure
@@ -36,6 +36,14 @@ export default function Home() {
 
   // Convert tests to homepage card format - sadece aktif testleri göster
   const homepageData = useMemo(() => {
+    // Debug: Log categories and tests
+    console.log('Homepage - Active categories:', activeCategories);
+    console.log('Homepage - All tests:', allTests);
+    if (allTests?.length > 0) {
+      console.log('Homepage - First test categories:', allTests[0]?.categories);
+      console.log('Homepage - First test slug:', allTests[0]?.slug);
+    }
+    
     return allTests.filter((test: any) => test.isActive).map((test: any, index: number) => {
       // Use local images from public/images folder as fallback
       const imageIndex = index % 8; // Cycle through v1.jpg to v8.jpg
@@ -57,7 +65,10 @@ export default function Home() {
       return {
         id: index + 1,
         testId: test._id, // Gerçek test ID'si
-        categories: [getCategoryName(test.category)], // Changed to categories array
+        slug: test.slug, // Test slug'ı
+        categories: test.categories && test.categories.length > 0 ? test.categories.map((catId: string) => {
+          return getCategoryNameById(catId);
+        }) : [t('general')],
         title: test.title,
         image: imageUrl,
         description: test.description,
