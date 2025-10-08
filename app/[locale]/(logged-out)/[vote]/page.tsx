@@ -144,23 +144,8 @@ export default function VotePage() {
       }));
       
       setFinalRankings(rankings);
-    } else if (isComplete && test && finalWinner && finalRankings.length === 0 && !testResults && resultsFetched) {
-      // Eğer test results henüz gelmediyse ve fetch edildiyse, test options'ından ranking oluştur
-      const rankings = test.options.map((option: any) => ({
-        option: {
-          _id: option._id,
-          title: option.title,
-          image: option.image,
-          customFields: option.customFields,
-          votes: option.votes,
-          winRate: option.winRate
-        },
-        score: option.winRate || 0
-      })).sort((a: any, b: any) => b.score - a.score);
-      
-      setFinalRankings(rankings);
     }
-  }, [testResults, isComplete, test, finalWinner, finalRankings.length, resultsFetched]);
+  }, [testResults, finalRankings.length]);
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
@@ -249,20 +234,14 @@ export default function VotePage() {
         
         if (isSlug(voteId)) {
           dispatch(voteOnTestBySlug({ slug: voteId, optionId: winner._id })).unwrap().then((result) => {
-            // Vote başarılı olduktan sonra test results'ı yenile - sadece henüz alınmamışsa
-            if (!resultsFetched) {
-              setResultsFetched(true);
-              dispatch(getTestResultsBySlug(voteId));
-            }
+            // Vote başarılı olduktan sonra test results'ı yenile
+            dispatch(getTestResultsBySlug(voteId));
           }).catch((error) => {
           });
         } else {
           dispatch(voteOnTest({ testId: voteId, optionId: winner._id })).unwrap().then((result) => {
-            // Vote başarılı olduktan sonra test results'ı yenile - sadece henüz alınmamışsa
-            if (!resultsFetched) {
-              setResultsFetched(true);
-              dispatch(getTestResults(voteId));
-            }
+            // Vote başarılı olduktan sonra test results'ı yenile
+            dispatch(getTestResults(voteId));
           }).catch((error) => {
           });
         }
@@ -319,6 +298,64 @@ export default function VotePage() {
 
   // Final ekranı - Yüzdesel Sıralama
   if (isComplete) {
+    // Eğer final rankings henüz yüklenmediyse skeleton göster
+    if (finalRankings.length === 0) {
+      return (
+        <div className="min-h-screen bg-gray-50 p-4 py-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-6">
+              <Skeleton className="h-8 w-96 mx-auto mb-2" />
+              <Skeleton className="h-6 w-64 mx-auto mb-2" />
+              <Skeleton className="h-4 w-48 mx-auto" />
+            </div>
+
+            {/* Podium Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-end">
+              {[1, 2, 3].map((index) => (
+                <div key={index} className={`${index === 1 ? 'md:order-2' : index === 2 ? 'md:order-1' : 'md:order-3'}`}>
+                  <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                    <div className="relative">
+                      <div className="absolute top-4 left-4 z-10">
+                        <Skeleton className="w-12 h-12 rounded-full" />
+                      </div>
+                      <Skeleton className={`${index === 1 ? 'h-48' : 'h-40'} w-full`} />
+                    </div>
+                    <div className="p-4">
+                      <Skeleton className="h-6 w-32 mb-2" />
+                      <Skeleton className="h-4 w-24 mb-3" />
+                      <Skeleton className="h-2 w-full mb-2" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Other Rankings Skeleton */}
+            <div className="bg-white rounded-xl shadow-lg p-4">
+              <Skeleton className="h-6 w-32 mb-4" />
+              <div className="space-y-2">
+                {[1, 2, 3, 4].map((index) => (
+                  <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+                    <Skeleton className="w-12 h-12 rounded-lg flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <Skeleton className="h-4 w-24 mb-1" />
+                      <Skeleton className="h-3 w-16" />
+                    </div>
+                    <div className="flex-shrink-0 text-right">
+                      <Skeleton className="h-6 w-12 mb-1" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gray-50 p-4 py-8">
         <div className="max-w-6xl mx-auto">

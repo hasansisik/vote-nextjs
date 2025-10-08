@@ -55,12 +55,6 @@ export default async function LocaleLayout({
                 {children}
               </main>
             </AuthWrapper>
-            <Toaster 
-              position="top-right"
-              expand={true}
-              richColors
-              closeButton
-            />
           </Providers>
         </NextIntlClientProvider>
       </body>
