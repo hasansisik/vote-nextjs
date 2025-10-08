@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vote App",
-  description: "Vote management application",
+  title: "Oylama sitesi",
+  description: "Oylama yönetim uygulaması",
 };
 
 export default async function LocaleLayout({
