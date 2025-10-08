@@ -52,6 +52,13 @@ export default function DashboardLayout({
     });
   }, []); // Run only once on mount
 
+  // Check user role and redirect normal users to home page
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      router.push('/');
+    }
+  }, [user, router]);
+
   // Show loading only when actually loading
   if (loading) {
     return (

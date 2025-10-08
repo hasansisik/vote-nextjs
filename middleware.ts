@@ -10,8 +10,18 @@ export function middleware(request: NextRequest) {
 
   // Dashboard routes that should bypass locale prefix completely
   if (pathname.startsWith('/dashboard')) {
+    // Check if user is authenticated by looking for accessToken in cookies
+    const accessToken = request.cookies.get('accessToken')?.value;
+    
+    // If no token, redirect to login
+    if (!accessToken) {
+      const loginUrl = new URL('/giris', request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    
     // Allow access to dashboard without locale prefix
-    // Authentication will be handled by the dashboard layout
+    // Role checking will be handled by the dashboard layout
     return NextResponse.next();
   }
 
@@ -49,8 +59,8 @@ export function middleware(request: NextRequest) {
     '/bildirimler',
     '/kategori',
     '/menu',
-    '/profil',
-    '/dashboard' // Dashboard routes should not have locale prefix
+    '/profil'
+    // Dashboard routes are handled separately above and require authentication
   ];
 
   // Check if the path is a test slug (contains hyphens and lowercase letters/numbers)
