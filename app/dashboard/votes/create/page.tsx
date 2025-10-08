@@ -187,7 +187,7 @@ function CreateTestPageContent() {
           categories: singleTest.categories || [],
           trend: singleTest.trend || false,
           popular: singleTest.popular || false,
-          endDate: singleTest.endDate ? new Date(singleTest.endDate).toISOString().split('T')[0] : "",
+          endDate: singleTest.endDate ? new Date(singleTest.endDate).toISOString().slice(0, 16) : "",
           slug: singleTest.slug || "", // Slug'ı yükle
           isActive: singleTest.isActive !== undefined ? singleTest.isActive : true, // Aktif durumu
         });
@@ -226,7 +226,17 @@ function CreateTestPageContent() {
         }
       }));
     } else {
-      setFormData(prev => ({ ...prev, [field]: value }));
+      setFormData(prev => {
+        // Eğer isActive true yapılıyorsa ve endDate geçmişse, endDate'i temizle
+        if (field === 'isActive' && value === true && prev.endDate) {
+          const endDate = new Date(prev.endDate);
+          const now = new Date();
+          if (endDate < now) {
+            return { ...prev, [field]: value, endDate: "" };
+          }
+        }
+        return { ...prev, [field]: value };
+      });
     }
   };
 
@@ -967,9 +977,14 @@ function CreateTestPageContent() {
                   onChange={(e) => handleInputChange("endDate", e.target.value)}
                   className="w-full"
                 />
-                <p className="text-xs text-gray-500">
-                  Bu tarihte test otomatik olarak pasif hale gelir
-                </p>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <p>Bu tarihte test otomatik olarak pasif hale gelir</p>
+                  {formData.endDate && new Date(formData.endDate) < new Date() && (
+                    <p className="text-orange-600 font-medium">
+                      ⚠️ Bitiş tarihi geçmiş. Test aktif edilirse bu tarih temizlenecek.
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -986,6 +1001,7 @@ function CreateTestPageContent() {
               <li>• Diğer diller isteğe bağlıdır</li>
               <li>• Özel alanlar isteğe bağlıdır</li>
               <li>• Bitiş tarihi belirlenirse test otomatik pasif olur</li>
+              <li>• Geçmiş bitiş tarihi olan test aktif edilirse tarih temizlenir</li>
               <li>• Aktif/Pasif durumu ile testi yayından kaldırabilirsiniz</li>
             </ul>
           </div>

@@ -41,11 +41,6 @@ export default function Home() {
       const imageIndex = index % 8; // Cycle through v1.jpg to v8.jpg
       const localImage = `/images/v${imageIndex + 1}.jpg`;
       
-      // Görsel öncelik sırası:
-      // 1. Test'in coverImage'ı (eğer varsa)
-      // 2. Test'in ilk option'ının görseli (eğer local path ise)
-      // 3. Cloudinary veya başka bir CDN'den gelen görsel
-      // 4. Local fallback görsel
       let imageUrl = localImage;
       
       // Önce coverImage'ı kontrol et
@@ -62,7 +57,7 @@ export default function Home() {
       return {
         id: index + 1,
         testId: test._id, // Gerçek test ID'si
-        category: getCategoryName(test.category),
+        categories: [getCategoryName(test.category)], // Changed to categories array
         title: test.title,
         image: imageUrl,
         description: test.description,
