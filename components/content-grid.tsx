@@ -13,7 +13,7 @@ interface HomepageCard {
   id: number;
   testId?: string; // Gerçek test ID'si
   slug?: string; // Test slug'ı
-  category: string;
+  categories: string[]; // Changed from single category to categories array
   title: string;
   image: string;
   description?: string;
@@ -35,13 +35,25 @@ const ContentGrid: React.FC<ContentGridProps> = ({
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
   // Category name helper function
-  const getCategoryNameById = (category: any) => {
-    if (typeof category === 'string') {
-      // Category ID'si string olarak geliyorsa, activeCategories'den bul
-      const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
+  const getCategoryNameById = (categories: any) => {
+    // Handle categories array - get first category
+    if (Array.isArray(categories) && categories.length > 0) {
+      const firstCategory = categories[0];
+      if (typeof firstCategory === 'string') {
+        // Category ID'si string olarak geliyorsa, activeCategories'den bul
+        const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
+        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+      }
+      return getCategoryName(firstCategory).toUpperCase() || t('category');
+    }
+    
+    // Handle single category (backward compatibility)
+    if (typeof categories === 'string') {
+      const categoryObj = activeCategories?.find((cat: any) => cat._id === categories);
       return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
     }
-    return getCategoryName(category).toUpperCase() || t('category');
+    
+    return getCategoryName(categories).toUpperCase() || t('category');
   };
 
   // Popular testleri yükle
@@ -77,7 +89,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
       id: index + 1,
       testId: test._id, // Gerçek test ID'si
       slug: test.slug, // Test slug'ı
-      category: getCategoryNameById(test.category),
+      categories: test.categories || [], // Use categories array
       title: getTestTitle(test),
       image: imageUrl,
       description: getTestDescription(test),
@@ -205,6 +217,30 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
   const router = useRouter();
+  const { activeCategories } = useSelector((state: any) => state.testCategory);
+  const t = useTranslations('ContentGrid');
+  
+  // Category name helper function
+  const getCategoryNameById = (categories: any) => {
+    // Handle categories array - get first category
+    if (Array.isArray(categories) && categories.length > 0) {
+      const firstCategory = categories[0];
+      if (typeof firstCategory === 'string') {
+        // Category ID'si string olarak geliyorsa, activeCategories'den bul
+        const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
+        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+      }
+      return getCategoryName(firstCategory).toUpperCase() || t('category');
+    }
+    
+    // Handle single category (backward compatibility)
+    if (typeof categories === 'string') {
+      const categoryObj = activeCategories?.find((cat: any) => cat._id === categories);
+      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+    }
+    
+    return getCategoryName(categories).toUpperCase() || t('category');
+  };
   
   const handleClick = () => {
     // Slug varsa slug'ı kullan, yoksa ID'yi kullan
@@ -239,7 +275,7 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
           <div className="flex-1 px-1 py-2 flex flex-col justify-center">
             {/* Kategori */}
             <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-              {card.category}
+              {getCategoryNameById(card.categories)}
             </div>
             
             {/* Başlık */}
@@ -299,7 +335,7 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {card.category}
+          {getCategoryNameById(card.categories)}
         </div>
         
         {/* Başlık */}

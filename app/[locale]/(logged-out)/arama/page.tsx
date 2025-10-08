@@ -23,7 +23,7 @@ interface Test {
   slug?: string;
   title: string;
   description: string;
-  category: string;
+  categories: string[]; // Changed from single category to categories array
   options: any[];
   totalVotes: number;
   isActive: boolean;
@@ -45,16 +45,35 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
   };
 
   // Get category name by ID
-  const getCategoryNameById = (category: any) => {
-    // If category is already an object with multilingual data, use it directly
-    if (typeof category === 'object' && category !== null && category.name) {
-      return getCategoryName(category);
+  const getCategoryNameById = (categories: any) => {
+    // Handle categories array - get first category
+    if (Array.isArray(categories) && categories.length > 0) {
+      const firstCategory = categories[0];
+      
+      // If category is already an object with multilingual data, use it directly
+      if (typeof firstCategory === 'object' && firstCategory !== null && firstCategory.name) {
+        return getCategoryName(firstCategory);
+      }
+      
+      // If category is a string ID, find the corresponding menu
+      if (typeof firstCategory === 'string' && activeMenus && activeMenus.length > 0) {
+        const menu = activeMenus.find((menu: any) => 
+          menu.testCategory && menu.testCategory._id === firstCategory
+        );
+        if (menu && menu.testCategory) {
+          return getCategoryName(menu.testCategory);
+        }
+      }
     }
     
-    // If category is a string ID, find the corresponding menu
-    if (typeof category === 'string' && activeMenus && activeMenus.length > 0) {
+    // Handle single category (backward compatibility)
+    if (typeof categories === 'object' && categories !== null && categories.name) {
+      return getCategoryName(categories);
+    }
+    
+    if (typeof categories === 'string' && activeMenus && activeMenus.length > 0) {
       const menu = activeMenus.find((menu: any) => 
-        menu.testCategory && menu.testCategory._id === category
+        menu.testCategory && menu.testCategory._id === categories
       );
       if (menu && menu.testCategory) {
         return getCategoryName(menu.testCategory);
@@ -89,7 +108,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {getCategoryNameById(test.category)}
+          {getCategoryNameById(test.categories)}
         </div>
         
         {/* Başlık */}
@@ -131,16 +150,35 @@ export default function AramaPage() {
   }, [dispatch]);
 
   // Get category name by ID
-  const getCategoryNameById = (category: any) => {
-    // If category is already an object with multilingual data, use it directly
-    if (typeof category === 'object' && category !== null && category.name) {
-      return getCategoryName(category);
+  const getCategoryNameById = (categories: any) => {
+    // Handle categories array - get first category
+    if (Array.isArray(categories) && categories.length > 0) {
+      const firstCategory = categories[0];
+      
+      // If category is already an object with multilingual data, use it directly
+      if (typeof firstCategory === 'object' && firstCategory !== null && firstCategory.name) {
+        return getCategoryName(firstCategory);
+      }
+      
+      // If category is a string ID, find the corresponding menu
+      if (typeof firstCategory === 'string' && activeMenus && activeMenus.length > 0) {
+        const menu = activeMenus.find((menu: any) => 
+          menu.testCategory && menu.testCategory._id === firstCategory
+        );
+        if (menu && menu.testCategory) {
+          return getCategoryName(menu.testCategory);
+        }
+      }
     }
     
-    // If category is a string ID, find the corresponding menu
-    if (typeof category === 'string' && activeMenus && activeMenus.length > 0) {
+    // Handle single category (backward compatibility)
+    if (typeof categories === 'object' && categories !== null && categories.name) {
+      return getCategoryName(categories);
+    }
+    
+    if (typeof categories === 'string' && activeMenus && activeMenus.length > 0) {
       const menu = activeMenus.find((menu: any) => 
-        menu.testCategory && menu.testCategory._id === category
+        menu.testCategory && menu.testCategory._id === categories
       );
       if (menu && menu.testCategory) {
         return getCategoryName(menu.testCategory);
@@ -174,7 +212,12 @@ export default function AramaPage() {
     // Kategori filtresi
     if (selectedCategory !== 'all') {
       filtered = filtered.filter((test: any) => {
-        // Handle both string category IDs and category objects
+        // Handle categories array - check if selected category is in the array
+        if (Array.isArray(test.categories)) {
+          return test.categories.includes(selectedCategory);
+        }
+        
+        // Handle single category (backward compatibility)
         const testCategoryId = typeof test.category === 'string' 
           ? test.category 
           : test.category?._id || test.category?.id;
@@ -187,7 +230,7 @@ export default function AramaPage() {
       filtered = filtered.filter((test: any) => 
         getTestTitle(test).toLowerCase().includes(searchTerm.toLowerCase()) ||
         getTestDescription(test).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getCategoryNameById(test.category).toLowerCase().includes(searchTerm.toLowerCase())
+        getCategoryNameById(test.categories).toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 

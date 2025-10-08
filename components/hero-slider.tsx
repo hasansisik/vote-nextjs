@@ -12,7 +12,7 @@ import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLa
 interface SliderContent {
   _id: string;
   slug?: string;
-  category: string | { _id: string; name: string };
+  categories: string[]; // Changed from single category to categories array
   title: string;
   description: string;
   coverImage: string;
@@ -32,13 +32,25 @@ export default function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
 
   // Category name helper function
-  const getCategoryNameById = (category: any) => {
-    if (typeof category === 'string') {
-      // Category ID'si string olarak geliyorsa, activeCategories'den bul
-      const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
+  const getCategoryNameById = (categories: any) => {
+    // Handle categories array - get first category
+    if (Array.isArray(categories) && categories.length > 0) {
+      const firstCategory = categories[0];
+      if (typeof firstCategory === 'string') {
+        // Category ID'si string olarak geliyorsa, activeCategories'den bul
+        const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
+        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+      }
+      return getCategoryName(firstCategory).toUpperCase() || t('category');
+    }
+    
+    // Handle single category (backward compatibility)
+    if (typeof categories === 'string') {
+      const categoryObj = activeCategories?.find((cat: any) => cat._id === categories);
       return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
     }
-    return getCategoryName(category).toUpperCase() || t('category');
+    
+    return getCategoryName(categories).toUpperCase() || t('category');
   };
 
   // Sadece trend testleri yükle - kategoriler ana sayfada zaten yükleniyor
@@ -186,7 +198,7 @@ export default function HeroSlider() {
             <div className="text-white space-y-2">
               {/* Kategori */}
               <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">
-                {getCategoryNameById(displayData[currentSlide].category)}
+                {getCategoryNameById(displayData[currentSlide].categories)}
               </div>
               
               {/* Başlık */}
@@ -258,7 +270,7 @@ export default function HeroSlider() {
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                   {/* Kategori */}
                   <div className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
-                    {getCategoryNameById(item.category)}
+                    {getCategoryNameById(item.categories)}
                   </div>
                   
                   {/* Başlık */}
@@ -303,7 +315,7 @@ export default function HeroSlider() {
             <div className="text-white space-y-1">
               {/* Kategori */}
               <div className="text-xs font-semibold uppercase tracking-wider text-gray-300">
-                {getCategoryNameById(displayData[currentSlide].category)}
+                {getCategoryNameById(displayData[currentSlide].categories)}
               </div>
               
               {/* Başlık */}
@@ -372,7 +384,7 @@ export default function HeroSlider() {
                 <div className="text-center">
                   {/* Kategori */}
                   <div className="text-xs font-semibold text-gray-300 uppercase tracking-wide">
-                    {getCategoryNameById(item.category)}
+                    {getCategoryNameById(item.categories)}
                   </div>
                   
                   {/* Başlık */}

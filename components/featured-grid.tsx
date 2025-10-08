@@ -10,7 +10,7 @@ interface HomepageCard {
   id: number;
   testId?: string; // Gerçek test ID'si
   slug?: string; // Test slug'ı
-  category: string;
+  categories: string[]; // Changed from single category to categories array
   title: string;
   image: string;
   description?: string;
@@ -105,7 +105,7 @@ const Card: React.FC<CardProps> = ({ card, className = "" }) => {
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {card.category}
+          {card.categories && card.categories.length > 0 ? card.categories[0] : 'Kategori'}
         </div>
         
         {/* Başlık */}
