@@ -107,15 +107,6 @@ export default function GizlilikPolitikasiPage() {
               </ul>
             </div>
 
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">7. İletişim</h2>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                Gizlilik politikamız hakkında sorularınız varsa veya kişisel verilerinizle 
-                ilgili talepleriniz bulunuyorsa, 
-                <a href="/bize-ulasin" className="text-red-500 hover:text-red-600 ml-1">bizimle iletişime geçebilirsiniz</a>.
-              </p>
-            </div>
-
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-yellow-800 mb-3">Önemli Not</h3>
               <p className="text-yellow-700">

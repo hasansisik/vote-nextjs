@@ -141,15 +141,6 @@ export default function KullanimSartlariPage() {
                 durumunda Türkiye Cumhuriyeti mahkemeleri yetkilidir.
               </p>
             </div>
-
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">10. İletişim</h2>
-              <p className="text-gray-600 leading-relaxed mb-4">
-                Kullanım şartları hakkında sorularınız varsa, 
-                <a href="/bize-ulasin" className="text-red-500 hover:text-red-600 ml-1">bizimle iletişime geçebilirsiniz</a>.
-              </p>
-            </div>
-
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold text-blue-800 mb-3">Kabul</h3>
               <p className="text-blue-700">
