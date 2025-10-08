@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getTestsByCategorySlug } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
-import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getText } from '@/lib/multiLanguageUtils';
 import {
   Pagination,
   PaginationContent,
@@ -121,15 +121,20 @@ export default function CategoryPage() {
   }, [categoryPagination]);
 
   const getCategoryDisplayName = (): string => {
-    return categoryInfo?.name?.toUpperCase() || categorySlug?.toUpperCase() || 'KATEGORİ';
+    if (categoryInfo?.name) {
+      const categoryName = getText(categoryInfo.name, 'tr');
+      return categoryName ? categoryName.toUpperCase() : categorySlug?.toUpperCase() || 'KATEGORİ';
+    }
+    return categorySlug?.toUpperCase() || 'KATEGORİ';
   };
 
   const getCategoryColor = (): string => {
     // Önce menü verilerinden rengi bul
     if (activeMenus && activeMenus.length > 0 && categoryInfo) {
+      const categoryName = getText(categoryInfo.name, 'tr');
       const menu = activeMenus.find((menu: any) => 
         menu.testCategory && menu.testCategory.name && 
-        menu.testCategory.name.toLowerCase() === categoryInfo.name.toLowerCase()
+        menu.testCategory.name.toLowerCase() === categoryName.toLowerCase()
       );
       if (menu && menu.color) {
         return 'custom-color';
@@ -154,9 +159,10 @@ export default function CategoryPage() {
   const getCategoryColorStyle = (): React.CSSProperties => {
     // Önce menü verilerinden rengi bul
     if (activeMenus && activeMenus.length > 0 && categoryInfo) {
+      const categoryName = getText(categoryInfo.name, 'tr');
       const menu = activeMenus.find((menu: any) => 
         menu.testCategory && menu.testCategory.name && 
-        menu.testCategory.name.toLowerCase() === categoryInfo.name.toLowerCase()
+        menu.testCategory.name.toLowerCase() === categoryName.toLowerCase()
       );
       if (menu && menu.color) {
         return { backgroundColor: menu.color };

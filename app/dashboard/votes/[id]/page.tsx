@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
 import { getAllTests, deleteTest } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
+import { getText } from "@/lib/multiLanguageUtils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,7 +86,11 @@ function TestDetailPageClient({ testId }: { testId: string }) {
 
   const getCategoryName = (categoryId: string) => {
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? category.name : categoryId;
+    if (category && category.name) {
+      // Handle multilingual name structure
+      return getText(category.name, 'tr') || categoryId;
+    }
+    return categoryId;
   };
 
   if (user?.role !== 'admin') {

@@ -10,6 +10,7 @@ import FeaturedGrid from "@/components/featured-grid";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
+import { getText } from "@/lib/multiLanguageUtils";
 
 export default function Home() {
   const t = useTranslations('HomePage');
@@ -25,7 +26,12 @@ export default function Home() {
   // Get category name by ID
   const getCategoryName = (categoryId: string) => {
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? category.name.toUpperCase() : t('general');
+    if (category && category.name) {
+      // Handle multilingual name structure
+      const categoryName = getText(category.name, 'tr');
+      return categoryName ? categoryName.toUpperCase() : t('general');
+    }
+    return t('general');
   };
 
   // Convert tests to homepage card format - sadece aktif testleri göster
