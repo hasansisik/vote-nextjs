@@ -46,13 +46,21 @@ export function middleware(request: NextRequest) {
     '/dashboard' // Dashboard routes should not have locale prefix
   ];
 
+  // Check if the path is a test slug (contains hyphens and lowercase letters/numbers)
+  const isTestSlug = (path: string) => {
+    // Remove leading slash
+    const cleanPath = path.replace(/^\//, '');
+    // Check if it matches slug pattern: lowercase letters, numbers, and hyphens
+    return /^[a-z0-9-]+$/.test(cleanPath) && cleanPath.length > 0;
+  };
+
   // Extract pathname without locale
   const pathnameWithoutLocale = pathname.replace(/^\/(tr|en|de|fr)/, '') || '/';
 
-  // Check if the current path is a public route
+  // Check if the current path is a public route or a test slug
   const isPublicRoute = publicRoutes.some(route => 
     pathnameWithoutLocale === route || pathnameWithoutLocale.startsWith(route)
-  );
+  ) || isTestSlug(pathnameWithoutLocale);
 
   // If it's a public route, allow access
   if (isPublicRoute) {

@@ -27,6 +27,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { getCategoryName } from '@/lib/multiLanguageUtils';
 
+// Utility function to generate slug
+const generateSlug = (text: string): string => {
+  if (!text) return '';
+  
+  return text
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 interface Option {
   title: {
     tr: string;
@@ -92,6 +110,8 @@ function CreateTestPageContent() {
     trend: false,
     popular: false,
     endDate: "",
+    slug: "", // Slug alanı eklendi
+    isActive: true, // Aktif/Pasif durumu
   });
 
   const [options, setOptions] = useState<Option[]>([
@@ -168,6 +188,8 @@ function CreateTestPageContent() {
           trend: singleTest.trend || false,
           popular: singleTest.popular || false,
           endDate: singleTest.endDate ? new Date(singleTest.endDate).toISOString().split('T')[0] : "",
+          slug: singleTest.slug || "", // Slug'ı yükle
+          isActive: singleTest.isActive !== undefined ? singleTest.isActive : true, // Aktif durumu
         });
         
         if (singleTest.options && singleTest.options.length > 0) {
@@ -183,6 +205,16 @@ function CreateTestPageContent() {
       }
     }
   }, [isEditMode, editId, singleTest]);
+
+  // Auto-generate slug when Turkish title changes
+  useEffect(() => {
+    if (formData.title.tr && (!formData.slug || isEditMode)) {
+      const newSlug = generateSlug(formData.title.tr);
+      if (newSlug !== formData.slug) {
+        setFormData(prev => ({ ...prev, slug: newSlug }));
+      }
+    }
+  }, [formData.title.tr, formData.slug, isEditMode]);
 
   const handleInputChange = (field: string, value: string | boolean, language?: "tr" | "en" | "de" | "fr") => {
     if (language && typeof value === 'string') {
@@ -489,6 +521,7 @@ function CreateTestPageContent() {
               <Plus className="h-4 w-4 mr-1" />
               Kategori Yönet
             </Button>
+            
             
             <Button
               type="button"
@@ -841,6 +874,39 @@ function CreateTestPageContent() {
                 />
               </div>
 
+              {/* Active Switch */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Aktif
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    Testin aktif/pasif durumu
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.isActive}
+                  onCheckedChange={(checked: boolean) => handleInputChange("isActive", checked)}
+                />
+              </div>
+
+              {/* Slug */}
+              <div className="space-y-2">
+                <Label htmlFor="slug" className="text-sm font-medium text-gray-700">
+                  URL Slug
+                </Label>
+                <Input
+                  id="slug"
+                  value={formData.slug}
+                  onChange={(e) => handleInputChange("slug", e.target.value)}
+                  placeholder="url-slug"
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500">
+                  URL'de görünecek kısım (otomatik oluşturulur)
+                </p>
+              </div>
+
               {/* End Date */}
               <div className="space-y-2">
                 <Label htmlFor="endDate" className="text-sm font-medium text-gray-700">
@@ -871,6 +937,7 @@ function CreateTestPageContent() {
               <li>• Diğer diller isteğe bağlıdır</li>
               <li>• Özel alanlar isteğe bağlıdır</li>
               <li>• Bitiş tarihi belirlenirse test otomatik pasif olur</li>
+              <li>• Aktif/Pasif durumu ile testi yayından kaldırabilirsiniz</li>
             </ul>
           </div>
         </div>

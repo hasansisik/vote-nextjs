@@ -11,6 +11,7 @@ import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLa
 
 interface SliderContent {
   _id: string;
+  slug?: string;
   category: string | { _id: string; name: string };
   title: string;
   description: string;
@@ -165,7 +166,7 @@ export default function HeroSlider() {
         {/* Ana Slider - Sol Taraf */}
         <div 
           className="w-2/3 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => router.push(`/${displayData[currentSlide]._id}`)}
+          onClick={() => router.push(`/${displayData[currentSlide].slug || displayData[currentSlide]._id}`)}
         >
           {/* Üst Kısım - Fotoğraf */}
           <div className="relative h-3/4 p-4">
@@ -239,7 +240,7 @@ export default function HeroSlider() {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`/${item._id}`);
+                    router.push(`/${item.slug || item._id}`);
                   }}
                   style={{ height: 'calc(20% - 4px)' }}
                 >
@@ -282,7 +283,7 @@ export default function HeroSlider() {
         {/* Ana Slider */}
         <div 
           className="flex-1 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => router.push(`/${displayData[currentSlide]._id}`)}
+          onClick={() => router.push(`/${displayData[currentSlide].slug || displayData[currentSlide]._id}`)}
         >
           {/* Üst Kısım - Fotoğraf */}
           <div className="relative h-1/2 p-2">
@@ -353,7 +354,7 @@ export default function HeroSlider() {
                 }`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  router.push(`/${item._id}`);
+                  router.push(`/${item.slug || item._id}`);
                 }}
                 style={{ minWidth: '120px' }}
               >

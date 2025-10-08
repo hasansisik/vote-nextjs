@@ -9,6 +9,7 @@ import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLa
 interface HomepageCard {
   id: number;
   testId?: string; // Gerçek test ID'si
+  slug?: string; // Test slug'ı
   category: string;
   title: string;
   image: string;
@@ -75,8 +76,8 @@ const Card: React.FC<CardProps> = ({ card, className = "" }) => {
   const router = useRouter();
   
   const handleClick = () => {
-    // Gerçek test ID'sini kullan, yoksa fallback olarak card.id kullan
-    const targetId = card.testId || `test_${card.id}`;
+    // Slug varsa slug'ı kullan, yoksa ID'yi kullan
+    const targetId = card.slug || card.testId || `test_${card.id}`;
     router.push(`/${targetId}`);
   };
 

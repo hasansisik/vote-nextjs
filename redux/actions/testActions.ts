@@ -221,6 +221,28 @@ export const getSingleTest = createAsyncThunk(
   }
 );
 
+export const getSingleTestBySlug = createAsyncThunk(
+  "test/getSingleTestBySlug",
+  async (slug: string, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const response = await axios.get(`${server}/tests/slug/${slug}`, config);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
 export const updateTest = createAsyncThunk(
   "test/updateTest",
   async ({ id, formData }: { id: string; formData: UpdateTestPayload }, thunkAPI) => {
@@ -540,11 +562,56 @@ export const voteOnTest = createAsyncThunk(
   }
 );
 
+export const voteOnTestBySlug = createAsyncThunk(
+  "test/voteOnTestBySlug",
+  async (payload: { slug: string; optionId: string }, thunkAPI) => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      
+      const config = {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      };
+      
+      const response = await axios.post(
+        `${server}/tests/slug/${payload.slug}/vote`,
+        { optionId: payload.optionId },
+        config
+      );
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
 export const getTestResults = createAsyncThunk(
   "test/getTestResults",
   async (testId: string, thunkAPI) => {
     try {
       const response = await axios.get(`${server}/tests/${testId}/results`);
+      return response.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message
+      );
+    }
+  }
+);
+
+export const getTestResultsBySlug = createAsyncThunk(
+  "test/getTestResultsBySlug",
+  async (slug: string, thunkAPI) => {
+    try {
+      const response = await axios.get(`${server}/tests/slug/${slug}/results`);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -650,3 +717,4 @@ export const clearTestError = createAsyncThunk(
     return null;
   }
 );
+

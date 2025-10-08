@@ -484,7 +484,7 @@ export default function ProfilPage() {
                         {/* Action Button */}
                         <div className="mt-4 flex justify-end">
                           <Button
-                            onClick={() => router.push(`/${votedTest.test._id}`)}
+                            onClick={() => router.push(`/${votedTest.test.slug || votedTest.test._id}`)}
                             size="sm"
                             variant="outline"
                             className="text-orange-600 border-orange-600 hover:bg-orange-50"

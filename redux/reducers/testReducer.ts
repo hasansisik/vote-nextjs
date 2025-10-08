@@ -3,6 +3,7 @@ import {
   createTest,
   getAllTests,
   getSingleTest,
+  getSingleTestBySlug,
   updateTest,
   deleteTest,
   resetTestVotes,
@@ -11,7 +12,9 @@ import {
   getTestsByCategorySlug,
   getUserVotedTests,
   voteOnTest,
+  voteOnTestBySlug,
   getTestResults,
+  getTestResultsBySlug,
   startVoteSession,
   getVoteSession,
   voteOnOption,
@@ -125,6 +128,18 @@ export const testReducer = createReducer(initialState, (builder) => {
       state.singleTest = action.payload.test;
     })
     .addCase(getSingleTest.rejected, (state, action) => {
+      state.testsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Get Single Test by Slug
+    .addCase(getSingleTestBySlug.pending, (state) => {
+      state.testsLoading = true;
+    })
+    .addCase(getSingleTestBySlug.fulfilled, (state, action) => {
+      state.testsLoading = false;
+      state.singleTest = action.payload.test;
+    })
+    .addCase(getSingleTestBySlug.rejected, (state, action) => {
       state.testsLoading = false;
       state.testsError = action.payload as string;
     })
@@ -246,6 +261,18 @@ export const testReducer = createReducer(initialState, (builder) => {
       state.testsLoading = false;
       state.testsError = action.payload as string;
     })
+    // Vote on Test by Slug
+    .addCase(voteOnTestBySlug.pending, (state) => {
+      state.testsLoading = true;
+    })
+    .addCase(voteOnTestBySlug.fulfilled, (state, action) => {
+      state.testsLoading = false;
+      state.message = action.payload.message;
+    })
+    .addCase(voteOnTestBySlug.rejected, (state, action) => {
+      state.testsLoading = false;
+      state.testsError = action.payload as string;
+    })
     // Get Test Results
     .addCase(getTestResults.pending, (state) => {
       state.testsLoading = true;
@@ -255,6 +282,18 @@ export const testReducer = createReducer(initialState, (builder) => {
       state.testResults = action.payload;
     })
     .addCase(getTestResults.rejected, (state, action) => {
+      state.testsLoading = false;
+      state.testsError = action.payload as string;
+    })
+    // Get Test Results by Slug
+    .addCase(getTestResultsBySlug.pending, (state) => {
+      state.testsLoading = true;
+    })
+    .addCase(getTestResultsBySlug.fulfilled, (state, action) => {
+      state.testsLoading = false;
+      state.testResults = action.payload;
+    })
+    .addCase(getTestResultsBySlug.rejected, (state, action) => {
       state.testsLoading = false;
       state.testsError = action.payload as string;
     })

@@ -12,6 +12,7 @@ import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLa
 interface HomepageCard {
   id: number;
   testId?: string; // Gerçek test ID'si
+  slug?: string; // Test slug'ı
   category: string;
   title: string;
   image: string;
@@ -75,6 +76,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
     return {
       id: index + 1,
       testId: test._id, // Gerçek test ID'si
+      slug: test.slug, // Test slug'ı
       category: getCategoryNameById(test.category),
       title: getTestTitle(test),
       image: imageUrl,
@@ -205,8 +207,8 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
   const router = useRouter();
   
   const handleClick = () => {
-    // Gerçek test ID'sini kullan, yoksa fallback olarak card.id kullan
-    const targetId = card.testId || `test_${card.id}`;
+    // Slug varsa slug'ı kullan, yoksa ID'yi kullan
+    const targetId = card.slug || card.testId || `test_${card.id}`;
     router.push(`/${targetId}`);
   };
   

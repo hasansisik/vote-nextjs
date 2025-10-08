@@ -5,11 +5,19 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { getAllTests, voteOnTest, getTestResults } from '@/redux/actions/testActions';
+import { getAllTests, voteOnTest, getTestResults, getSingleTestBySlug, voteOnTestBySlug, getTestResultsBySlug } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import ShareDialog from '@/components/ShareDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue } from '@/lib/multiLanguageUtils';
+// Utility functions for slug/ID detection
+const isObjectId = (str: string): boolean => {
+  return /^[0-9a-fA-F]{24}$/.test(str);
+};
+
+const isSlug = (str: string): boolean => {
+  return /^[a-z0-9-]+$/.test(str);
+};
 
 interface CustomField {
   fieldName: string;
@@ -74,23 +82,45 @@ export default function VotePage() {
     dispatch(getActiveTestCategories());
   }, [dispatch]);
 
-  // Test'i yükle
+  // Test'i yükle - slug veya ID ile
   useEffect(() => {
-    if (allTests.length > 0 && voteId) {
-      const foundTest = allTests.find((t: any) => t._id === voteId);
-      if (foundTest && !test) { // Sadece test yoksa yükle
-        setTest(foundTest);
-        initializeVoting(foundTest); // Direkt testi başlat
+    if (voteId && !test) {
+      // Eğer slug formatındaysa direkt slug ile yükle
+      if (isSlug(voteId)) {
+        dispatch(getSingleTestBySlug(voteId)).unwrap()
+          .then((result) => {
+            if (result.test) {
+              setTest(result.test);
+              initializeVoting(result.test);
+            }
+          })
+          .catch((error) => {
+            console.error('Test yükleme hatası:', error);
+          });
+      } 
+      // Eğer ObjectId formatındaysa eski yöntemle yükle
+      else if (isObjectId(voteId)) {
+        if (allTests.length > 0) {
+          const foundTest = allTests.find((t: any) => t._id === voteId);
+          if (foundTest) {
+            setTest(foundTest);
+            initializeVoting(foundTest);
+          }
+        }
       }
     }
-  }, [voteId, allTests, test]);
+  }, [voteId, allTests, test, dispatch]);
 
   // Test bittiğinde final rankings oluştur - sadece bir kez çalışacak
   useEffect(() => {
     if (isComplete && test && finalWinner && !resultsFetched) {
-      // Test results'ı getir - sadece henüz alınmamışsa
+      // Test results'ı getir - slug veya ID ile
       setResultsFetched(true);
-      dispatch(getTestResults(voteId));
+      if (isSlug(voteId)) {
+        dispatch(getTestResultsBySlug(voteId));
+      } else {
+        dispatch(getTestResults(voteId));
+      }
     }
   }, [isComplete, test, finalWinner, voteId, dispatch, resultsFetched]);
 
@@ -208,22 +238,32 @@ export default function VotePage() {
         setFinalWinner(winner); // En son seçilen seçeneği final kazanan olarak kaydet
         setIsComplete(true);
         
-        // Vote'u backend'e gönder
+        // Vote'u backend'e gönder - slug veya ID ile
         console.log('Vote gönderiliyor:', { testId: voteId, optionId: winner._id });
         
-        dispatch(voteOnTest({
-          testId: voteId,
-          optionId: winner._id
-        })).unwrap().then((result) => {
-          console.log('Vote başarılı!', result);
-          // Vote başarılı olduktan sonra test results'ı yenile - sadece henüz alınmamışsa
-          if (!resultsFetched) {
-            setResultsFetched(true);
-            dispatch(getTestResults(voteId));
-          }
-        }).catch((error) => {
-          console.error('Vote hatası:', error);
-        });
+        if (isSlug(voteId)) {
+          dispatch(voteOnTestBySlug({ slug: voteId, optionId: winner._id })).unwrap().then((result) => {
+            console.log('Vote başarılı!', result);
+            // Vote başarılı olduktan sonra test results'ı yenile - sadece henüz alınmamışsa
+            if (!resultsFetched) {
+              setResultsFetched(true);
+              dispatch(getTestResultsBySlug(voteId));
+            }
+          }).catch((error) => {
+            console.error('Vote hatası:', error);
+          });
+        } else {
+          dispatch(voteOnTest({ testId: voteId, optionId: winner._id })).unwrap().then((result) => {
+            console.log('Vote başarılı!', result);
+            // Vote başarılı olduktan sonra test results'ı yenile - sadece henüz alınmamışsa
+            if (!resultsFetched) {
+              setResultsFetched(true);
+              dispatch(getTestResults(voteId));
+            }
+          }).catch((error) => {
+            console.error('Vote hatası:', error);
+          });
+        }
       }
       
       setSelectedOption(null);

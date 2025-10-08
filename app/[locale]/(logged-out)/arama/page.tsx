@@ -20,6 +20,7 @@ import {
 
 interface Test {
   _id: string;
+  slug?: string;
   title: string;
   description: string;
   category: string;
@@ -32,7 +33,7 @@ interface Test {
 interface CardProps {
   test: Test;
   index: number;
-  onTestClick: (testId: string, e: React.MouseEvent) => void;
+  onTestClick: (test: Test, e: React.MouseEvent) => void;
   className?: string;
 }
 
@@ -40,7 +41,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
   const { activeMenus } = useAppSelector((state) => state.menu);
   
   const handleClick = (e: React.MouseEvent) => {
-    onTestClick(test._id, e);
+    onTestClick(test, e);
   };
 
   // Get category name by ID
@@ -246,11 +247,12 @@ export default function AramaPage() {
     return {};
   };
 
-  const handleTestClick = (testId: string, e: React.MouseEvent) => {
+  const handleTestClick = (test: Test, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     try {
-      router.push(`/${testId}`);
+      const targetId = test.slug || test._id;
+      router.push(`/${targetId}`);
     } catch (error) {
       console.error('Navigation error:', error);
     }
