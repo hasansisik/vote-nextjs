@@ -29,7 +29,7 @@ export interface CreateTestPayload {
     de?: string;
     fr?: string;
   };
-  category: string;
+  categories: string[];
   trend?: boolean;
   popular?: boolean;
   endDate?: string;
@@ -84,7 +84,7 @@ export interface UpdateTestPayload {
     de?: string;
     fr?: string;
   };
-  category?: string;
+  categories?: string[];
   isActive?: boolean;
   trend?: boolean;
   popular?: boolean;
