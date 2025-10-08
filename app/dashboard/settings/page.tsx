@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 import {
   getSettings,
   toggleLanguage,
-  updateDefaultLanguage,
 } from '@/redux/actions/settingsActions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,25 +52,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleUpdateDefaultLanguage = async (languageCode: string) => {
-    try {
-      const result = await dispatch(updateDefaultLanguage(languageCode) as any);
-
-      if (updateDefaultLanguage.fulfilled.match(result)) {
-        toast.success('Başarılı', {
-          description: 'Varsayılan dil güncellendi.',
-        });
-      } else {
-        toast.error('Hata', {
-          description: result.payload as string || 'Bir hata oluştu.',
-        });
-      }
-    } catch (error) {
-      toast.error('Hata', {
-        description: 'Bir hata oluştu.',
-      });
-    }
-  };
 
   if (user?.role !== 'admin') {
     return (
@@ -167,35 +147,6 @@ export default function SettingsPage() {
               </div>
               
               <div className="space-y-6">
-                {/* Default Language Selector */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
-                    Varsayılan Dil
-                  </Label>
-                  <Select
-                    value={settings.languages.defaultLanguage}
-                    onValueChange={handleUpdateDefaultLanguage}
-                  >
-                    <SelectTrigger className="w-full md:w-[300px] bg-white">
-                      <SelectValue placeholder="Varsayılan dil seçin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {settings.languages.availableLanguages
-                        .filter((lang: any) => lang.enabled)
-                        .map((lang: any) => (
-                          <SelectItem key={lang.code} value={lang.code}>
-                            <span className="flex items-center gap-2">
-                              <span>{lang.flag}</span>
-                              <span>{lang.name}</span>
-                            </span>
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500">
-                    Kullanıcılar tarafından seçilmediğinde kullanılacak varsayılan dil
-                  </p>
-                </div>
 
                 {/* Language Toggle List */}
                 <div className="space-y-4">
@@ -218,22 +169,15 @@ export default function SettingsPage() {
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          {settings.languages.defaultLanguage === lang.code && (
-                            <div className="flex items-center gap-1 text-sm bg-orange-100 text-orange-700 px-3 py-1 rounded-full">
-                              <Check className="h-3 w-3" />
-                              Varsayılan
-                            </div>
-                          )}
                           <div className="flex items-center gap-2">
                             <Switch
                               checked={lang.enabled}
                               onCheckedChange={() => handleToggleLanguage(lang.code, lang.enabled)}
                               disabled={
-                                settings.languages.defaultLanguage === lang.code ||
-                                (lang.enabled &&
-                                  settings.languages.availableLanguages.filter(
-                                    (l: any) => l.enabled
-                                  ).length === 1)
+                                lang.enabled &&
+                                settings.languages.availableLanguages.filter(
+                                  (l: any) => l.enabled
+                                ).length === 1
                               }
                             />
                             <Label className="text-sm font-normal">
@@ -255,8 +199,8 @@ export default function SettingsPage() {
                     ))}
                   </div>
                   <p className="text-xs text-gray-500">
-                    * Varsayılan dil devre dışı bırakılamaz
-                    <br />* En az bir dil aktif olmalıdır
+                    * En az bir dil aktif olmalıdır
+                    <br />* Kullanıcılar dil seçimlerini localStorage'da saklayabilir
                   </p>
                 </div>
               </div>
@@ -270,10 +214,10 @@ export default function SettingsPage() {
           <div className="bg-orange-50 rounded-lg border border-orange-200 p-6">
             <h3 className="text-lg font-semibold text-orange-900 mb-2">İpuçları</h3>
             <ul className="text-sm text-orange-800 space-y-2">
-              <li>• Varsayılan dil devre dışı bırakılamaz</li>
               <li>• En az bir dil aktif olmalıdır</li>
               <li>• Pasif edilen diller kullanıcılar tarafından seçilemez</li>
               <li>• Dil değişiklikleri anında etkili olur</li>
+              <li>• Kullanıcılar dil seçimlerini localStorage'da saklar</li>
             </ul>
           </div>
         </div>

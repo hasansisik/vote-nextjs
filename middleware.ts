@@ -18,6 +18,12 @@ export function middleware(request: NextRequest) {
   // Handle internationalization for all other routes
   const intlResponse = intlMiddleware(request);
   
+  // Add preferred language header from cookie if available
+  const preferredLanguage = request.cookies.get('preferred-language')?.value;
+  if (preferredLanguage) {
+    intlResponse.headers.set('x-preferred-language', preferredLanguage);
+  }
+  
   // Public routes that don't require authentication (without locale prefix)
   const publicRoutes = [
     '/',

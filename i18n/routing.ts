@@ -5,11 +5,14 @@ export const routing = defineRouting({
   // A list of all locales that are supported
   locales: ['tr', 'en', 'de', 'fr'],
 
-  // Used when no locale matches
+  // Used when no locale matches - always Turkish as default
   defaultLocale: 'tr',
 
-  // The prefix for the default locale
-  localePrefix: 'as-needed'
+  // The prefix for the default locale - as-needed means Turkish won't have prefix
+  localePrefix: 'as-needed',
+
+  // Detect locale from localStorage on client side
+  localeDetection: false
 });
 
 // Lightweight wrappers around Next.js' navigation APIs

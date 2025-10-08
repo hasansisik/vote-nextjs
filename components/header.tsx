@@ -22,10 +22,12 @@ import {
 import { Skeleton } from './ui/skeleton';
 import MobileMenu from './mobile-menu';
 import { LanguageSwitcher } from './language-switcher';
+import { useRouter as useNextRouter } from 'next/navigation';
 
 export default function Header() {
   const t = useTranslations('Header');
   const router = useRouter();
+  const nextRouter = useNextRouter();
   const dispatch = useDispatch();
   const locale = useLocale();
   const { isAuthenticated, user, loading } = useSelector((state: any) => state.user);
@@ -33,6 +35,28 @@ export default function Header() {
   const { stats: notificationStats } = useSelector((state: any) => state.notification);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hasScroll, setHasScroll] = useState(false);
+
+  // Handle language change with localStorage
+  const handleLanguageChange = (newLocale: string) => {
+    // Save to localStorage
+    localStorage.setItem('preferred-language', newLocale);
+    
+    // Also save to cookie for server-side access
+    document.cookie = `preferred-language=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+    
+    // Get current pathname without locale
+    const currentPath = window.location.pathname;
+    const pathWithoutLocale = currentPath.replace(/^\/[a-z]{2}(\/|$)/, '/');
+    
+    // Navigate to new locale
+    if (newLocale === 'tr') {
+      // For Turkish, remove locale prefix
+      nextRouter.push(pathWithoutLocale);
+    } else {
+      // For other languages, add locale prefix
+      nextRouter.push(`/${newLocale}${pathWithoutLocale}`);
+    }
+  };
 
   // Load all menus on component mount
   useEffect(() => {
@@ -238,7 +262,7 @@ export default function Header() {
               </button>
 
               {/* Dil Seçici */}
-              <LanguageSwitcher />
+              <LanguageSwitcher onLanguageChange={handleLanguageChange} />
 
               {/* Giriş Yap ve Kayıt Ol butonları - sadece giriş yapmamış kullanıcılar için */}
               {!isAuthenticated && (

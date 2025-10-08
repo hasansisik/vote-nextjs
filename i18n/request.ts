@@ -1,13 +1,23 @@
 import { getRequestConfig } from 'next-intl/server';
 import { routing } from './routing';
+import { headers } from 'next/headers';
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // This typically corresponds to the `[locale]` segment
   let locale = await requestLocale;
 
-  // Ensure that a valid locale is used
+  // If no locale in URL, try to get from localStorage via cookie or default to Turkish
   if (!locale || !routing.locales.includes(locale as any)) {
-    locale = routing.defaultLocale;
+    // Try to get preferred language from cookie (set by client-side)
+    const headersList = await headers();
+    const preferredLanguage = headersList.get('x-preferred-language');
+    
+    if (preferredLanguage && routing.locales.includes(preferredLanguage as any)) {
+      locale = preferredLanguage;
+    } else {
+      // Default to Turkish
+      locale = routing.defaultLocale;
+    }
   }
 
   return {

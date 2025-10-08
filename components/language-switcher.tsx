@@ -14,7 +14,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  onLanguageChange?: (locale: string) => void;
+}
+
+export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
   const [isPending, startTransition] = useTransition();
   const dispatch = useAppDispatch();
   const router = useNextRouter();
@@ -34,15 +38,26 @@ export function LanguageSwitcher() {
   function handleLanguageChange(newLocale: string) {
     if (newLocale === locale) return;
 
-    startTransition(() => {
-      // Remove current locale from pathname and add new locale
-      const pathnameWithoutLocale = pathname.replace(/^\/(tr|en|de|fr)/, '') || '/';
-      const newPath = `/${newLocale}${pathnameWithoutLocale}`;
-      
-      // Use router.push with refresh to properly update the page
-      router.push(newPath);
-      router.refresh();
-    });
+    // Save to localStorage
+    localStorage.setItem('preferred-language', newLocale);
+    
+    // Also save to cookie for server-side access
+    document.cookie = `preferred-language=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
+
+    // Use custom handler if provided, otherwise use default behavior
+    if (onLanguageChange) {
+      onLanguageChange(newLocale);
+    } else {
+      startTransition(() => {
+        // Remove current locale from pathname and add new locale
+        const pathnameWithoutLocale = pathname.replace(/^\/(tr|en|de|fr)/, '') || '/';
+        const newPath = `/${newLocale}${pathnameWithoutLocale}`;
+        
+        // Use router.push with refresh to properly update the page
+        router.push(newPath);
+        router.refresh();
+      });
+    }
   }
 
   // Don't render if no languages loaded yet
