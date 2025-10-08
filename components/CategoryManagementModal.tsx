@@ -71,7 +71,6 @@ export default function CategoryManagementModal({
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingCategory, setEditingCategory] = useState<any>(null);
-  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: {
       tr: '',
@@ -197,25 +196,18 @@ export default function CategoryManagementModal({
 
   // Handle delete category
   const handleDelete = async (categoryId: string) => {
-    setCategoryToDelete(categoryId);
-  };
-
-  const confirmDelete = async () => {
-    if (categoryToDelete) {
-      try {
-        const result = await dispatch(deleteTestCategory(categoryToDelete) as any);
-        if (result.type.endsWith('/fulfilled')) {
-          toast.success('Kategori başarıyla silindi');
-          // Refresh categories after delete
-          await dispatch(getActiveTestCategories() as any);
-        } else {
-          toast.error(result.payload || 'Kategori silinirken bir hata oluştu');
-        }
-        setCategoryToDelete(null);
-      } catch (error) {
-        console.error('Delete category error:', error);
-        toast.error('Kategori silinirken bir hata oluştu');
+    try {
+      const result = await dispatch(deleteTestCategory(categoryId) as any);
+      if (result.type.endsWith('/fulfilled')) {
+        toast.success('Kategori başarıyla silindi');
+        // Refresh categories after delete
+        await dispatch(getActiveTestCategories() as any);
+      } else {
+        toast.error(result.payload || 'Kategori silinirken bir hata oluştu');
       }
+    } catch (error) {
+      console.error('Delete category error:', error);
+      toast.error('Kategori silinirken bir hata oluştu');
     }
   };
 
@@ -436,10 +428,7 @@ export default function CategoryManagementModal({
                               <AlertDialogFooter>
                                 <AlertDialogCancel>İptal</AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => {
-                                    handleDelete(category._id);
-                                    confirmDelete();
-                                  }}
+                                  onClick={() => handleDelete(category._id)}
                                   className="bg-red-600 hover:bg-red-700"
                                 >
                                   Sil
