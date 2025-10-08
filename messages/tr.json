@@ -196,6 +196,19 @@
     "featuredContent": "ÖNE ÇIKAN İÇERİKLER",
     "general": "GENEL"
   },
+  "SearchPage": {
+    "title": "Test Ara",
+    "searchPlaceholder": "Test ara... (başlık, açıklama, kategori)",
+    "allCategories": "Tümü",
+    "noResults": "Sonuç bulunamadı",
+    "noResultsForSearch": "\"{searchTerm}\" için sonuç bulunamadı. Farklı anahtar kelimeler deneyin.",
+    "noResultsInCategory": "Bu kategoride henüz test bulunmuyor.",
+    "votesFound": "oylama bulundu",
+    "forSearch": "\"{searchTerm}\" için",
+    "inCategory": "{categoryName} kategorisinde",
+    "previous": "Önceki",
+    "next": "Sonraki"
+  },
   "NotificationsPage": {
     "title": "Bildirimler",
     "unreadCount": "okunmamış bildiriminiz var",

@@ -196,6 +196,19 @@
     "featuredContent": "FEATURED CONTENT",
     "general": "GENERAL"
   },
+  "SearchPage": {
+    "title": "Search Tests",
+    "searchPlaceholder": "Search tests... (title, description, category)",
+    "allCategories": "All",
+    "noResults": "No results found",
+    "noResultsForSearch": "No results found for \"{searchTerm}\". Try different keywords.",
+    "noResultsInCategory": "No tests found in this category yet.",
+    "votesFound": "votes found",
+    "forSearch": "for \"{searchTerm}\"",
+    "inCategory": "in {categoryName} category",
+    "previous": "Previous",
+    "next": "Next"
+  },
   "NotificationsPage": {
     "title": "Notifications",
     "unreadCount": "unread notifications",

@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
+import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 import {
   Pagination,
   PaginationContent,
@@ -42,16 +44,24 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
   };
 
   // Get category name by ID
-  const getCategoryName = (categoryId: string) => {
-    if (activeMenus && activeMenus.length > 0) {
+  const getCategoryNameById = (category: any) => {
+    // If category is already an object with multilingual data, use it directly
+    if (typeof category === 'object' && category !== null && category.name) {
+      return getCategoryName(category);
+    }
+    
+    // If category is a string ID, find the corresponding menu
+    if (typeof category === 'string' && activeMenus && activeMenus.length > 0) {
       const menu = activeMenus.find((menu: any) => 
-        menu.testCategory && menu.testCategory._id === categoryId
+        menu.testCategory && menu.testCategory._id === category
       );
       if (menu && menu.testCategory) {
-        return menu.testCategory.name;
+        return getCategoryName(menu.testCategory);
       }
     }
-    return categoryId;
+    
+    // Final fallback
+    return 'Kategori';
   };
 
   return (
@@ -78,18 +88,18 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {getCategoryName(test.category)}
+          {getCategoryNameById(test.category)}
         </div>
         
         {/* Başlık */}
         <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
-          {test.title}
+          {getTestTitle(test)}
         </h3>
         
         {/* Açıklama */}
         {test.description && (
           <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-            {test.description}
+            {getTestDescription(test)}
           </p>
         )}
       </div>
@@ -98,6 +108,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
 };
 
 export default function AramaPage() {
+  const t = useTranslations('SearchPage');
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { allTests, testsLoading } = useAppSelector((state) => state.test);
@@ -119,16 +130,24 @@ export default function AramaPage() {
   }, [dispatch]);
 
   // Get category name by ID
-  const getCategoryName = (categoryId: string) => {
-    if (activeMenus && activeMenus.length > 0) {
+  const getCategoryNameById = (category: any) => {
+    // If category is already an object with multilingual data, use it directly
+    if (typeof category === 'object' && category !== null && category.name) {
+      return getCategoryName(category);
+    }
+    
+    // If category is a string ID, find the corresponding menu
+    if (typeof category === 'string' && activeMenus && activeMenus.length > 0) {
       const menu = activeMenus.find((menu: any) => 
-        menu.testCategory && menu.testCategory._id === categoryId
+        menu.testCategory && menu.testCategory._id === category
       );
       if (menu && menu.testCategory) {
-        return menu.testCategory.name;
+        return getCategoryName(menu.testCategory);
       }
     }
-    return categoryId;
+    
+    // Final fallback
+    return 'Kategori';
   };
 
   // Set initial filtered tests and pagination
@@ -153,15 +172,21 @@ export default function AramaPage() {
 
     // Kategori filtresi
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter((test: any) => test.category === selectedCategory);
+      filtered = filtered.filter((test: any) => {
+        // Handle both string category IDs and category objects
+        const testCategoryId = typeof test.category === 'string' 
+          ? test.category 
+          : test.category?._id || test.category?.id;
+        return testCategoryId === selectedCategory;
+      });
     }
 
     // Arama terimi filtresi
     if (searchTerm.trim()) {
       filtered = filtered.filter((test: any) => 
-        test.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        test.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getCategoryName(test.category).toLowerCase().includes(searchTerm.toLowerCase())
+        getTestTitle(test).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getTestDescription(test).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getCategoryNameById(test.category).toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -184,7 +209,7 @@ export default function AramaPage() {
   // Get dynamic categories from activeMenus
   const getCategories = () => {
     const categories = [
-      { value: 'all', label: 'Tümü', color: 'bg-gray-500' }
+      { value: 'all', label: t('allCategories'), color: 'bg-gray-500' }
     ];
     
     if (activeMenus && activeMenus.length > 0) {
@@ -192,7 +217,7 @@ export default function AramaPage() {
         if (menu.testCategory) {
           categories.push({
             value: menu.testCategory._id,
-            label: menu.testCategory.name,
+            label: getCategoryName(menu.testCategory),
             color: menu.color ? 'custom-color' : 'bg-gray-400'
           });
         }
@@ -255,7 +280,7 @@ export default function AramaPage() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Test Ara</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('title')}</h1>
             <button
               onClick={() => router.push('/')}
               className="text-orange-600 hover:text-gray-900"
@@ -275,7 +300,7 @@ export default function AramaPage() {
             </div>
             <input
               type="text"
-              placeholder="Test ara... (başlık, açıklama, kategori)"
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -321,12 +346,12 @@ export default function AramaPage() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Sonuç bulunamadı
+              {t('noResults')}
             </h3>
             <p className="text-gray-600">
               {searchTerm.trim() 
-                ? `"${searchTerm}" için sonuç bulunamadı. Farklı anahtar kelimeler deneyin.`
-                : 'Bu kategoride henüz test bulunmuyor.'
+                ? t('noResultsForSearch', { searchTerm })
+                : t('noResultsInCategory')
               }
             </p>
           </div>
@@ -334,9 +359,9 @@ export default function AramaPage() {
           <>
             <div className="mb-6">
               <p className="text-gray-600 text-lg">
-                <span className="font-semibold">{totalItems}</span> oylama bulundu
-                {searchTerm.trim() && ` "${searchTerm}" için`}
-                {selectedCategory !== 'all' && ` ${getCategories().find(c => c.value === selectedCategory)?.label} kategorisinde`}
+                <span className="font-semibold">{totalItems}</span> {t('votesFound')}
+                {searchTerm.trim() && ` ${t('forSearch', { searchTerm })}`}
+                {selectedCategory !== 'all' && ` ${t('inCategory', { categoryName: getCategories().find(c => c.value === selectedCategory)?.label || selectedCategory })}`}
               </p>
             </div>
 
@@ -381,7 +406,7 @@ export default function AramaPage() {
                         onClick={handlePrevPage}
                         className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       >
-                        <span className="hidden sm:block">Önceki</span>
+                        <span className="hidden sm:block">{t('previous')}</span>
                       </PaginationPrevious>
                     </PaginationItem>
 
@@ -424,7 +449,7 @@ export default function AramaPage() {
                         onClick={handleNextPage}
                         className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       >
-                        <span className="hidden sm:block">Sonraki</span>
+                        <span className="hidden sm:block">{t('next')}</span>
                       </PaginationNext>
                     </PaginationItem>
                   </PaginationContent>

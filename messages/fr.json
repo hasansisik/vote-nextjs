@@ -196,6 +196,19 @@
     "featuredContent": "CONTENU EN VEDETTE",
     "general": "GÉNÉRAL"
   },
+  "SearchPage": {
+    "title": "Rechercher des tests",
+    "searchPlaceholder": "Rechercher des tests... (titre, description, catégorie)",
+    "allCategories": "Toutes",
+    "noResults": "Aucun résultat trouvé",
+    "noResultsForSearch": "Aucun résultat trouvé pour \"{searchTerm}\". Essayez d'autres mots-clés.",
+    "noResultsInCategory": "Aucun test trouvé dans cette catégorie pour le moment.",
+    "votesFound": "votes trouvés",
+    "forSearch": "pour \"{searchTerm}\"",
+    "inCategory": "dans la catégorie {categoryName}",
+    "previous": "Précédent",
+    "next": "Suivant"
+  },
   "NotificationsPage": {
     "title": "Notifications",
     "unreadCount": "notifications non lues",

@@ -196,6 +196,19 @@
     "featuredContent": "AUSGEWÄHLTE INHALTE",
     "general": "ALLGEMEIN"
   },
+  "SearchPage": {
+    "title": "Tests suchen",
+    "searchPlaceholder": "Tests suchen... (Titel, Beschreibung, Kategorie)",
+    "allCategories": "Alle",
+    "noResults": "Keine Ergebnisse gefunden",
+    "noResultsForSearch": "Keine Ergebnisse für \"{searchTerm}\" gefunden. Versuchen Sie andere Schlüsselwörter.",
+    "noResultsInCategory": "In dieser Kategorie wurden noch keine Tests gefunden.",
+    "votesFound": "Abstimmungen gefunden",
+    "forSearch": "für \"{searchTerm}\"",
+    "inCategory": "in der Kategorie {categoryName}",
+    "previous": "Vorherige",
+    "next": "Nächste"
+  },
   "NotificationsPage": {
     "title": "Benachrichtigungen",
     "unreadCount": "ungelesene Benachrichtigungen",

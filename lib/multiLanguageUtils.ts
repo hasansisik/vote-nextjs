@@ -46,11 +46,21 @@ export function isMultiLanguageText(text: any): text is MultiLanguageText {
 export function getCategoryName(category: any): string {
   if (!category) return 'Kategori Yok';
   
-  if (typeof category.name === 'object') {
-    return category.name.tr || category.name.en || 'Kategori';
+  // If category has a name property (populated object)
+  if (category.name) {
+    if (typeof category.name === 'object') {
+      return category.name.tr || category.name.en || 'Kategori';
+    }
+    return category.name;
   }
   
-  return category.name || 'Kategori';
+  // If category is just a string, it's likely an ID - return default
+  // The actual lookup should be done in the component using activeMenus
+  if (typeof category === 'string') {
+    return 'Kategori';
+  }
+  
+  return 'Kategori';
 }
 
 /**
