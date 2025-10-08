@@ -243,14 +243,8 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
   };
   
   const handleClick = () => {
-    // Debug: Log card data
-    console.log('Content Grid - Card data:', card);
-    console.log('Content Grid - Card slug:', card.slug);
-    console.log('Content Grid - Card testId:', card.testId);
-    
     // Slug varsa slug'ı kullan, yoksa ID'yi kullan
     const targetId = card.slug || card.testId || `test_${card.id}`;
-    console.log('Content Grid - Target ID:', targetId);
     router.push(`/${targetId}`);
   };
   

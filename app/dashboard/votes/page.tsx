@@ -38,17 +38,6 @@ export default function VotesPage() {
     }
   }, [dispatch, user]);
 
-  // Debug: Log categories and tests
-  useEffect(() => {
-    console.log('Active categories:', activeCategories);
-    console.log('All tests:', allTests);
-    if (allTests?.length > 0) {
-      console.log('First test categories:', allTests[0]?.categories);
-      console.log('Category matches:', allTests[0]?.categories?.map((catId: string) => 
-        activeCategories?.find((cat: any) => cat._id === catId)
-      ));
-    }
-  }, [activeCategories, allTests]);
 
   const handleDeleteTest = async (testId: string) => {
     setTestToDelete(testId);
@@ -56,23 +45,18 @@ export default function VotesPage() {
 
   const confirmDelete = async () => {
     if (testToDelete) {
-      console.log('Deleting test with ID:', testToDelete);
       setIsDeleting(true);
       try {
         const result = await dispatch(deleteTest(testToDelete) as any);
-        console.log('Delete result:', result);
         if (result.type.endsWith('/fulfilled')) {
-          console.log('Test deleted successfully');
           toast.success('Test başarıyla silindi');
           // Test başarıyla silindi, listeyi yenile
           await dispatch(getAllTests({}) as any);
           setTestToDelete(null);
         } else {
-          console.error('Delete test failed:', result.payload);
           toast.error('Test silinirken bir hata oluştu: ' + result.payload);
         }
       } catch (error) {
-        console.error('Delete test error:', error);
         toast.error('Test silinirken bir hata oluştu');
       } finally {
         setIsDeleting(false);
@@ -82,17 +66,13 @@ export default function VotesPage() {
 
   const handleEditTest = async (testId: string) => {
     try {
-      console.log('Editing test with ID:', testId);
       const result = await dispatch(getSingleTest(testId) as any);
       if (result.type.endsWith('/fulfilled')) {
-        console.log('Test data loaded successfully, navigating to edit page');
         router.push(`/dashboard/votes/create?edit=${testId}`);
       } else {
-        console.error('Test verileri yüklenemedi:', result.payload);
         toast.error('Test verileri yüklenirken bir hata oluştu');
       }
     } catch (error) {
-      console.error('Test verileri yüklenirken hata:', error);
       toast.error('Test verileri yüklenirken bir hata oluştu');
     }
   };

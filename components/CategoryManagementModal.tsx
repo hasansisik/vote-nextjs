@@ -144,8 +144,6 @@ export default function CategoryManagementModal({
       return;
     }
 
-    console.log('Creating category with data:', formData);
-
     try {
       let result;
       if (editingCategory) {

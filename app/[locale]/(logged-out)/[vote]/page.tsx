@@ -131,7 +131,6 @@ export default function VotePage() {
   // Test results değiştiğinde final rankings oluştur - sadece bir kez
   useEffect(() => {
     if (testResults && testResults.results && finalRankings.length === 0) {
-      console.log('Test results alındı:', testResults);
       const rankings = testResults.results.map((result: any) => ({
         option: {
           _id: result._id,
@@ -145,8 +144,8 @@ export default function VotePage() {
       }));
       
       setFinalRankings(rankings);
-    } else if (isComplete && test && finalWinner && finalRankings.length === 0 && !testResults) {
-      // Eğer test results henüz gelmediyse, test options'ından ranking oluştur
+    } else if (isComplete && test && finalWinner && finalRankings.length === 0 && !testResults && resultsFetched) {
+      // Eğer test results henüz gelmediyse ve fetch edildiyse, test options'ından ranking oluştur
       const rankings = test.options.map((option: any) => ({
         option: {
           _id: option._id,
@@ -161,7 +160,7 @@ export default function VotePage() {
       
       setFinalRankings(rankings);
     }
-  }, [testResults, isComplete, test, finalWinner, finalRankings.length]);
+  }, [testResults, isComplete, test, finalWinner, finalRankings.length, resultsFetched]);
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
@@ -170,7 +169,6 @@ export default function VotePage() {
       return;
     }
     
-    console.log(`Film testi başlatılıyor: ${testData.options.length} seçenek ile`);
     
     // Başlangıç skorları - her seçenek için 0 puan
     const initialScores: {[key: string]: number} = {};
@@ -191,7 +189,6 @@ export default function VotePage() {
       const bHash = b._id.slice(-4);
       return (testIdHash + aHash).localeCompare(testIdHash + bHash);
     });
-    console.log('Sabit sıralı seçenekler:', shuffled.map(s => s.title));
     
     // İlk karşılaştırma
     setCurrentPair([shuffled[0], shuffled[1]]);
@@ -207,8 +204,6 @@ export default function VotePage() {
     setFinalRankings([]); // Final rankings'i temizle
     setVotingInitialized(true); // Initialize edildi olarak işaretle
     
-    console.log(`Başlangıç çifti: ${shuffled[0].title} vs ${shuffled[1].title}`);
-    console.log(`Toplam ${testData.options.length - 1} karşılaştırma olacak`);
   };
 
   // Seçim yapıldığında
@@ -216,7 +211,6 @@ export default function VotePage() {
     setSelectedOption(winner._id);
     
     setTimeout(() => {
-      console.log(`Round ${round}: ${winner.title} seçildi. Remaining: ${remainingOptions.length}`);
 
       // Eğer hala kullanılacak seçenekler varsa
       if (remainingOptions.length > 0) {
@@ -228,21 +222,18 @@ export default function VotePage() {
           // Aynı seçenek çıkarsa, farklı bir seçenek bul
           const differentOption = remainingOptions.find(opt => opt._id !== winner._id);
           if (differentOption) {
-            console.log(`Sonraki karşılaştırma: ${winner.title} vs ${differentOption.title} (aynı seçenek önlendi)`);
             // Seçilen seçeneğin konumunu koru - winner'ın pozisyonunu kontrol et
             const winnerIndex = currentPair?.findIndex(opt => opt._id === winner._id) ?? 0;
             setCurrentPair(winnerIndex === 0 ? [winner, differentOption] : [differentOption, winner]);
             setRemainingOptions(prev => prev.filter(opt => opt._id !== differentOption._id));
           } else {
             // Eğer farklı seçenek yoksa, sadece kazananı al
-            console.log(`Sonraki karşılaştırma: ${winner.title} vs ${nextOption.title}`);
             // Seçilen seçeneğin konumunu koru
             const winnerIndex = currentPair?.findIndex(opt => opt._id === winner._id) ?? 0;
             setCurrentPair(winnerIndex === 0 ? [winner, nextOption] : [nextOption, winner]);
             setRemainingOptions(prev => prev.slice(1));
           }
         } else {
-          console.log(`Sonraki karşılaştırma: ${winner.title} vs ${nextOption.title}`);
           // Seçilen seçeneğin konumunu koru
           const winnerIndex = currentPair?.findIndex(opt => opt._id === winner._id) ?? 0;
           setCurrentPair(winnerIndex === 0 ? [winner, nextOption] : [nextOption, winner]);
@@ -251,34 +242,28 @@ export default function VotePage() {
         setRound(prevRound => prevRound + 1);
       } else {
         // Tüm seçenekler tükendi - EN SON SEÇİLEN KAZANIR!
-        console.log(`Final kazanan (en son seçilen): ${winner.title}! Test tamamlandı.`);
         setFinalWinner(winner); // En son seçilen seçeneği final kazanan olarak kaydet
         setIsComplete(true);
         
         // Vote'u backend'e gönder - slug veya ID ile
-        console.log('Vote gönderiliyor:', { testId: voteId, optionId: winner._id });
         
         if (isSlug(voteId)) {
           dispatch(voteOnTestBySlug({ slug: voteId, optionId: winner._id })).unwrap().then((result) => {
-            console.log('Vote başarılı!', result);
             // Vote başarılı olduktan sonra test results'ı yenile - sadece henüz alınmamışsa
             if (!resultsFetched) {
               setResultsFetched(true);
               dispatch(getTestResultsBySlug(voteId));
             }
           }).catch((error) => {
-            console.error('Vote hatası:', error);
           });
         } else {
           dispatch(voteOnTest({ testId: voteId, optionId: winner._id })).unwrap().then((result) => {
-            console.log('Vote başarılı!', result);
             // Vote başarılı olduktan sonra test results'ı yenile - sadece henüz alınmamışsa
             if (!resultsFetched) {
               setResultsFetched(true);
               dispatch(getTestResults(voteId));
             }
           }).catch((error) => {
-            console.error('Vote hatası:', error);
           });
         }
       }

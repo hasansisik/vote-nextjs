@@ -157,11 +157,6 @@ function CreateTestPageContent() {
     }
   }, [isEditMode, editId, singleTest, dispatch]);
 
-  // Debug: Log categories when they change
-  useEffect(() => {
-    console.log('Active categories:', activeCategories);
-    console.log('Categories loading:', categoriesLoading);
-  }, [activeCategories, categoriesLoading]);
 
   // Show error messages
   useEffect(() => {
