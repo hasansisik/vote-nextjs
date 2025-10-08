@@ -3,6 +3,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 
 interface HomepageCard {
@@ -24,6 +25,8 @@ const FeaturedGrid: React.FC<FeaturedGridProps> = ({
   title = '', 
   cards = [] 
 }) => {
+  const t = useTranslations('FeaturedGrid');
+  
   return (
     <div className="max-w-7xl mx-auto px-2 lg:px-4 py-1">
       {title && (

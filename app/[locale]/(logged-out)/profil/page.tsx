@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
 import { useRouter } from 'next/navigation';
-import { editProfile, deleteAccount, clearError } from '@/redux/actions/userActions';
+import { useTranslations } from 'next-intl';
+import { editProfile, deleteAccount, clearError, logout } from '@/redux/actions/userActions';
 import { getUserVotedTests } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldValue } from '@/lib/multiLanguageUtils';
@@ -14,9 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 export default function ProfilPage() {
+  const t = useTranslations('ProfilePage');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { user, loading, error, isAuthenticated } = useSelector((state: any) => state.user);
@@ -25,7 +28,6 @@ export default function ProfilPage() {
 
   const [activeTab, setActiveTab] = useState('votes');
   const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const [profileData, setProfileData] = useState({
     name: '',
@@ -79,10 +81,10 @@ export default function ProfilPage() {
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
 
-    if (!minLength) return 'Şifre en az 8 karakter olmalıdır';
-    if (!hasUpperCase) return 'Şifre en az bir büyük harf içermelidir';
-    if (!hasLowerCase) return 'Şifre en az bir küçük harf içermelidir';
-    if (!hasNumbers) return 'Şifre en az bir rakam içermelidir';
+    if (!minLength) return t('passwordValidation.minLength');
+    if (!hasUpperCase) return t('passwordValidation.hasUpperCase');
+    if (!hasLowerCase) return t('passwordValidation.hasLowerCase');
+    if (!hasNumbers) return t('passwordValidation.hasNumbers');
     return '';
   };
 
@@ -115,14 +117,14 @@ export default function ProfilPage() {
       const result = await dispatch(editProfile(profileData));
       
       if (editProfile.fulfilled.match(result)) {
-        toast.success('Profil başarıyla güncellendi!');
+        toast.success(t('messages.profileUpdated'));
       } else {
-        const errorMessage = (result.payload as string) || 'Profil güncellenirken bir hata oluştu';
+        const errorMessage = (result.payload as string) || t('messages.profileUpdateError');
         toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Profile update error:', error);
-      toast.error('Profil güncellenirken bir hata oluştu');
+      toast.error(t('messages.profileUpdateError'));
     }
   };
 
@@ -130,7 +132,7 @@ export default function ProfilPage() {
     e.preventDefault();
     
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('Yeni şifreler eşleşmiyor');
+      toast.error(t('messages.passwordsNotMatch'));
       return;
     }
 
@@ -141,7 +143,7 @@ export default function ProfilPage() {
     }
 
     if (!passwordData.currentPassword) {
-      toast.error('Mevcut şifre gereklidir');
+      toast.error(t('messages.currentPasswordRequired'));
       return;
     }
 
@@ -152,17 +154,17 @@ export default function ProfilPage() {
       }));
       
       if (editProfile.fulfilled.match(result)) {
-        toast.success('Şifre başarıyla değiştirildi!');
+        toast.success(t('messages.passwordChanged'));
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         setShowPasswordForm(false);
       } else {
         // Handle error from Redux
-        const errorMessage = (result.payload as string) || 'Şifre değiştirilirken bir hata oluştu';
+        const errorMessage = (result.payload as string) || t('messages.passwordChangeError');
         toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Password change error:', error);
-      toast.error('Şifre değiştirilirken bir hata oluştu');
+      toast.error(t('messages.passwordChangeError'));
     }
   };
 
@@ -171,15 +173,15 @@ export default function ProfilPage() {
       const result = await dispatch(deleteAccount());
       
       if (deleteAccount.fulfilled.match(result)) {
-        toast.success('Hesabınız başarıyla silindi');
+        toast.success(t('messages.accountDeleted'));
         router.push('/');
       } else {
-        const errorMessage = (result.payload as string) || 'Hesap silinirken bir hata oluştu';
+        const errorMessage = (result.payload as string) || t('messages.accountDeleteError');
         toast.error(errorMessage);
       }
     } catch (error) {
       console.error('Delete account error:', error);
-      toast.error('Hesap silinirken bir hata oluştu');
+      toast.error(t('messages.accountDeleteError'));
     }
   };
 
@@ -205,7 +207,7 @@ export default function ProfilPage() {
                 {user?.name} {user?.surname}
               </h1>
               <p className="text-gray-600">{user?.email}</p>
-              <p className="text-sm text-gray-500">Üye olma tarihi: {new Date(user?.createdAt).toLocaleDateString('tr-TR')}</p>
+              <p className="text-sm text-gray-500">{t('memberSince')}: {new Date(user?.createdAt).toLocaleDateString('tr-TR')}</p>
             </div>
           </div>
         </div>
@@ -215,9 +217,9 @@ export default function ProfilPage() {
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
               {[
-                { id: 'votes', name: 'Kullanılan Oylar' },
-                { id: 'profile', name: 'Profil Bilgileri' },
-                { id: 'password', name: 'Şifre Değiştir' }
+                { id: 'votes', name: t('votesUsed') },
+                { id: 'profile', name: t('profileInfo') },
+                { id: 'password', name: t('changePassword') }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -242,7 +244,7 @@ export default function ProfilPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                      Ad
+                      {t('firstName')}
                     </Label>
                     <Input
                       type="text"
@@ -255,7 +257,7 @@ export default function ProfilPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="surname" className="text-sm font-medium text-gray-700">
-                      Soyad
+                      {t('lastName')}
                     </Label>
                     <Input
                       type="text"
@@ -270,7 +272,7 @@ export default function ProfilPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="bio" className="text-sm font-medium text-gray-700">
-                    Biyografi
+                    {t('bio')}
                   </Label>
                   <Textarea
                     id="bio"
@@ -279,10 +281,10 @@ export default function ProfilPage() {
                     value={profileData.bio}
                     onChange={handleProfileChange}
                     className="w-full bg-white"
-                    placeholder="Kendiniz hakkında bir şeyler yazın..."
+                    placeholder={t('bioPlaceholder')}
                   />
                   <p className="text-sm text-gray-500">
-                    {profileData.bio.length}/500 karakter
+                    {profileData.bio.length}/500 {t('characters')}
                   </p>
                 </div>
 
@@ -293,7 +295,7 @@ export default function ProfilPage() {
                     size="sm"
                     className="bg-orange-600 hover:bg-orange-700 text-white"
                   >
-                    {loading ? 'Güncelleniyor...' : 'Güncelle'}
+                    {loading ? t('updating') : t('update')}
                   </Button>
                 </div>
               </form>
@@ -304,20 +306,20 @@ export default function ProfilPage() {
               <div>
                 {!showPasswordForm ? (
                   <div className="text-center py-8">
-                    <p className="text-gray-600 mb-4">Şifrenizi değiştirmek için aşağıdaki butona tıklayın</p>
+                    <p className="text-gray-600 mb-4">{t('changePasswordDesc')}</p>
                     <Button
                       onClick={() => setShowPasswordForm(true)}
                       size="sm"
                       className="bg-orange-600 hover:bg-orange-700 text-white"
                     >
-                      Şifre Değiştir
+                      {t('changePasswordBtn')}
                     </Button>
                   </div>
                 ) : (
                   <form onSubmit={handlePasswordSubmit} className="space-y-6 max-w-md">
                     <div className="space-y-2">
                       <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">
-                        Mevcut Şifre
+                        {t('currentPassword')}
                       </Label>
                       <Input
                         type="password"
@@ -332,7 +334,7 @@ export default function ProfilPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">
-                        Yeni Şifre
+                        {t('newPassword')}
                       </Label>
                       <Input
                         type="password"
@@ -344,13 +346,13 @@ export default function ProfilPage() {
                         className="w-full bg-white"
                       />
                       {passwordData.newPassword && validatePassword(passwordData.newPassword) === '' && (
-                        <p className="text-sm text-green-600">Şifre güçlü</p>
+                        <p className="text-sm text-green-600">{t('passwordStrong')}</p>
                       )}
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                        Yeni Şifre Tekrar
+                        {t('confirmPassword')}
                       </Label>
                       <Input
                         type="password"
@@ -370,7 +372,7 @@ export default function ProfilPage() {
                         size="sm"
                         className="bg-orange-600 hover:bg-orange-700 text-white"
                       >
-                        {loading ? 'Değiştiriliyor...' : 'Şifreyi Değiştir'}
+                        {loading ? t('changing') : t('changePasswordSubmit')}
                       </Button>
                       <Button
                         type="button"
@@ -381,7 +383,7 @@ export default function ProfilPage() {
                         size="sm"
                         variant="outline"
                       >
-                        İptal
+                        {t('cancel')}
                       </Button>
                     </div>
                   </form>
@@ -393,9 +395,9 @@ export default function ProfilPage() {
             {activeTab === 'votes' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Kullanılan Oylar</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">{t('votesUsed')}</h3>
                   <span className="text-sm text-gray-500">
-                    {userVotedTests?.length || 0} test
+                    {userVotedTests?.length || 0} {t('test')}
                   </span>
                 </div>
 
@@ -424,7 +426,7 @@ export default function ProfilPage() {
                               />
                             ) : (
                               <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <span className="text-gray-400 text-xs">Resim Yok</span>
+                                <span className="text-gray-400 text-xs">{t('noImage')}</span>
                               </div>
                             )}
                           </div>
@@ -442,11 +444,11 @@ export default function ProfilPage() {
                               {getTestDescription(votedTest.test)}
                             </p>
                             <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                              <span>Kategori: {getCategoryNameById(votedTest.test.category)}</span>
+                              <span>{t('category')}: {getCategoryNameById(votedTest.test.category)}</span>
                               <span>•</span>
-                              <span>Toplam Oy: {votedTest.test.totalVotes}</span>
+                              <span>{t('totalVotes')}: {votedTest.test.totalVotes}</span>
                               <span>•</span>
-                              <span>Oyladığınız: {new Date(votedTest.votedAt).toLocaleDateString('tr-TR')}</span>
+                              <span>{t('votedOn')}: {new Date(votedTest.votedAt).toLocaleDateString('tr-TR')}</span>
                             </div>
                           </div>
 
@@ -454,7 +456,7 @@ export default function ProfilPage() {
                           {votedTest.selectedOption && (
                             <div className="flex-shrink-0 text-right">
                               <div className="text-sm font-medium text-gray-900 mb-1">
-                                Seçtiğiniz Seçenek
+                                {t('selectedOption')}
                               </div>
                               <div className="flex items-center gap-2">
                                 <Image
@@ -487,7 +489,7 @@ export default function ProfilPage() {
                             variant="outline"
                             className="text-orange-600 border-orange-600 hover:bg-orange-50"
                           >
-                            Testi Tekrar Görüntüle
+                            {t('viewTestAgain')}
                           </Button>
                         </div>
                       </div>
@@ -500,16 +502,16 @@ export default function ProfilPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Henüz oy verdiğiniz test yok</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">{t('noVotedTests')}</h3>
                     <p className="text-gray-600 mb-4">
-                      Testlere oy vermeye başladığınızda, oyladığınız testler burada görünecek.
+                      {t('noVotedTestsDesc')}
                     </p>
                     <Button
                       onClick={() => router.push('/')}
                       size="sm"
                       className="bg-orange-600 hover:bg-orange-700 text-white"
                     >
-                      Testlere Göz At
+                      {t('browseTests')}
                     </Button>
                   </div>
                 )}
@@ -522,43 +524,40 @@ export default function ProfilPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-medium text-red-600">Hesabı Sil</h3>
+              <h3 className="text-lg font-medium text-red-600">{t('deleteAccount')}</h3>
               <p className="text-sm text-gray-500 mt-1">
-                Hesabınızı kalıcı olarak silmek istiyorsanız bu seçeneği kullanın.
+                {t('deleteAccountDesc')}
               </p>
             </div>
-            <Button
-              onClick={() => setShowDeleteConfirm(true)}
-              size="sm"
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Hesabımı Sil
-            </Button>
-          </div>
-
-          {showDeleteConfirm && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-800 mb-4">
-                Bu işlem geri alınamaz. Hesabınız ve tüm verileriniz kalıcı olarak silinecektir.
-              </p>
-              <div className="flex gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
                 <Button
-                  onClick={handleDeleteAccount}
                   size="sm"
                   className="bg-red-600 hover:bg-red-700 text-white"
                 >
-                  Evet, Hesabımı Sil
+                  {t('deleteMyAccount')}
                 </Button>
-                <Button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  size="sm"
-                  variant="outline"
-                >
-                  İptal
-                </Button>
-              </div>
-            </div>
-          )}
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-red-600">{t('deleteConfirmTitle')}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t('deleteConfirmDesc')}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    {t('yesDeleteAccount')}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
         </div>
       </div>
     </div>

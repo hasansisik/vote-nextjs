@@ -4,9 +4,11 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
 import { getGlobalStats } from '@/redux/actions/testActions';
+import { useTranslations } from 'next-intl';
 import { Skeleton } from './ui/skeleton';
 
 export default function StatsBanner() {
+  const t = useTranslations('StatsBanner');
   const dispatch = useAppDispatch();
   const { globalStats, globalStatsLoading } = useSelector((state: any) => state.test);
 
@@ -30,7 +32,7 @@ export default function StatsBanner() {
               )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Test
+              {t('test')}
             </div>
           </div>
 
@@ -47,7 +49,7 @@ export default function StatsBanner() {
               )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Oy
+              {t('vote')}
             </div>
           </div>
 
@@ -64,7 +66,7 @@ export default function StatsBanner() {
               )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Kullanıcı
+              {t('user')}
             </div>
           </div>
 
@@ -83,7 +85,7 @@ export default function StatsBanner() {
               )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Test
+              {t('test')}
             </div>
           </div>
 
@@ -97,7 +99,7 @@ export default function StatsBanner() {
               )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Oy
+              {t('vote')}
             </div>
           </div>
 
@@ -111,7 +113,7 @@ export default function StatsBanner() {
               )}
             </div>
             <div className="text-xs text-gray-700 italic uppercase tracking-wide">
-              Kullanıcı
+              {t('user')}
             </div>
           </div>
 

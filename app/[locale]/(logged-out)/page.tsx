@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Image from "next/image";
+import { useTranslations } from 'next-intl';
 import StatsBanner from "@/components/stats-banner";
 import HeroSection from "@/components/hero-section";
 import ContentGrid from "@/components/content-grid";
@@ -11,6 +12,7 @@ import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
 
 export default function Home() {
+  const t = useTranslations('HomePage');
   const dispatch = useAppDispatch();
   const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeCategories, loading: categoriesLoading } = useAppSelector((state) => state.testCategory);
@@ -23,7 +25,7 @@ export default function Home() {
   // Get category name by ID
   const getCategoryName = (categoryId: string) => {
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? category.name.toUpperCase() : 'GENEL';
+    return category ? category.name.toUpperCase() : t('general');
   };
 
   // Convert tests to homepage card format - sadece aktif testleri göster
@@ -79,12 +81,12 @@ export default function Home() {
       
       {/* İçerik Grid */}
       <ContentGrid 
-        title="EN POPÜLER OYLAMALAR"
+        title={t('popularVotes')}
       />
       
       {/* Featured Grid */}
       <FeaturedGrid 
-        title="ÖNE ÇIKAN İÇERİKLER"
+        title={t('featuredContent')}
         cards={featuredData}
       />
     </div>

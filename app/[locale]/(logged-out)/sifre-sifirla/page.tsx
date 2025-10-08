@@ -4,12 +4,18 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from '@/i18n/routing';
 import { resetPassword, clearError } from '@/redux/actions/userActions';
 import { toast } from 'sonner';
 import { PasswordInput } from '@/components/ui/password-input';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 function SifreSifirlaContent() {
+  const t = useTranslations('ResetPasswordPage');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -42,7 +48,7 @@ function SifreSifirlaContent() {
         return;
       }
       
-      toast.error('Hata!', {
+      toast.error(t('errorTitle'), {
         description: errorMessage,
         duration: 5000,
       });
@@ -55,10 +61,10 @@ function SifreSifirlaContent() {
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
 
-    if (!minLength) return 'Şifre en az 8 karakter olmalıdır';
-    if (!hasUpperCase) return 'Şifre en az bir büyük harf içermelidir';
-    if (!hasLowerCase) return 'Şifre en az bir küçük harf içermelidir';
-    if (!hasNumbers) return 'Şifre en az bir rakam içermelidir';
+    if (!minLength) return t('passwordTooShort');
+    if (!hasUpperCase) return t('passwordNoUppercase');
+    if (!hasLowerCase) return t('passwordNoLowercase');
+    if (!hasNumbers) return t('passwordNoNumber');
     return '';
   };
 
@@ -82,8 +88,8 @@ function SifreSifirlaContent() {
     
     // Validate required fields
     if (!formData.passwordToken || !formData.password || !formData.confirmPassword) {
-      toast.error('Tüm alanları doldurun!', {
-        description: 'Lütfen doğrulama kodunu, yeni şifrenizi ve şifre tekrarını girin.',
+      toast.error(t('fillAllFields'), {
+        description: t('fillAllFieldsDescription'),
         duration: 3000,
       });
       return;
@@ -91,8 +97,8 @@ function SifreSifirlaContent() {
 
     // Validate password token (should be 4 digits)
     if (!/^\d{4}$/.test(formData.passwordToken)) {
-      toast.error('Geçersiz doğrulama kodu!', {
-        description: 'Doğrulama kodu 4 haneli olmalıdır.',
+      toast.error(t('invalidCode'), {
+        description: t('invalidCodeDescription'),
         duration: 3000,
       });
       return;
@@ -100,9 +106,9 @@ function SifreSifirlaContent() {
 
     // Validate password match
     if (formData.password !== formData.confirmPassword) {
-      setPasswordError('Şifreler eşleşmiyor');
-      toast.error('Şifreler eşleşmiyor!', {
-        description: 'Lütfen aynı şifreyi iki kez girin.',
+      setPasswordError(t('passwordMismatch'));
+      toast.error(t('passwordMismatch'), {
+        description: t('passwordMismatchDescription'),
         duration: 3000,
       });
       return;
@@ -112,7 +118,7 @@ function SifreSifirlaContent() {
     const passwordErrorMsg = validatePassword(formData.password);
     if (passwordErrorMsg) {
       setPasswordError(passwordErrorMsg);
-      toast.error('Şifre güçlü değil!', {
+      toast.error(t('passwordMismatch'), {
         description: passwordErrorMsg,
         duration: 5000,
       });
@@ -120,8 +126,8 @@ function SifreSifirlaContent() {
     }
 
     if (!email) {
-      toast.error('Geçersiz bağlantı!', {
-        description: 'E-posta adresi bulunamadı. Lütfen şifremi unuttum sayfasından tekrar başlayın.',
+      toast.error(t('invalidLink'), {
+        description: t('invalidLinkDescription'),
         duration: 5000,
       });
       return;
@@ -136,8 +142,8 @@ function SifreSifirlaContent() {
       
       if (resetPassword.fulfilled.match(result)) {
         setIsSuccess(true);
-        toast.success('Şifre başarıyla sıfırlandı!', {
-          description: 'Yeni şifrenizle giriş yapabilirsiniz.',
+        toast.success(t('resetSuccess'), {
+          description: t('resetSuccessDescription'),
           duration: 5000,
         });
         
@@ -159,7 +165,7 @@ function SifreSifirlaContent() {
             <div className="mx-auto flex items-center justify-center mb-4">
               <Image
                 src="/_next/static/logo-vote.png"
-                alt="Vote Logo"
+                alt={t('logoAlt')}
                 width={200}
                 height={80}
                 className="h-20 w-auto"
@@ -167,10 +173,10 @@ function SifreSifirlaContent() {
               />
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Şifre Başarıyla Sıfırlandı
+              {t('successTitle')}
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Yeni şifrenizle giriş yapabilirsiniz.
+              {t('successSubtitle')}
             </p>
           </div>
 
@@ -183,11 +189,11 @@ function SifreSifirlaContent() {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-green-800">
-                  İşlem tamamlandı
+                  {t('successMessage')}
                 </h3>
                 <div className="mt-2 text-sm text-green-700">
                   <p>
-                    Şifreniz başarıyla güncellendi. Artık yeni şifrenizle giriş yapabilirsiniz.
+                    {t('successDescription')}
                   </p>
                 </div>
               </div>
@@ -195,12 +201,12 @@ function SifreSifirlaContent() {
           </div>
 
           <div className="text-center">
-            <button
+            <Button
               onClick={() => router.push('/giris')}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Giriş Yap
-            </button>
+              {t('loginButton')}
+            </Button>
           </div>
         </div>
       </div>
@@ -214,7 +220,7 @@ function SifreSifirlaContent() {
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
               src="/_next/static/logo-vote.png"
-              alt="Vote Logo"
+              alt={t('logoAlt')}
               width={200}
               height={80}
               className="h-20 w-auto"
@@ -222,12 +228,12 @@ function SifreSifirlaContent() {
             />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Yeni Şifre Oluştur
+            {t('title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {email && (
               <>
-                <span className="font-medium text-orange-600">{email}</span> adresine gönderilen doğrulama kodunu girin ve yeni şifre oluşturun.
+                {t('subtitle')} <span className="font-medium text-orange-600">{email}</span>
               </>
             )}
           </p>
@@ -236,10 +242,10 @@ function SifreSifirlaContent() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="passwordToken" className="block text-sm font-medium text-gray-700">
-                Doğrulama Kodu
-              </label>
-              <input
+              <Label htmlFor="passwordToken" className="text-sm font-medium text-gray-700">
+                {t('verificationCodeLabel')}
+              </Label>
+              <Input
                 id="passwordToken"
                 name="passwordToken"
                 type="number"
@@ -248,74 +254,76 @@ function SifreSifirlaContent() {
                 maxLength={4}
                 value={formData.passwordToken}
                 onChange={handleChange}
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 bg-white rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm text-center text-lg tracking-widest"
-                placeholder="0000"
+                className="mt-1 w-full bg-white text-center text-lg tracking-widest"
+                placeholder={t('verificationCodePlaceholder')}
                 required
                 autoComplete="one-time-code"
               />
               <p className="mt-1 text-xs text-gray-500">
-                E-posta adresinize gönderilen 4 haneli kodu girin.
+                {t('verificationCodeHelp')}
               </p>
             </div>
 
             <PasswordInput
               id="password"
               name="password"
-              label="Yeni Şifre"
+              label={t('newPasswordLabel')}
               value={formData.password}
               onChange={handleChange}
-              placeholder="Yeni şifreniz"
+              placeholder={t('newPasswordPlaceholder')}
               required
               autoComplete="new-password"
               showPassword={showPassword}
               setShowPassword={setShowPassword}
               error={passwordError}
-              success={!passwordError && formData.password ? "Şifre güçlü" : undefined}
+              success={!passwordError && formData.password ? t('passwordStrong') : undefined}
+              className="w-full"
             />
 
             <PasswordInput
               id="confirmPassword"
               name="confirmPassword"
-              label="Şifre Tekrar"
+              label={t('confirmPasswordLabel')}
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="Şifrenizi tekrar girin"
+              placeholder={t('confirmPasswordPlaceholder')}
               required
               autoComplete="new-password"
               showPassword={showConfirmPassword}
               setShowPassword={setShowConfirmPassword}
+              className="w-full"
             />
           </div>
 
           <div>
-            <button
+            <Button
               type="submit"
               disabled={loading || passwordError !== '' || !formData.passwordToken || !formData.password || !formData.confirmPassword}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
               {loading ? (
-                <div className="flex items-center">
+                <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Sıfırlanıyor...
-                </div>
+                  {t('resetButtonLoading')}
+                </>
               ) : (
-                <div className="flex items-center">
+                <>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                   </svg>
-                  Şifreyi Sıfırla
-                </div>
+                  {t('resetButton')}
+                </>
               )}
-            </button>
+            </Button>
           </div>
 
           <div className="text-center">
-            <a href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
-              Giriş sayfasına dön
-            </a>
+            <Link href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
+              {t('backToLogin')}
+            </Link>
           </div>
         </form>
       </div>
@@ -340,7 +348,7 @@ export default function SifreSifirlaPage() {
           </div>
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-600">Yükleniyor...</p>
+            <p className="mt-2 text-sm text-gray-600">Loading...</p>
           </div>
         </div>
       </div>

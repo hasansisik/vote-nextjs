@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { getTrendTests } from '@/redux/actions/testActions';
+import { useTranslations } from 'next-intl';
 import { Skeleton } from './ui/skeleton';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 
@@ -22,6 +23,7 @@ interface SliderContent {
 }
 
 export default function HeroSlider() {
+  const t = useTranslations('HeroSlider');
   const router = useRouter();
   const dispatch = useDispatch();
   const { trendTests, trendTestsLoading } = useSelector((state: any) => state.test);
@@ -33,9 +35,9 @@ export default function HeroSlider() {
     if (typeof category === 'string') {
       // Category ID'si string olarak geliyorsa, activeCategories'den bul
       const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
-      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
+      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
     }
-    return getCategoryName(category).toUpperCase() || 'KATEGORİ';
+    return getCategoryName(category).toUpperCase() || t('category');
   };
 
   // Sadece trend testleri yükle - kategoriler ana sayfada zaten yükleniyor
@@ -220,7 +222,7 @@ export default function HeroSlider() {
         {/* Sağ Taraf - Trend */}
         <div className="w-1/3 bg-black p-4 flex flex-col">
           <h3 className="text-lg font-bold uppercase tracking-wide mb-4 text-white flex-shrink-0">
-            ŞU AN TREND
+            {t('trendingNow')}
           </h3>
           
           <div className="flex-1 flex flex-col">
@@ -337,7 +339,7 @@ export default function HeroSlider() {
         {/* Trend Section - Mobile below */}
         <div className="bg-black border-t border-gray-800 p-2">
           <h3 className="text-sm font-bold uppercase tracking-wide mb-2 text-white">
-            ŞU AN TREND
+            {t('trendingNow')}
           </h3>
           
           <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">

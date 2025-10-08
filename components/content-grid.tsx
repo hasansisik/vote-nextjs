@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { getPopularTests } from '@/redux/actions/testActions';
+import { useTranslations } from 'next-intl';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 
 
@@ -27,6 +28,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
   title = '', 
   cards = [] 
 }) => {
+  const t = useTranslations('ContentGrid');
   const dispatch = useDispatch();
   const { popularTests, popularTestsLoading } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
@@ -36,9 +38,9 @@ const ContentGrid: React.FC<ContentGridProps> = ({
     if (typeof category === 'string') {
       // Category ID'si string olarak geliyorsa, activeCategories'den bul
       const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
-      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
+      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
     }
-    return getCategoryName(category).toUpperCase() || 'KATEGORİ';
+    return getCategoryName(category).toUpperCase() || t('category');
   };
 
   // Popular testleri yükle
@@ -96,7 +98,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
         <div className="flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Popüler testler yükleniyor...</p>
+            <p className="text-gray-600">{t('loading')}</p>
           </div>
         </div>
       </div>

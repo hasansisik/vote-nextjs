@@ -4,14 +4,17 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from '@/i18n/routing';
 import { verifyEmail, againEmail, clearError } from '@/redux/actions/userActions';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 function DogrulamaContent() {
+  const t = useTranslations('VerificationPage');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,7 +40,7 @@ function DogrulamaContent() {
         return;
       }
       
-      toast.error('Hata!', {
+      toast.error(t('errorTitle'), {
         description: errorMessage,
         duration: 5000,
       });
@@ -56,16 +59,16 @@ function DogrulamaContent() {
     e.preventDefault();
     
     if (!verificationCode || verificationCode.length !== 4) {
-      toast.error('Geçersiz kod!', {
-        description: 'Lütfen 4 haneli doğrulama kodunu girin.',
+      toast.error(t('invalidCode'), {
+        description: t('invalidCodeDescription'),
         duration: 3000,
       });
       return;
     }
 
     if (!email) {
-      toast.error('E-posta bulunamadı!', {
-        description: 'Lütfen tekrar kayıt olun.',
+      toast.error(t('emailNotFound'), {
+        description: t('emailNotFoundDescription'),
         duration: 3000,
       });
       return;
@@ -79,8 +82,8 @@ function DogrulamaContent() {
       
       if (verifyEmail.fulfilled.match(result)) {
         setIsSuccess(true);
-        toast.success('E-posta doğrulandı!', {
-          description: 'Hesabınız başarıyla doğrulandı. Şimdi giriş yapabilirsiniz.',
+        toast.success(t('verificationSuccess'), {
+          description: t('verificationSuccessDescription'),
           duration: 5000,
         });
         
@@ -96,8 +99,8 @@ function DogrulamaContent() {
 
   const handleResendCode = async () => {
     if (!email) {
-      toast.error('E-posta bulunamadı!', {
-        description: 'Lütfen tekrar kayıt olun.',
+      toast.error(t('emailNotFound'), {
+        description: t('emailNotFoundDescription'),
         duration: 3000,
       });
       return;
@@ -108,8 +111,8 @@ function DogrulamaContent() {
       const result = await dispatch(againEmail(email));
       
       if (againEmail.fulfilled.match(result)) {
-        toast.success('Kod tekrar gönderildi!', {
-          description: 'Yeni doğrulama kodu e-posta adresinize gönderildi.',
+        toast.success(t('resendSuccess'), {
+          description: t('resendSuccessDescription'),
           duration: 5000,
         });
       }
@@ -128,7 +131,7 @@ function DogrulamaContent() {
             <div className="mx-auto flex items-center justify-center mb-4">
               <Image
                 src="/_next/static/logo-vote.png"
-                alt="Vote Logo"
+                alt={t('logoAlt')}
                 width={200}
                 height={80}
                 className="h-20 w-auto"
@@ -136,10 +139,10 @@ function DogrulamaContent() {
               />
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              E-posta Doğrulandı
+              {t('successTitle')}
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Hesabınız başarıyla doğrulandı. Şimdi giriş yapabilirsiniz.
+              {t('successSubtitle')}
             </p>
           </div>
 
@@ -152,11 +155,11 @@ function DogrulamaContent() {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-green-800">
-                  Doğrulama tamamlandı
+                  {t('successMessage')}
                 </h3>
                 <div className="mt-2 text-sm text-green-700">
                   <p>
-                    E-posta adresiniz başarıyla doğrulandı. Artık hesabınıza giriş yapabilirsiniz.
+                    {t('successDescription')}
                   </p>
                 </div>
               </div>
@@ -168,7 +171,7 @@ function DogrulamaContent() {
               onClick={() => router.push('/giris')}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
-              Giriş Yap
+              {t('loginButton')}
             </Button>
           </div>
         </div>
@@ -183,7 +186,7 @@ function DogrulamaContent() {
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
               src="/_next/static/logo-vote.png"
-              alt="Vote Logo"
+              alt={t('logoAlt')}
               width={200}
               height={80}
               className="h-20 w-auto"
@@ -191,12 +194,12 @@ function DogrulamaContent() {
             />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            E-posta Doğrulama
+            {t('title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {email && (
               <>
-                <span className="font-medium text-orange-600">{email}</span> adresine gönderilen 4 haneli doğrulama kodunu girin.
+                {t('subtitle')} <span className="font-medium text-orange-600">{email}</span>
               </>
             )}
           </p>
@@ -204,20 +207,22 @@ function DogrulamaContent() {
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
-            <Label htmlFor="verificationCode">Doğrulama Kodu</Label>
+            <Label htmlFor="verificationCode" className="text-sm font-medium text-gray-700">
+              {t('verificationCodeLabel')}
+            </Label>
             <Input
               id="verificationCode"
               name="verificationCode"
               type="text"
               value={verificationCode}
               onChange={handleChange}
-              placeholder="123456"
+              placeholder={t('verificationCodePlaceholder')}
               className="text-center text-2xl tracking-widest mt-2 bg-white"
               maxLength={4}
               required
             />
             <p className="mt-2 text-xs text-gray-500 text-center">
-              4 haneli doğrulama kodunu girin
+              {t('verificationCodeHelp')}
             </p>
           </div>
 
@@ -228,42 +233,42 @@ function DogrulamaContent() {
               className="w-full bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                <div className="flex items-center">
+                <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Doğrulanıyor...
-                </div>
+                  {t('verifyButtonLoading')}
+                </>
               ) : (
-                <div className="flex items-center">
+                <>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  Doğrula
-                </div>
+                  {t('verifyButton')}
+                </>
               )}
             </Button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Kodu almadınız mı?{' '}
+              {t('resendText')}{' '}
               <button
                 type="button"
                 onClick={handleResendCode}
                 disabled={isResending}
                 className="font-medium text-orange-600 hover:text-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isResending ? 'Gönderiliyor...' : 'Tekrar Gönder'}
+                {isResending ? t('resendButtonLoading') : t('resendButton')}
               </button>
             </p>
           </div>
 
           <div className="text-center">
-            <a href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
-              Giriş sayfasına dön
-            </a>
+            <Link href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
+              {t('backToLogin')}
+            </Link>
           </div>
         </form>
       </div>
@@ -288,7 +293,7 @@ export default function DogrulamaPage() {
           </div>
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-            <p className="mt-2 text-sm text-gray-600">Yükleniyor...</p>
+            <p className="mt-2 text-sm text-gray-600">Loading...</p>
           </div>
         </div>
       </div>

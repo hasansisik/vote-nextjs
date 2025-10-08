@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
 import { getNotificationStats, getNotifications } from '@/redux/actions/notificationActions';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { 
   User, 
   LogOut, 
@@ -24,6 +24,7 @@ import MobileMenu from './mobile-menu';
 import { LanguageSwitcher } from './language-switcher';
 
 export default function Header() {
+  const t = useTranslations('Header');
   const router = useRouter();
   const dispatch = useDispatch();
   const locale = useLocale();
@@ -116,7 +117,7 @@ export default function Header() {
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
           className={`${hasScroll ? 'block' : 'md:hidden'} p-2 hover:bg-gray-100 rounded-full transition-colors`}
-          title="Menü"
+          title={t('menu')}
         >
           <Menu className="w-6 h-6 text-gray-700" />
         </button>
@@ -138,7 +139,7 @@ export default function Header() {
         >
           <Image
             src="/_next/static/logo-vote.png"
-            alt="Logo"
+            alt={t('logoAlt')}
             width={150}
             height={60}
             className="h-12 w-auto"
@@ -169,12 +170,12 @@ export default function Header() {
                   <button 
                     onClick={handleProfileClick}
                     className="p-2 hover:bg-orange-50 rounded-full transition-colors"
-                    title="Profil"
+                    title={t('profile')}
                   >
                     {(user?.profile?.picture || user?.picture) ? (
                       <Image
                         src={user.profile?.picture || user.picture}
-                        alt="Profil"
+                        alt={t('profile')}
                         width={32}
                         height={32}
                         className="w-8 h-8 rounded-full object-cover"
@@ -204,7 +205,7 @@ export default function Header() {
               <button 
                 onClick={handleNotificationsClick}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
-                title="Bildirimler"
+                title={t('notifications')}
               >
                 <Bell className="w-6 h-6 text-gray-700" />
                 {/* Okunmamış bildirim sayısı */}
@@ -219,7 +220,7 @@ export default function Header() {
               <button 
                 onClick={handleSearchClick}
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                title="Ara"
+                title={t('search')}
               >
                 <svg 
                   className="w-6 h-6 text-gray-700" 
@@ -245,16 +246,16 @@ export default function Header() {
                   <button 
                     onClick={handleLogin}
                     className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-                    title="Giriş Yap"
+                    title={t('login')}
                   >
-                    Giriş Yap
+                    {t('login')}
                   </button>
                   <button 
                     onClick={handleRegister}
                     className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
-                    title="Kayıt Ol"
+                    title={t('register')}
                   >
-                    Kayıt Ol
+                    {t('register')}
                   </button>
                 </>
               )}
@@ -264,9 +265,9 @@ export default function Header() {
                 <button 
                   onClick={handleLogout}
                   className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
-                  title="Çıkış Yap"
+                  title={t('logout')}
                 >
-                  Çıkış Yap
+                  {t('logout')}
                 </button>
               )}
             </>
@@ -300,7 +301,7 @@ export default function Header() {
                     className="w-2 h-2 rounded-full flex-shrink-0" 
                     style={{ backgroundColor: item.color || '#f97316' }}
                   ></div>
-                  {item.name?.[locale] || item.testCategory.name?.[locale] || item.testCategory.name || 'Kategori'}
+                  {item.name?.[locale] || item.testCategory.name?.[locale] || item.testCategory.name || t('category')}
                 </button>
               ))
             )}

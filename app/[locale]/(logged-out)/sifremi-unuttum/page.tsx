@@ -4,11 +4,17 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { forgotPassword, clearError } from '@/redux/actions/userActions';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 export default function SifremiUnuttumPage() {
+  const t = useTranslations('ForgotPasswordPage');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const { loading, error, isAuthenticated } = useSelector((state: any) => state.user);
@@ -30,7 +36,7 @@ export default function SifremiUnuttumPage() {
         return;
       }
       
-      toast.error('Hata!', {
+      toast.error(t('errorTitle'), {
         description: errorMessage,
         duration: 5000,
       });
@@ -41,8 +47,8 @@ export default function SifremiUnuttumPage() {
     e.preventDefault();
     
     if (!email) {
-      toast.error('E-posta adresi gerekli!', {
-        description: 'Lütfen e-posta adresinizi girin.',
+      toast.error(t('emailRequired'), {
+        description: t('emailRequiredDescription'),
         duration: 3000,
       });
       return;
@@ -51,8 +57,8 @@ export default function SifremiUnuttumPage() {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error('Geçersiz e-posta!', {
-        description: 'Lütfen geçerli bir e-posta adresi girin.',
+      toast.error(t('invalidEmail'), {
+        description: t('invalidEmailDescription'),
         duration: 3000,
       });
       return;
@@ -63,8 +69,8 @@ export default function SifremiUnuttumPage() {
       
       if (forgotPassword.fulfilled.match(result)) {
         setIsEmailSent(true);
-        toast.success('E-posta gönderildi!', {
-          description: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.',
+        toast.success(t('emailSent'), {
+          description: t('emailSentDescription'),
           duration: 5000,
         });
         
@@ -86,7 +92,7 @@ export default function SifremiUnuttumPage() {
             <div className="mx-auto flex items-center justify-center mb-4">
               <Image
                 src="/_next/static/logo-vote.png"
-                alt="Vote Logo"
+                alt={t('logoAlt')}
                 width={200}
                 height={80}
                 className="h-20 w-auto"
@@ -94,11 +100,11 @@ export default function SifremiUnuttumPage() {
               />
             </div>
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              E-posta Gönderildi
+              {t('successTitle')}
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Şifre sıfırlama bağlantısı{' '}
-              <span className="font-medium text-orange-600">{email}</span> adresine gönderildi.
+              {t('successSubtitle')}{' '}
+              <span className="font-medium text-orange-600">{email}</span>
             </p>
           </div>
 
@@ -111,12 +117,11 @@ export default function SifremiUnuttumPage() {
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-orange-800">
-                  E-postanızı kontrol edin
+                  {t('successMessage')}
                 </h3>
                 <div className="mt-2 text-sm text-orange-700">
                   <p>
-                    Spam klasörünüzü de kontrol etmeyi unutmayın. 
-                    E-postanızda bulunan 4 haneli kodu kullanarak yeni şifrenizi oluşturabilirsiniz.
+                    {t('successDescription')}
                   </p>
                 </div>
               </div>
@@ -124,12 +129,12 @@ export default function SifremiUnuttumPage() {
           </div>
 
           <div className="text-center">
-            <button
-              onClick={() => router.push('/giris')}
+            <Link
+              href="/giris"
               className="text-orange-600 hover:text-orange-500 font-medium text-sm"
             >
-              Giriş sayfasına dön
-            </button>
+              {t('backToLogin')}
+            </Link>
           </div>
         </div>
       </div>
@@ -143,7 +148,7 @@ export default function SifremiUnuttumPage() {
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
               src="/_next/static/logo-vote.png"
-              alt="Vote Logo"
+              alt={t('logoAlt')}
               width={200}
               height={80}
               className="h-20 w-auto"
@@ -151,19 +156,19 @@ export default function SifremiUnuttumPage() {
             />
           </div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Şifremi Unuttum
+            {t('title')}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim.
+            {t('subtitle')}
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              E-posta adresi
-            </label>
-            <input
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+              {t('emailLabel')}
+            </Label>
+            <Input
               id="email"
               name="email"
               type="email"
@@ -171,40 +176,40 @@ export default function SifremiUnuttumPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 bg-white rounded-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-              placeholder="E-posta adresiniz"
+              placeholder={t('emailPlaceholder')}
+              className="mt-1 w-full bg-white"
             />
           </div>
 
           <div>
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
               {loading ? (
-                <div className="flex items-center">
+                <>
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Gönderiliyor...
-                </div>
+                  {t('submitButtonLoading')}
+                </>
               ) : (
-                <div className="flex items-center">
+                <>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  Şifre Sıfırlama Bağlantısı Gönder
-                </div>
+                  {t('submitButton')}
+                </>
               )}
-            </button>
+            </Button>
           </div>
 
           <div className="text-center">
-            <a href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
-              Giriş sayfasına dön
-            </a>
+            <Link href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
+              {t('backToLogin')}
+            </Link>
           </div>
         </form>
       </div>

@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
 import { getNotificationStats } from '@/redux/actions/notificationActions';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
@@ -25,6 +25,7 @@ interface MobileMenuProps {
 }
 
 export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  const t = useTranslations('MobileMenu');
   const router = useRouter();
   const dispatch = useDispatch();
   const locale = useLocale();
@@ -101,7 +102,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             >
               <Image
                 src="/_next/static/logo-vote.png"
-                alt="Vote Logo"
+                alt={t('logoAlt')}
                 width={120}
                 height={48}
                 className="h-10 w-auto"
@@ -134,7 +135,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 {(user?.profile?.picture || user?.picture) ? (
                   <Image
                     src={user.profile?.picture || user.picture}
-                    alt="Profil"
+                    alt={t('profile')}
                     width={40}
                     height={40}
                     className="w-10 h-10 rounded-full object-cover"
@@ -157,7 +158,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   </div>
                 )}
                 <div>
-                  <p className="font-medium text-gray-900">{user?.name || 'Kullanıcı'}</p>
+                  <p className="font-medium text-gray-900">{user?.name || t('user')}</p>
                   <p className="text-sm text-gray-500">{user?.email}</p>
                 </div>
               </div>
@@ -170,7 +171,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 >
                   <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
                     <User className="w-5 h-5 text-gray-600" />
-                    Profil
+                    {t('profile')}
                   </div>
                 </button>
                 <button 
@@ -179,7 +180,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 >
                   <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg relative">
                     <Bell className="w-5 h-5 text-gray-600" />
-                    Bildirimler
+                    {t('notifications')}
                     {/* Okunmamış bildirim sayısı */}
                     {notificationStats?.unread > 0 && (
                       <span className="ml-auto bg-orange-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
@@ -194,7 +195,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 >
                   <div className="flex items-center gap-3 px-4 py-3 rounded-lg">
                     <LogOut className="w-5 h-5" />
-                    Çıkış Yap
+                    {t('logout')}
                   </div>
                 </button>
               </div>
@@ -208,7 +209,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               >
                 <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
                   <LogIn className="w-5 h-5 text-gray-600" />
-                  Giriş Yap
+                  {t('login')}
                 </div>
               </button>
               <button 
@@ -217,7 +218,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               >
                 <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
                   <UserPlus className="w-5 h-5 text-gray-600" />
-                  Kayıt Ol
+                  {t('register')}
                 </div>
               </button>
             </div>
@@ -231,7 +232,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             >
               <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-100 rounded-lg">
                 <Search className="w-5 h-5 text-gray-600" />
-                Ara
+                {t('search')}
               </div>
             </button>
           </div>
@@ -256,7 +257,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         className="w-3 h-3 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: item.color || '#f97316' }}
                       ></div>
-                      {item.name?.[locale] || item.testCategory.name?.[locale] || item.testCategory.name || 'Kategori'}
+                      {item.name?.[locale] || item.testCategory.name?.[locale] || item.testCategory.name || t('category')}
                     </div>
                   </button>
                 ))
