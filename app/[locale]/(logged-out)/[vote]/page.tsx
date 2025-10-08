@@ -67,6 +67,7 @@ export default function VotePage() {
   const [finalRankings, setFinalRankings] = useState<Array<{option: Option, score: number}>>([]);
   const [finalWinner, setFinalWinner] = useState<Option | null>(null);
   const [resultsFetched, setResultsFetched] = useState(false);
+  const [votingInitialized, setVotingInitialized] = useState(false);
 
   // Get category name by ID
   const getCategoryNameById = (categoryId: string) => {
@@ -85,6 +86,9 @@ export default function VotePage() {
   // Test'i yükle - slug veya ID ile
   useEffect(() => {
     if (voteId && !test) {
+      // Voting initialized state'ini sıfırla
+      setVotingInitialized(false);
+      
       // Eğer slug formatındaysa direkt slug ile yükle
       if (isSlug(voteId)) {
         dispatch(getSingleTestBySlug(voteId)).unwrap()
@@ -109,7 +113,7 @@ export default function VotePage() {
         }
       }
     }
-  }, [voteId, allTests, test, dispatch]);
+  }, [voteId, test, dispatch]); // allTests dependency'sini kaldırdık
 
   // Test bittiğinde final rankings oluştur - sadece bir kez çalışacak
   useEffect(() => {
@@ -161,6 +165,11 @@ export default function VotePage() {
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
+    // Eğer zaten initialize edilmişse tekrar etme
+    if (votingInitialized) {
+      return;
+    }
+    
     console.log(`Film testi başlatılıyor: ${testData.options.length} seçenek ile`);
     
     // Başlangıç skorları - her seçenek için 0 puan
@@ -174,8 +183,15 @@ export default function VotePage() {
     // Her karşılaştırmada bir seçenek kazanır ve diğeri elenir
     // 10 seçenek = 9 karşılaştırma sonunda 1 kazanan kalır
     
-    const shuffled = [...testData.options].sort(() => Math.random() - 0.5);
-    console.log('Karıştırılmış seçenekler:', shuffled.map(s => s.title));
+    // Test ID'sine göre sabit sıralama (her test için aynı sıra)
+    const shuffled = [...testData.options].sort((a, b) => {
+      // Test ID'sinin son karakterlerini kullanarak sabit bir sıralama yap
+      const testIdHash = testData._id.slice(-4);
+      const aHash = a._id.slice(-4);
+      const bHash = b._id.slice(-4);
+      return (testIdHash + aHash).localeCompare(testIdHash + bHash);
+    });
+    console.log('Sabit sıralı seçenekler:', shuffled.map(s => s.title));
     
     // İlk karşılaştırma
     setCurrentPair([shuffled[0], shuffled[1]]);
@@ -189,6 +205,7 @@ export default function VotePage() {
     setIsComplete(false);
     setResultsFetched(false); // Results fetch durumunu sıfırla
     setFinalRankings([]); // Final rankings'i temizle
+    setVotingInitialized(true); // Initialize edildi olarak işaretle
     
     console.log(`Başlangıç çifti: ${shuffled[0].title} vs ${shuffled[1].title}`);
     console.log(`Toplam ${testData.options.length - 1} karşılaştırma olacak`);
