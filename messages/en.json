@@ -209,6 +209,32 @@
     "previous": "Previous",
     "next": "Next"
   },
+  "VotePage": {
+    "finalRankingsTitle": "{category} RANKINGS",
+    "yourChoice": "Winner (Your Choice)",
+    "otherParticipantsChoice": "Other Participants' Choice",
+    "otherRankings": "Other Rankings",
+    "shareResults": "Share Results",
+    "backToHome": "Back to Home"
+  },
+  "ShareDialog": {
+    "shareResultsText": "voting results",
+    "yourChoice": "Your Choice",
+    "rankings": "Rankings",
+    "voting": "Voting",
+    "votingResults": "Voting Results",
+    "resultsCopied": "Results copied to clipboard!",
+    "copyFailed": "Copy failed!",
+    "linkCopied": "Link copied to clipboard!",
+    "linkCopyFailed": "Link copy failed!",
+    "shareWindowOpened": "{platform} share window opened!",
+    "votingResult": "Voting Result",
+    "congratulations": "Congratulations! This is your choice.",
+    "voteRate": "vote rate",
+    "shareAndCopy": "Share & Copy",
+    "shareResults": "Share Results",
+    "copyLink": "Copy Link"
+  },
   "NotificationsPage": {
     "title": "Notifications",
     "unreadCount": "unread notifications",

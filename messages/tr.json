@@ -209,6 +209,32 @@
     "previous": "Önceki",
     "next": "Sonraki"
   },
+  "VotePage": {
+    "finalRankingsTitle": "{category} SIRALAMASI",
+    "yourChoice": "Kazanan (Sizin Seçiminiz)",
+    "otherParticipantsChoice": "Diğer Katılımcıların Tercihi",
+    "otherRankings": "Diğer Sıralamalar",
+    "shareResults": "Sonuçları Paylaş",
+    "backToHome": "Ana Sayfaya Dön"
+  },
+  "ShareDialog": {
+    "shareResultsText": "oylama sonuçları",
+    "yourChoice": "Seçimin",
+    "rankings": "Sıralama",
+    "voting": "Oylama",
+    "votingResults": "Oylama Sonuçları",
+    "resultsCopied": "Sonuçlar panoya kopyalandı!",
+    "copyFailed": "Kopyalama başarısız!",
+    "linkCopied": "Link panoya kopyalandı!",
+    "linkCopyFailed": "Link kopyalama başarısız!",
+    "shareWindowOpened": "{platform} paylaşım penceresi açıldı!",
+    "votingResult": "Oylama Sonucu",
+    "congratulations": "Tebrikler! Bu sizin tercihiniz.",
+    "voteRate": "oy oranı",
+    "shareAndCopy": "Paylaş & Kopyala",
+    "shareResults": "Sonuçları Paylaş",
+    "copyLink": "Linki Kopyala"
+  },
   "NotificationsPage": {
     "title": "Bildirimler",
     "unreadCount": "okunmamış bildiriminiz var",

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests, voteOnTest, getTestResults } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
@@ -38,6 +39,7 @@ interface Test {
 }
 
 export default function VotePage() {
+  const t = useTranslations('VotePage');
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -273,7 +275,7 @@ export default function VotePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-6">
              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-               {getCategoryNameById(test.category).toUpperCase()} SIRALAMASI
+               {t('finalRankingsTitle', { category: getCategoryNameById(test.category).toUpperCase() })}
              </h1>
              <p className="text-base text-gray-600 mb-2">{getTestTitle(test)}</p>
              <p className="text-sm text-gray-500">{getTestDescription(test)}</p>
@@ -335,7 +337,7 @@ export default function VotePage() {
                     <div className="mb-3">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-medium text-gray-600">
-                          {ranking.option._id === finalWinner?._id ? 'Kazanan (Sizin Seçiminiz)' : 'Diğer Katılımcıların Tercihi'}
+                          {ranking.option._id === finalWinner?._id ? t('yourChoice') : t('otherParticipantsChoice')}
                         </span>
                         <span className="text-lg font-bold text-orange-600">
                           {ranking.score.toFixed(1)}%
@@ -370,7 +372,7 @@ export default function VotePage() {
           {/* Rest of Rankings */}
           {finalRankings.length > 3 && (
             <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Diğer Sıralamalar</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">{t('otherRankings')}</h2>
               <div className="space-y-2">
                 {finalRankings.slice(3).map((ranking, index) => (
                   <div 
@@ -408,7 +410,7 @@ export default function VotePage() {
                         {ranking.score.toFixed(1)}%
                       </div>
                       <div className="text-xs text-gray-500 mb-1">
-                        {ranking.option._id === finalWinner?._id ? 'Kazanan (Sizin Seçiminiz)' : 'Diğer Katılımcıların Tercihi'}
+                        {ranking.option._id === finalWinner?._id ? t('yourChoice') : t('otherParticipantsChoice')}
                       </div>
                      
                     </div>
@@ -428,7 +430,7 @@ export default function VotePage() {
               finalWinner={finalWinner}
             >
               <button className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
-                Sonuçları Paylaş
+                {t('shareResults')}
               </button>
             </ShareDialog>
             
@@ -436,7 +438,7 @@ export default function VotePage() {
               onClick={() => router.push('/')}
               className="px-8 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors font-medium"
             >
-              Ana Sayfaya Dön
+              {t('backToHome')}
             </button>
           </div>
 

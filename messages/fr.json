@@ -209,6 +209,32 @@
     "previous": "Précédent",
     "next": "Suivant"
   },
+  "VotePage": {
+    "finalRankingsTitle": "CLASSEMENT {category}",
+    "yourChoice": "Gagnant (Votre Choix)",
+    "otherParticipantsChoice": "Choix des Autres Participants",
+    "otherRankings": "Autres Classements",
+    "shareResults": "Partager les Résultats",
+    "backToHome": "Retour à l'Accueil"
+  },
+  "ShareDialog": {
+    "shareResultsText": "résultats de vote",
+    "yourChoice": "Votre Choix",
+    "rankings": "Classement",
+    "voting": "Vote",
+    "votingResults": "Résultats de Vote",
+    "resultsCopied": "Résultats copiés dans le presse-papiers !",
+    "copyFailed": "Échec de la copie !",
+    "linkCopied": "Lien copié dans le presse-papiers !",
+    "linkCopyFailed": "Échec de la copie du lien !",
+    "shareWindowOpened": "Fenêtre de partage {platform} ouverte !",
+    "votingResult": "Résultat de Vote",
+    "congratulations": "Félicitations ! C'est votre choix.",
+    "voteRate": "taux de vote",
+    "shareAndCopy": "Partager et Copier",
+    "shareResults": "Partager les Résultats",
+    "copyLink": "Copier le Lien"
+  },
   "NotificationsPage": {
     "title": "Notifications",
     "unreadCount": "notifications non lues",

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -43,11 +44,12 @@ export default function ShareDialog({
   finalWinner,
   children
 }: ShareDialogProps) {
+  const t = useTranslations('ShareDialog');
   const [isOpen, setIsOpen] = useState(false);
 
-  const shareText = `${testTitle} oylama sonuçları!\n\nSeçimin: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\nSıralama:\n${finalRankings.slice(0, 5).map((ranking, index) => 
+  const shareText = `${testTitle} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
     `${index + 1}. ${getOptionTitle(ranking.option)} - %${ranking.score.toFixed(1)}`
-  ).join('\n')}\n\n#Oylama #${categoryName}`;
+  ).join('\n')}\n\n#${t('voting')} #${categoryName}`;
 
   const shareUrl = window.location.href;
 
@@ -55,7 +57,7 @@ export default function ShareDialog({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${testTitle} - Oylama Sonuçları`,
+          title: `${testTitle} - ${t('votingResults')}`,
           text: shareText,
           url: shareUrl
         });
@@ -68,20 +70,20 @@ export default function ShareDialog({
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(shareText);
-      toast.success('Sonuçlar panoya kopyalandı!');
+      toast.success(t('resultsCopied'));
     } catch (error) {
       console.error('Failed to copy to clipboard:', error);
-      toast.error('Kopyalama başarısız!');
+      toast.error(t('copyFailed'));
     }
   };
 
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast.success('Link panoya kopyalandı!');
+      toast.success(t('linkCopied'));
     } catch (error) {
       console.error('Failed to copy link:', error);
-      toast.error('Link kopyalama başarısız!');
+      toast.error(t('linkCopyFailed'));
     }
   };
 
@@ -113,7 +115,7 @@ export default function ShareDialog({
     
     if (url) {
       window.open(url, '_blank', 'width=600,height=400');
-      toast.success(`${platformName} paylaşım penceresi açıldı!`);
+      toast.success(t('shareWindowOpened', { platform: platformName }));
     }
   };
 
@@ -128,7 +130,7 @@ export default function ShareDialog({
           <div className="absolute inset-0 bg-black/10"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold">Oylama Sonucu</h2>
+              <h2 className="text-2xl font-bold">{t('votingResult')}</h2>
             </div>
             
             {/* Test Info with Image */}
@@ -179,9 +181,9 @@ export default function ShareDialog({
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h4 className="text-base font-bold text-orange-800 ">Seçimin</h4>
+                    <h4 className="text-base font-bold text-orange-800 ">{t('yourChoice')}</h4>
                     <p className="text-md font-semibold text-orange-900">{getOptionTitle(finalWinner)}</p>
-                    <p className="text-sm text-orange-700">Tebrikler! Bu sizin tercihiniz.</p>
+                    <p className="text-sm text-orange-700">{t('congratulations')}</p>
                   </div>
                 </div>
               </div>
@@ -193,7 +195,7 @@ export default function ShareDialog({
                 <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                 </svg>
-                Sıralama
+                {t('rankings')}
               </h4>
               
               <div className="grid gap-2">
@@ -228,7 +230,7 @@ export default function ShareDialog({
                         <div className="text-base font-bold text-orange-600">
                           %{ranking.score.toFixed(1)}
                         </div>
-                        <div className="text-xs text-gray-500">oy oranı</div>
+                        <div className="text-xs text-gray-500">{t('voteRate')}</div>
                       </div>
                     </div>
                   </div>
@@ -242,7 +244,7 @@ export default function ShareDialog({
                 <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                 </svg>
-                Paylaş & Kopyala
+                {t('shareAndCopy')}
               </h4>
               
               {/* Primary Share Button */}
@@ -254,7 +256,7 @@ export default function ShareDialog({
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
                   </svg>
-                  Sonuçları Paylaş
+                  {t('shareResults')}
                 </Button>
               </div>
 
@@ -303,7 +305,7 @@ export default function ShareDialog({
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                   </svg>
-                  Linki Kopyala
+                  {t('copyLink')}
                 </Button>
               </div>
             </div>
