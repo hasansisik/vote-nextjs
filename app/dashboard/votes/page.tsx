@@ -43,8 +43,10 @@ export default function VotesPage() {
     console.log('Active categories:', activeCategories);
     console.log('All tests:', allTests);
     if (allTests?.length > 0) {
-      console.log('First test category:', allTests[0]?.category);
-      console.log('Category match:', activeCategories?.find((cat: any) => cat._id === allTests[0]?.category));
+      console.log('First test categories:', allTests[0]?.categories);
+      console.log('Category matches:', allTests[0]?.categories?.map((catId: string) => 
+        activeCategories?.find((cat: any) => cat._id === catId)
+      ));
     }
   }, [activeCategories, allTests]);
 
@@ -98,14 +100,6 @@ export default function VotesPage() {
 
   const getCategoryColor = (categoryId: string) => {
     return "bg-gray-100 text-gray-800";
-  };
-
-  const getCategoryNameById = (categoryId: string) => {
-    if (!categoryId) return 'Kategori Yok';
-    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    if (!category) return 'Bilinmeyen Kategori';
-    
-    return getCategoryName(category);
   };
 
   if (user?.role !== 'admin') {
@@ -227,9 +221,25 @@ export default function VotesPage() {
                     </div>
                   </td>
                   <td className="px-4 py-4">
-                    <Badge className={`${getCategoryColor(test.category)} text-xs`}>
-                      {activeCategories?.length > 0 ? getCategoryNameById(test.category) : 'Yükleniyor...'}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1">
+                      {test.categories && test.categories.length > 0 ? (
+                        test.categories.map((categoryId: string, index: number) => {
+                          const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+                          return (
+                            <Badge 
+                              key={index} 
+                              className={`${getCategoryColor(categoryId)} text-xs`}
+                            >
+                              {category ? getCategoryName(category) : 'Bilinmeyen Kategori'}
+                            </Badge>
+                          );
+                        })
+                      ) : (
+                        <Badge className="bg-gray-100 text-gray-800 text-xs">
+                          {activeCategories?.length > 0 ? 'Kategori Yok' : 'Yükleniyor...'}
+                        </Badge>
+                      )}
+                    </div>
                   </td>
                   <td className="px-1 py-2">
                     <div className="flex items-center gap-0.5 flex-wrap">
