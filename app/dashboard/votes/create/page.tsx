@@ -106,7 +106,7 @@ function CreateTestPageContent() {
       de: "",
       fr: "",
     },
-    category: "",
+    categories: [] as string[],
     trend: false,
     popular: false,
     endDate: "",
@@ -184,7 +184,7 @@ function CreateTestPageContent() {
           coverImage: singleTest.coverImage || "",
           headerText: singleTest.headerText || { tr: "", en: "", de: "", fr: "" },
           footerText: singleTest.footerText || { tr: "", en: "", de: "", fr: "" },
-          category: singleTest.category || "",
+          categories: singleTest.categories || [],
           trend: singleTest.trend || false,
           popular: singleTest.popular || false,
           endDate: singleTest.endDate ? new Date(singleTest.endDate).toISOString().split('T')[0] : "",
@@ -379,16 +379,26 @@ function CreateTestPageContent() {
   };
 
   const handleCategorySelect = (category: any) => {
-    handleInputChange("category", category._id);
+    setFormData(prev => ({
+      ...prev,
+      categories: [...prev.categories, category._id]
+    }));
+  };
+
+  const handleCategoryRemove = (categoryId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.filter(id => id !== categoryId)
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
-    if (!formData.title.tr || !formData.category) {
+    if (!formData.title.tr || formData.categories.length === 0) {
       toast.error("Eksik Bilgi", {
-        description: "Türkçe başlık ve kategori alanları zorunludur.",
+        description: "Türkçe başlık ve en az bir kategori alanları zorunludur.",
         duration: 4000
       });
       return;
@@ -821,25 +831,63 @@ function CreateTestPageContent() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Yayınla</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="category" className="text-sm font-medium text-gray-700">
-                  Kategori *
+                <Label htmlFor="categories" className="text-sm font-medium text-gray-700">
+                  Kategoriler *
                 </Label>
+                
+                {/* Selected Categories Display */}
+                {formData.categories.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs text-gray-500">Seçili kategoriler:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.categories.map((categoryId) => {
+                        const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+                        return category ? (
+                          <div
+                            key={categoryId}
+                            className="flex items-center gap-1 bg-orange-100 text-orange-800 px-2 py-1 rounded-md text-xs"
+                          >
+                            <span>{getCategoryName(category)}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleCategoryRemove(categoryId)}
+                              className="text-orange-600 hover:text-orange-800"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Category Selection */}
                 <Select
-                  value={formData.category}
-                  onValueChange={(value) => handleInputChange("category", value)}
+                  value=""
+                  onValueChange={(value) => {
+                    const category = activeCategories?.find((cat: any) => cat._id === value);
+                    if (category && !formData.categories.includes(value)) {
+                      handleCategorySelect(category);
+                    }
+                  }}
                   disabled={categoriesLoading}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={categoriesLoading ? "Kategoriler yükleniyor..." : "Kategori seçin"} />
+                    <SelectValue placeholder={categoriesLoading ? "Kategoriler yükleniyor..." : "Kategori ekle"} />
                   </SelectTrigger>
                   <SelectContent>
-                    {activeCategories?.map((category: any) => (
+                    {activeCategories?.filter((category: any) => !formData.categories.includes(category._id)).map((category: any) => (
                       <SelectItem key={category._id} value={category._id}>
                         {getCategoryName(category)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                
+                {formData.categories.length === 0 && (
+                  <p className="text-xs text-red-500">En az bir kategori seçmelisiniz</p>
+                )}
               </div>
 
               {/* Trend Switch */}
@@ -933,7 +981,8 @@ function CreateTestPageContent() {
             <ul className="text-sm text-orange-800 space-y-2">
               <li>• En az 2 seçenek eklemelisiniz</li>
               <li>• Her seçenek için görsel yüklemek zorunludur</li>
-              <li>• Türkçe başlık ve kategori alanları zorunludur</li>
+              <li>• Türkçe başlık ve en az bir kategori zorunludur</li>
+              <li>• Birden fazla kategori seçebilirsiniz</li>
               <li>• Diğer diller isteğe bağlıdır</li>
               <li>• Özel alanlar isteğe bağlıdır</li>
               <li>• Bitiş tarihi belirlenirse test otomatik pasif olur</li>
@@ -957,7 +1006,7 @@ function CreateTestPageContent() {
         onClose={() => setCropperOpen(false)}
         onCrop={handleCroppedImage}
         imageUrl={cropperImageUrl}
-        aspectRatio={1} // Square aspect ratio
+        aspectRatio={croppingFor === "cover" ? 16/9 : 1} // Horizontal for cover, square for options
       />
     </div>
   );
