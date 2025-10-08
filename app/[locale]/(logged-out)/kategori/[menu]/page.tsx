@@ -54,7 +54,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, getCategoryNameBy
       <div className="px-1 py-2">
         {/* Kategori */}
         <div className="text-xs font-bold uppercase tracking-wide text-gray-600">
-          {getCategoryNameById(test.category)}
+          {getCategoryNameById(test.categories)}
         </div>
         
         {/* Başlık */}
@@ -88,13 +88,25 @@ export default function CategoryPage() {
   const itemsPerPage = 20;
 
   // Category name helper function
-  const getCategoryNameById = (category: any) => {
-    if (typeof category === 'string') {
-      // Category ID'si string olarak geliyorsa, activeCategories'den bul
-      const categoryObj = activeCategories?.find((cat: any) => cat._id === category);
+  const getCategoryNameById = (categories: any) => {
+    // Handle categories array - get first category
+    if (Array.isArray(categories) && categories.length > 0) {
+      const firstCategory = categories[0];
+      if (typeof firstCategory === 'string') {
+        // Category ID'si string olarak geliyorsa, activeCategories'den bul
+        const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
+        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
+      }
+      return getCategoryName(firstCategory).toUpperCase() || 'KATEGORİ';
+    }
+    
+    // Handle single category (backward compatibility)
+    if (typeof categories === 'string') {
+      const categoryObj = activeCategories?.find((cat: any) => cat._id === categories);
       return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
     }
-    return getCategoryName(category).toUpperCase() || 'KATEGORİ';
+    
+    return getCategoryName(categories).toUpperCase() || 'KATEGORİ';
   };
 
   // URL'den kategori parametresini al
@@ -134,7 +146,7 @@ export default function CategoryPage() {
       const categoryName = getText(categoryInfo.name, 'tr');
       const menu = activeMenus.find((menu: any) => 
         menu.testCategory && menu.testCategory.name && 
-        menu.testCategory.name.toLowerCase() === categoryName.toLowerCase()
+        getText(menu.testCategory.name, 'tr').toLowerCase() === categoryName.toLowerCase()
       );
       if (menu && menu.color) {
         return 'custom-color';
@@ -162,7 +174,7 @@ export default function CategoryPage() {
       const categoryName = getText(categoryInfo.name, 'tr');
       const menu = activeMenus.find((menu: any) => 
         menu.testCategory && menu.testCategory.name && 
-        menu.testCategory.name.toLowerCase() === categoryName.toLowerCase()
+        getText(menu.testCategory.name, 'tr').toLowerCase() === categoryName.toLowerCase()
       );
       if (menu && menu.color) {
         return { backgroundColor: menu.color };
