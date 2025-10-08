@@ -46,6 +46,10 @@ const nextConfig: NextConfig = {
     // Fallback to local images if external image fails
     unoptimized: false,
   },
+  // Ensure static files are properly served
+  trailingSlash: false,
+  // Optimize for Vercel deployment
+  output: 'standalone',
 };
 
 export default withNextIntl(nextConfig);

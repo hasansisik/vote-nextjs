@@ -32,6 +32,7 @@ export function middleware(request: NextRequest) {
     '/kullanim-sartlari',
     '/api',
     '/_next',
+    '/static', // Static files should not have locale prefix
     '/favicon.ico',
     '/oylamalar',
     '/kategoriler',
@@ -88,8 +89,9 @@ export const config = {
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
+     * - static (public static files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api|_next/static|_next/image|static|favicon.ico).*)',
   ],
 };

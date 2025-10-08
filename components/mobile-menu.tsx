@@ -101,7 +101,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               className="hover:opacity-80 transition-opacity"
             >
               <Image
-                src="/_next/static/logo-vote.png"
+                src="/static/logo-vote.png"
                 alt={t('logoAlt')}
                 width={120}
                 height={48}

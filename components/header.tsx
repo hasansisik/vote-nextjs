@@ -138,7 +138,7 @@ export default function Header() {
           className="absolute left-1/2 transform -translate-x-1/2 hover:opacity-80 transition-opacity"
         >
           <Image
-            src="/_next/static/logo-vote.png"
+            src="/static/logo-vote.png"
             alt={t('logoAlt')}
             width={150}
             height={60}

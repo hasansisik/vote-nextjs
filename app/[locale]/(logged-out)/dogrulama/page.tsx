@@ -131,7 +131,7 @@ function DogrulamaContent() {
           <div>
             <div className="mx-auto flex items-center justify-center mb-4">
               <Image
-                src="/_next/static/logo-vote.png"
+                src="/static/logo-vote.png"
                 alt={t('logoAlt')}
                 width={200}
                 height={80}
@@ -186,7 +186,7 @@ function DogrulamaContent() {
         <div>
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
-              src="/_next/static/logo-vote.png"
+              src="/static/logo-vote.png"
               alt={t('logoAlt')}
               width={200}
               height={80}
@@ -284,7 +284,7 @@ export default function DogrulamaPage() {
         <div className="max-w-md w-full space-y-8">
           <div className="mx-auto flex items-center justify-center mb-4">
             <Image
-              src="/_next/static/logo-vote.png"
+              src="/static/logo-vote.png"
               alt="Vote Logo"
               width={200}
               height={80}
