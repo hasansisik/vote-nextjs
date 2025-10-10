@@ -817,10 +817,10 @@ export default function VotePage() {
         </div>
 
         {/* Footer Text */}
-        {test.footerText && getText(test.footerText, 'tr') && (
+        {test.footerText && getText(test.footerText, locale) && (
           <div className="mt-8 text-center">
             {(() => {
-              const footerText = getText(test.footerText, 'tr');
+              const footerText = getText(test.footerText, locale);
               // HTML tag kontrolü
               const hasHtmlTags = /<[^>]*>/g.test(footerText);
               
