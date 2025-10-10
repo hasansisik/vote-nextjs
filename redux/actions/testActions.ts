@@ -223,13 +223,16 @@ export const getSingleTest = createAsyncThunk(
 
 export const getSingleTestBySlug = createAsyncThunk(
   "test/getSingleTestBySlug",
-  async (slug: string, thunkAPI) => {
+  async ({ slug, locale = 'tr' }: { slug: string; locale?: string }, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
       const config = {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: {
+          locale
+        }
       };
       const response = await axios.get(`${server}/tests/slug/${slug}`, config);
       return response.data;
@@ -564,7 +567,7 @@ export const voteOnTest = createAsyncThunk(
 
 export const voteOnTestBySlug = createAsyncThunk(
   "test/voteOnTestBySlug",
-  async (payload: { slug: string; optionId: string }, thunkAPI) => {
+  async (payload: { slug: string; optionId: string; locale?: string }, thunkAPI) => {
     try {
       const token = localStorage.getItem("accessToken");
       
@@ -573,6 +576,9 @@ export const voteOnTestBySlug = createAsyncThunk(
           "Content-Type": "application/json",
           ...(token && { Authorization: `Bearer ${token}` }),
         },
+        params: {
+          locale: payload.locale || 'tr'
+        }
       };
       
       const response = await axios.post(
@@ -609,9 +615,11 @@ export const getTestResults = createAsyncThunk(
 
 export const getTestResultsBySlug = createAsyncThunk(
   "test/getTestResultsBySlug",
-  async (slug: string, thunkAPI) => {
+  async ({ slug, locale = 'tr' }: { slug: string; locale?: string }, thunkAPI) => {
     try {
-      const response = await axios.get(`${server}/tests/slug/${slug}/results`);
+      const response = await axios.get(`${server}/tests/slug/${slug}/results`, {
+        params: { locale }
+      });
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(

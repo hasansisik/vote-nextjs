@@ -20,6 +20,14 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Globe, Check, X } from 'lucide-react';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function SettingsPage() {
   const dispatch = useAppDispatch();
@@ -94,6 +102,21 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-gray-200 px-6 py-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Ayarlar</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+
       {/* WordPress-style Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">

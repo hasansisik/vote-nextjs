@@ -20,6 +20,14 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function VotesPage() {
   const dispatch = useDispatch();
@@ -95,6 +103,19 @@ export default function VotesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Oylamalar</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Oylamalar</h1>

@@ -26,19 +26,98 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { getCategoryName } from '@/lib/multiLanguageUtils';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 // Utility function to generate slug
-const generateSlug = (text: string): string => {
+const generateSlug = (text: string, language: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string => {
   if (!text) return '';
   
-  return text
-    .toLowerCase()
-    .replace(/ğ/g, 'g')
-    .replace(/ü/g, 'u')
-    .replace(/ş/g, 's')
-    .replace(/ı/g, 'i')
-    .replace(/ö/g, 'o')
-    .replace(/ç/g, 'c')
+  let processedTitle = text.toLowerCase();
+  
+  // Language-specific character replacements
+  if (language === 'tr') {
+    processedTitle = processedTitle
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ı/g, 'i')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/İ/g, 'i')
+      .replace(/Ğ/g, 'g')
+      .replace(/Ü/g, 'u')
+      .replace(/Ş/g, 's')
+      .replace(/Ö/g, 'o')
+      .replace(/Ç/g, 'c');
+  } else if (language === 'de') {
+    processedTitle = processedTitle
+      .replace(/ä/g, 'ae')
+      .replace(/ö/g, 'oe')
+      .replace(/ü/g, 'ue')
+      .replace(/ß/g, 'ss')
+      .replace(/Ä/g, 'ae')
+      .replace(/Ö/g, 'oe')
+      .replace(/Ü/g, 'ue');
+  } else if (language === 'fr') {
+    processedTitle = processedTitle
+      .replace(/à/g, 'a')
+      .replace(/á/g, 'a')
+      .replace(/â/g, 'a')
+      .replace(/ä/g, 'a')
+      .replace(/è/g, 'e')
+      .replace(/é/g, 'e')
+      .replace(/ê/g, 'e')
+      .replace(/ë/g, 'e')
+      .replace(/ì/g, 'i')
+      .replace(/í/g, 'i')
+      .replace(/î/g, 'i')
+      .replace(/ï/g, 'i')
+      .replace(/ò/g, 'o')
+      .replace(/ó/g, 'o')
+      .replace(/ô/g, 'o')
+      .replace(/ö/g, 'o')
+      .replace(/ù/g, 'u')
+      .replace(/ú/g, 'u')
+      .replace(/û/g, 'u')
+      .replace(/ü/g, 'u')
+      .replace(/ý/g, 'y')
+      .replace(/ÿ/g, 'y')
+      .replace(/ñ/g, 'n')
+      .replace(/ç/g, 'c')
+      .replace(/À/g, 'a')
+      .replace(/Á/g, 'a')
+      .replace(/Â/g, 'a')
+      .replace(/Ä/g, 'a')
+      .replace(/È/g, 'e')
+      .replace(/É/g, 'e')
+      .replace(/Ê/g, 'e')
+      .replace(/Ë/g, 'e')
+      .replace(/Ì/g, 'i')
+      .replace(/Í/g, 'i')
+      .replace(/Î/g, 'i')
+      .replace(/Ï/g, 'i')
+      .replace(/Ò/g, 'o')
+      .replace(/Ó/g, 'o')
+      .replace(/Ô/g, 'o')
+      .replace(/Ö/g, 'o')
+      .replace(/Ù/g, 'u')
+      .replace(/Ú/g, 'u')
+      .replace(/Û/g, 'u')
+      .replace(/Ü/g, 'u')
+      .replace(/Ý/g, 'y')
+      .replace(/Ÿ/g, 'y')
+      .replace(/Ñ/g, 'n')
+      .replace(/Ç/g, 'c');
+  }
+  
+  return processedTitle
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
@@ -110,7 +189,12 @@ function CreateTestPageContent() {
     trend: false,
     popular: false,
     endDate: "",
-    slug: "", // Slug alanı eklendi
+    slug: {
+      tr: "",
+      en: "",
+      de: "",
+      fr: "",
+    }, // Multilingual slug alanı
     isActive: true, // Aktif/Pasif durumu
   });
 
@@ -183,7 +267,7 @@ function CreateTestPageContent() {
           trend: singleTest.trend || false,
           popular: singleTest.popular || false,
           endDate: singleTest.endDate ? new Date(singleTest.endDate).toISOString().slice(0, 16) : "",
-          slug: singleTest.slug || "", // Slug'ı yükle
+          slug: singleTest.slug || { tr: "", en: "", de: "", fr: "" }, // Multilingual slug'ları yükle
           isActive: singleTest.isActive !== undefined ? singleTest.isActive : true, // Aktif durumu
         });
         
@@ -201,15 +285,21 @@ function CreateTestPageContent() {
     }
   }, [isEditMode, editId, singleTest]);
 
-  // Auto-generate slug when Turkish title changes
+  // Auto-generate slug when title changes for current language
   useEffect(() => {
-    if (formData.title.tr && (!formData.slug || isEditMode)) {
-      const newSlug = generateSlug(formData.title.tr);
-      if (newSlug !== formData.slug) {
-        setFormData(prev => ({ ...prev, slug: newSlug }));
+    if (formData.title[activeLanguage] && (!formData.slug[activeLanguage] || isEditMode)) {
+      const newSlug = generateSlug(formData.title[activeLanguage], activeLanguage);
+      if (newSlug !== formData.slug[activeLanguage]) {
+        setFormData(prev => ({ 
+          ...prev, 
+          slug: { 
+            ...prev.slug, 
+            [activeLanguage]: newSlug 
+          } 
+        }));
       }
     }
-  }, [formData.title.tr, formData.slug, isEditMode]);
+  }, [formData.title[activeLanguage], formData.slug[activeLanguage], isEditMode, activeLanguage]);
 
   const handleInputChange = (field: string, value: string | boolean, language?: "tr" | "en" | "de" | "fr") => {
     if (language && typeof value === 'string') {
@@ -503,6 +593,25 @@ function CreateTestPageContent() {
 
   return (
     <div className="min-h-screen ">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-gray-200 px-6 py-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard/votes">Oylamalar</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{isEditMode ? 'Düzenle' : 'Yeni Oylama'}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+
       {/* WordPress-style Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -943,16 +1052,23 @@ function CreateTestPageContent() {
                 />
               </div>
 
-              {/* Slug */}
+              {/* Multilingual Slug */}
               <div className="space-y-2">
-                <Label htmlFor="slug" className="text-sm font-medium text-gray-700">
-                  URL Slug
+                <Label className="text-sm font-medium text-gray-700">
+                  URL Slug ({availableLanguages.find(l => l.code === activeLanguage)?.name})
                 </Label>
                 <Input
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) => handleInputChange("slug", e.target.value)}
-                  placeholder="url-slug"
+                  value={formData.slug[activeLanguage] || ""}
+                  onChange={(e) => {
+                    setFormData(prev => ({
+                      ...prev,
+                      slug: {
+                        ...prev.slug,
+                        [activeLanguage]: e.target.value
+                      }
+                    }));
+                  }}
+                  placeholder={`url-slug-${activeLanguage}`}
                   className="w-full"
                 />
                 <p className="text-xs text-gray-500">

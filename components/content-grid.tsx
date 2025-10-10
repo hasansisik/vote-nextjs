@@ -6,7 +6,7 @@ import { useRouter } from '@/i18n/routing';
 import { useSelector, useDispatch } from 'react-redux';
 import { getPopularTests } from '@/redux/actions/testActions';
 import { useTranslations } from 'next-intl';
-import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { useLocale } from 'next-intl';
 
 
@@ -90,7 +90,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
     return {
       id: index + 1,
       testId: test._id, // Gerçek test ID'si
-      slug: test.slug, // Test slug'ı
+      slug: test.slug, // Test slug'ı (multilingual)
       categories: test.categories || [], // Use categories array
       title: getTestTitle(test, locale),
       image: imageUrl,
@@ -246,8 +246,9 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
   };
   
   const handleClick = () => {
-    // Slug varsa slug'ı kullan, yoksa ID'yi kullan
-    const targetId = card.slug || card.testId || `test_${card.id}`;
+    // Get slug for current locale, fallback to testId or generated ID
+    const localeSlug = getSlugForLocale(card.slug, locale);
+    const targetId = localeSlug || card.testId || `test_${card.id}`;
     router.push(`/${targetId}`);
   };
   

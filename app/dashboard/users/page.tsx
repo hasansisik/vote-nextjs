@@ -39,6 +39,14 @@ import {
 } from "lucide-react"
 import { getAllUsers, deleteUser, updateUserRole, updateUserStatus, clearError } from "@/redux/actions/userActions"
 import { toast } from "sonner"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 interface User {
   _id: string
@@ -184,6 +192,19 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Kullanıcılar</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Kullanıcı Yönetimi</h1>

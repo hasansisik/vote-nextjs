@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getTrendTests } from '@/redux/actions/testActions';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from './ui/skeleton';
-import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { useLocale } from 'next-intl';
 
 interface SliderContent {
@@ -192,7 +192,11 @@ export default function HeroSlider() {
         {/* Ana Slider - Sol Taraf */}
         <div 
           className="w-2/3 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => router.push(`/${displayData[currentSlide].slug || displayData[currentSlide]._id}`)}
+          onClick={() => {
+            const localeSlug = getSlugForLocale(displayData[currentSlide].slug, locale);
+            const targetId = localeSlug || displayData[currentSlide]._id;
+            router.push(`/${targetId}`);
+          }}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -268,7 +272,9 @@ export default function HeroSlider() {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    router.push(`/${item.slug || item._id}`);
+                    const localeSlug = getSlugForLocale(item.slug, locale);
+                    const targetId = localeSlug || item._id;
+                    router.push(`/${targetId}`);
                   }}
                   style={{ height: 'calc(20% - 4px)' }}
                 >
@@ -311,7 +317,11 @@ export default function HeroSlider() {
         {/* Ana Slider */}
         <div 
           className="flex-1 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
-          onClick={() => router.push(`/${displayData[currentSlide].slug || displayData[currentSlide]._id}`)}
+          onClick={() => {
+            const localeSlug = getSlugForLocale(displayData[currentSlide].slug, locale);
+            const targetId = localeSlug || displayData[currentSlide]._id;
+            router.push(`/${targetId}`);
+          }}
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -384,7 +394,9 @@ export default function HeroSlider() {
                 }`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  router.push(`/${item.slug || item._id}`);
+                  const localeSlug = getSlugForLocale(item.slug, locale);
+                  const targetId = localeSlug || item._id;
+                  router.push(`/${targetId}`);
                 }}
               >
                 {/* Thumbnail */}

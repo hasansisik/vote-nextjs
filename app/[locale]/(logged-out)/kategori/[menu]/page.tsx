@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getTestsByCategorySlug } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
-import { getTestTitle, getTestDescription, getCategoryName, getText } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getText, getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { useLocale, useTranslations } from 'next-intl';
 import {
   Pagination,
@@ -207,7 +207,8 @@ export default function CategoryPage() {
     try {
       // Find the test to get its slug
       const test = categoryTests?.find((t: any) => t._id === testId);
-      const targetId = test?.slug || testId;
+      const localeSlug = getSlugForLocale(test?.slug, locale);
+      const targetId = localeSlug || testId;
       router.push(`/${targetId}`);
     } catch (error) {
       console.error('Navigation error:', error);

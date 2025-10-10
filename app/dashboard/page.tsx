@@ -44,6 +44,14 @@ import {
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import { getTestTitle, getCategoryName } from '@/lib/multiLanguageUtils';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function DashboardPage() {
   const dispatch = useDispatch();
@@ -211,6 +219,15 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-8">
+      {/* Breadcrumb */}
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbPage>Dashboard</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>

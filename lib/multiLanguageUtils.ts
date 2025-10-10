@@ -98,3 +98,42 @@ export function getCustomFieldName(field: any, locale: 'tr' | 'en' | 'de' | 'fr'
 export function getCustomFieldValue(field: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
   return getText(field?.fieldValue, locale);
 }
+
+// Get slug for current locale
+export function getSlugForLocale(slug: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+  if (!slug) return '';
+  
+  // If slug is a string, return as is
+  if (typeof slug === 'string') {
+    return slug;
+  }
+  
+  // If slug is an object with multilingual structure
+  if (typeof slug === 'object' && slug !== null) {
+    // Try to get slug for current locale first
+    if (slug[locale] && slug[locale].trim() !== '') {
+      return slug[locale];
+    }
+    
+    // If current locale slug is empty or doesn't exist, try Turkish
+    if (slug.tr && slug.tr.trim() !== '') {
+      return slug.tr;
+    }
+    
+    // If Turkish is also empty, try other languages in order
+    const fallbackOrder = ['en', 'de', 'fr'];
+    for (const fallbackLocale of fallbackOrder) {
+      if (slug[fallbackLocale] && slug[fallbackLocale].trim() !== '') {
+        return slug[fallbackLocale];
+      }
+    }
+    
+    // Last resort: any available non-empty slug
+    const availableSlugs = Object.values(slug).filter(s => s && typeof s === 'string' && s.trim() !== '');
+    if (availableSlugs.length > 0) {
+      return availableSlugs[0] as string;
+    }
+  }
+  
+  return '';
+}

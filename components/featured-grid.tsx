@@ -4,7 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { useLocale } from 'next-intl';
 
 interface HomepageCard {
@@ -78,8 +78,9 @@ const Card: React.FC<CardProps> = ({ card, className = "" }) => {
   const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   
   const handleClick = () => {
-    // Slug varsa slug'ı kullan, yoksa ID'yi kullan
-    const targetId = card.slug || card.testId || `test_${card.id}`;
+    // Get slug for current locale, fallback to testId or generated ID
+    const localeSlug = getSlugForLocale(card.slug, locale);
+    const targetId = localeSlug || card.testId || `test_${card.id}`;
     router.push(`/${targetId}`);
   };
 

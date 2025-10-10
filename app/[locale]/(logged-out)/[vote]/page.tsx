@@ -9,7 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests, voteOnTest, getTestResults, getSingleTestBySlug, voteOnTestBySlug, getTestResultsBySlug, getUserVotedTests } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue, getText } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue, getText, getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { useLocale } from 'next-intl';
 // Utility functions for slug/ID detection
 const isObjectId = (str: string): boolean => {
@@ -102,7 +102,7 @@ export default function VotePage() {
       
       // Eğer slug formatındaysa direkt slug ile yükle
       if (isSlug(voteId)) {
-        dispatch(getSingleTestBySlug(voteId)).unwrap()
+        dispatch(getSingleTestBySlug({ slug: voteId, locale })).unwrap()
           .then((result) => {
             if (result.test) {
               setTest(result.test);
@@ -170,7 +170,7 @@ export default function VotePage() {
           
           // Test results'ı da yükle
           if (isSlug(voteId)) {
-            dispatch(getTestResultsBySlug(voteId));
+            dispatch(getTestResultsBySlug({ slug: voteId, locale }));
           } else {
             dispatch(getTestResults(voteId));
           }
@@ -287,9 +287,9 @@ export default function VotePage() {
         
         // Vote'u backend'e gönder - slug veya ID ile
         if (isSlug(voteId)) {
-          dispatch(voteOnTestBySlug({ slug: voteId, optionId: winner._id })).unwrap().then((result) => {
+          dispatch(voteOnTestBySlug({ slug: voteId, optionId: winner._id, locale })).unwrap().then((result) => {
             // Vote başarılı olduktan sonra test results'ı yenile
-            dispatch(getTestResultsBySlug(voteId));
+            dispatch(getTestResultsBySlug({ slug: voteId, locale }));
           }).catch((error) => {
             console.error('Vote error:', error);
           });

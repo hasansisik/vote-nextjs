@@ -9,7 +9,7 @@ import { useTranslations } from 'next-intl';
 import { editProfile, deleteAccount, clearError, logout } from '@/redux/actions/userActions';
 import { getUserVotedTests } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
-import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldValue } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldValue, getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { useLocale } from 'next-intl';
 import ProfilePhotoUpload from '@/components/profile-photo-upload';
 import { Button } from '@/components/ui/button';
@@ -495,7 +495,11 @@ export default function ProfilPage() {
 
                           {/* Action Button - Full Width on Mobile */}
                           <Button
-                            onClick={() => router.push(`/${votedTest.test.slug || votedTest.test._id}`)}
+                            onClick={() => {
+                              const localeSlug = getSlugForLocale(votedTest.test.slug, locale);
+                              const targetId = localeSlug || votedTest.test._id;
+                              router.push(`/${targetId}`);
+                            }}
                             size="sm"
                             variant="outline"
                             className="w-full text-orange-600 border-orange-600 hover:bg-orange-50"
@@ -577,7 +581,11 @@ export default function ProfilPage() {
                           {/* Action Button */}
                           <div className="mt-4 flex justify-end">
                             <Button
-                              onClick={() => router.push(`/${votedTest.test.slug || votedTest.test._id}`)}
+                              onClick={() => {
+                                const localeSlug = getSlugForLocale(votedTest.test.slug, locale);
+                                const targetId = localeSlug || votedTest.test._id;
+                                router.push(`/${targetId}`);
+                              }}
                               size="sm"
                               variant="outline"
                               className="text-orange-600 border-orange-600 hover:bg-orange-50"

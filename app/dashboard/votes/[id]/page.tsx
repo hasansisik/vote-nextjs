@@ -21,6 +21,14 @@ import {
   Eye
 } from "lucide-react";
 import { getTestTitle, getTestDescription, getOptionTitle } from '@/lib/multiLanguageUtils';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function TestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   return <TestDetailPageWrapper params={params} />;
@@ -146,6 +154,25 @@ function TestDetailPageClient({ testId }: { testId: string }) {
 
   return (
     <div className="min-h-screen">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-gray-200 px-6 py-2">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard/votes">Oylamalar</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Detay</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+
       {/* WordPress-style Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">

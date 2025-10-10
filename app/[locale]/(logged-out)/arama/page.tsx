@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
-import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { getTestTitle, getTestDescription, getCategoryName, getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { useLocale } from 'next-intl';
 import {
   Pagination,
@@ -294,7 +294,8 @@ export default function AramaPage() {
     e.preventDefault();
     e.stopPropagation();
     try {
-      const targetId = test.slug || test._id;
+      const localeSlug = getSlugForLocale(test.slug, locale);
+      const targetId = localeSlug || test._id;
       router.push(`/${targetId}`);
     } catch (error) {
       console.error('Navigation error:', error);
