@@ -251,7 +251,7 @@
     "types": {
       "welcome": {
         "title": "Hoş Geldiniz!",
-        "message": "Sisteme katıldığınız için hoş geldiniz. İlk oylamanızı yapmaya başlayın!"
+        "message": "Hoş geldiniz! İlk oylamanızı yaparak topluluğumuza katkınızı gösterin."
       },
       "profileUpdate": {
         "title": "Profil Güncellendi",

@@ -154,6 +154,13 @@ export default function NotificationsPage() {
   };
 
   const handleNotificationClick = (notification: any) => {
+    // Debug: notification metadata'sını kontrol et
+    console.log('Notification clicked:', {
+      actionUrl: notification.actionUrl,
+      metadata: notification.metadata,
+      type: notification.type
+    });
+    
     // Mark as read if not already read
     if (!notification.isRead) {
       handleMarkAsRead(notification._id);
@@ -161,7 +168,19 @@ export default function NotificationsPage() {
     
     // Navigate to action URL if available
     if (notification.actionUrl) {
-      router.push(notification.actionUrl);
+      // Eğer actionUrl ID formatında ise (/vote/ID), slug formatına çevir
+      if (notification.actionUrl.startsWith('/vote/')) {
+        const testId = notification.actionUrl.replace('/vote/', '');
+        // Metadata'dan slug'ı al (hem testSlug hem de testId.slug'ı kontrol et)
+        const slug = notification.metadata?.testSlug || notification.metadata?.testId?.slug;
+        const targetUrl = slug ? `/${slug}` : `/${testId}`;
+        console.log('Target URL:', targetUrl);
+        router.push(targetUrl);
+      } else {
+        // Normal actionUrl kullan
+        console.log('Using normal actionUrl:', notification.actionUrl);
+        router.push(notification.actionUrl);
+      }
     }
   };
 
@@ -184,7 +203,7 @@ export default function NotificationsPage() {
               <Button 
                 onClick={handleMarkAllAsRead}
                 variant="outline"
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 cursor-pointer"
               >
                 <CheckCheck className="w-4 h-4" />
                 {t('markAllRead')}
@@ -198,7 +217,7 @@ export default function NotificationsPage() {
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                 filter === 'all'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -208,7 +227,7 @@ export default function NotificationsPage() {
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                 filter === 'unread'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -301,7 +320,7 @@ export default function NotificationsPage() {
                                 e.stopPropagation();
                                 handleMarkAsRead(notification._id);
                               }}
-                              className="text-gray-500 hover:text-gray-700"
+                              className="text-gray-500 hover:text-gray-700 cursor-pointer"
                             >
                               <Check className="w-4 h-4" />
                             </Button>
@@ -313,7 +332,7 @@ export default function NotificationsPage() {
                               e.stopPropagation();
                               handleDeleteNotification(notification._id);
                             }}
-                            className="text-gray-500 hover:text-red-600"
+                            className="text-gray-500 hover:text-red-600 cursor-pointer"
                           >
                             <X className="w-4 h-4" />
                           </Button>

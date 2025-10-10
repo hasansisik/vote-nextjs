@@ -88,9 +88,12 @@ function DogrulamaContent() {
           duration: 5000,
         });
         
-        // Redirect to login page after 3 seconds
+        // Load user data after successful verification
+        dispatch(loadUser());
+        
+        // Redirect to home page after 3 seconds
         setTimeout(() => {
-          router.push('/giris');
+          router.push('/');
         }, 3000);
       }
     } catch (error) {
@@ -169,10 +172,10 @@ function DogrulamaContent() {
 
           <div className="text-center">
             <Button
-              onClick={() => router.push('/giris')}
+              onClick={() => router.push('/')}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
-              {t('loginButton')}
+              {t('homeButton')}
             </Button>
           </div>
         </div>
