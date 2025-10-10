@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '@/redux/actions/userActions';
 import { getAllMenus } from '@/redux/actions/menuActions';
-import { getNotificationStats } from '@/redux/actions/notificationActions';
+// Notification actions are handled in layout
 import { useLocale, useTranslations } from 'next-intl';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,12 +38,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     dispatch(getAllMenus({}) as any);
   }, [dispatch]);
 
-  // Load notification stats when user is authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      dispatch(getNotificationStats() as any);
-    }
-  }, [dispatch, isAuthenticated]);
+  // Notification stats are loaded in header component
 
   const handleLogoClick = () => {
     router.push('/');

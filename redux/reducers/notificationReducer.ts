@@ -63,10 +63,13 @@ export const notificationReducer = createReducer(initialState, (builder) => {
       // No loading state for stats
     })
     .addCase(getNotificationStats.fulfilled, (state, action) => {
-      state.stats = action.payload.stats;
+      if (action.payload && action.payload.stats) {
+        state.stats = action.payload.stats;
+      }
     })
     .addCase(getNotificationStats.rejected, (state, action) => {
-      // Silent fail for stats
+      // Keep default stats on error
+      console.warn('Notification stats failed:', action.payload);
     })
     
     // Mark as Read
