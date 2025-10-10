@@ -176,7 +176,7 @@ export default function VotePage() {
 
   // Fallback: Eğer API'den veri gelmezse, test options'ından basit ranking oluştur
   useEffect(() => {
-    if (showResults && finalRankings.length === 0 && test && finalWinner && !testResults) {
+    if (showResults && finalRankings.length === 0 && test && finalWinner) {
       // Basit fallback ranking oluştur
       const fallbackRankings = test.options.map((option, index) => ({
         option: {
@@ -192,7 +192,7 @@ export default function VotePage() {
       
       setFinalRankings(fallbackRankings);
     }
-  }, [showResults, finalRankings.length, test, finalWinner, testResults]);
+  }, [showResults, finalRankings.length, test, finalWinner]);
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
@@ -302,7 +302,17 @@ export default function VotePage() {
     }, 500);
   };
 
-  if (testsLoading || userVotedTestsLoading || !test || (!currentPair && !hasUserVoted)) {
+  // Eğer kullanıcı daha önce oy vermişse, test results yüklenene kadar basit loading göster
+  if (hasUserVoted && !test) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Test yükleniyor...</p>
+        </div>
+      </div>
+    );
+  } else if (testsLoading || userVotedTestsLoading || !test || (!currentPair && !hasUserVoted)) {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Header Skeleton */}
@@ -349,7 +359,25 @@ export default function VotePage() {
 
   // Final ekranı - Yüzdesel Sıralama
   if ((isComplete && showResults) || hasUserVoted) {
-    // Eğer final rankings henüz yüklenmediyse skeleton göster
+    // Eğer final rankings henüz yüklenmediyse ve kullanıcı daha önce oy vermişse fallback göster
+    if (finalRankings.length === 0 && hasUserVoted && test && finalWinner) {
+      // Fallback ranking oluştur
+      const fallbackRankings = test.options.map((option, index) => ({
+        option: {
+          _id: option._id,
+          title: option.title,
+          image: option.image,
+          customFields: option.customFields,
+          votes: option.votes || 0,
+          winRate: option.winRate || 0
+        },
+        score: option._id === finalWinner._id ? 100 : Math.max(10, 100 - (index * 15))
+      }));
+      
+      setFinalRankings(fallbackRankings);
+    }
+    
+    // Eğer hala final rankings yoksa skeleton göster
     if (finalRankings.length === 0) {
       return (
         <div className="min-h-screen bg-gray-50 p-4 py-8">
