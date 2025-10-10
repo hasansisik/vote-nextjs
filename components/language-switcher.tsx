@@ -1,6 +1,6 @@
 'use client';
 
-import { useTransition, useEffect } from 'react';
+import { useTransition, useEffect, useRef } from 'react';
 import { usePathname, useRouter as useNextRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { useSelector } from 'react-redux';
@@ -24,6 +24,7 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
   const router = useNextRouter();
   const pathname = usePathname();
   const locale = useLocale();
+  const hasCheckedSavedLanguage = useRef(false);
   
   const { enabledLanguages, loading } = useSelector((state: any) => state.settings);
 
@@ -31,6 +32,45 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
   useEffect(() => {
     dispatch(getEnabledLanguages() as any);
   }, [dispatch]);
+
+  // Helper function to get saved language preference
+  const getSavedLanguage = () => {
+    // First check localStorage
+    const savedFromStorage = localStorage.getItem('preferred-language');
+    if (savedFromStorage) return savedFromStorage;
+    
+    // Then check cookie
+    const cookies = document.cookie.split(';');
+    const languageCookie = cookies.find(cookie => 
+      cookie.trim().startsWith('preferred-language=')
+    );
+    if (languageCookie) {
+      return languageCookie.split('=')[1];
+    }
+    
+    return null;
+  };
+
+  // Check localStorage for saved language preference on mount
+  useEffect(() => {
+    if (hasCheckedSavedLanguage.current) return;
+    
+    const savedLanguage = getSavedLanguage();
+    if (savedLanguage && savedLanguage !== locale) {
+      // If there's a saved language different from current, navigate to it
+      const pathnameWithoutLocale = pathname.replace(/^\/(tr|en|de|fr)/, '') || '/';
+      const newPath = `/${savedLanguage}${pathnameWithoutLocale}`;
+      
+      if (newPath !== pathname) {
+        hasCheckedSavedLanguage.current = true;
+        startTransition(() => {
+          router.push(newPath);
+          router.refresh();
+        });
+      }
+    }
+    hasCheckedSavedLanguage.current = true;
+  }, [locale, pathname, router]);
 
   // Get current language from enabled languages
   const currentLanguage = enabledLanguages.find((lang: any) => lang.code === locale) || enabledLanguages[0];
