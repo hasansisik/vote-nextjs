@@ -140,7 +140,7 @@ export default function Header() {
         {/* Mobil menü butonu - mobilde veya scroll olduğunda görünür */}
         <button 
           onClick={() => setIsMobileMenuOpen(true)}
-          className={`${hasScroll ? 'block' : 'md:hidden'} p-2 hover:bg-gray-100 rounded-full transition-colors`}
+          className={`${hasScroll ? 'block' : 'md:hidden'} p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer`}
           title={t('menu')}
         >
           <Menu className="w-6 h-6 text-gray-700" />
@@ -159,7 +159,7 @@ export default function Header() {
         {/* Ortadaki logo - mutlak ortada */}
         <button 
           onClick={handleLogoClick}
-          className="absolute left-1/2 transform -translate-x-1/2 hover:opacity-80 transition-opacity"
+          className="absolute left-1/2 transform -translate-x-1/2 hover:opacity-80 transition-opacity cursor-pointer"
         >
           <Image
             src="/static/logo-vote.png"
@@ -193,7 +193,7 @@ export default function Header() {
                 <div className="flex items-center gap-3">
                   <button 
                     onClick={handleProfileClick}
-                    className="p-2 hover:bg-orange-50 rounded-full transition-colors"
+                    className="p-2 hover:bg-orange-50 rounded-full transition-colors cursor-pointer"
                     title={t('profile')}
                   >
                     {(user?.profile?.picture || user?.picture) ? (
@@ -228,7 +228,7 @@ export default function Header() {
               {/* Bildirimler ikonu */}
               <button 
                 onClick={handleNotificationsClick}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors relative cursor-pointer"
                 title={t('notifications')}
               >
                 <Bell className="w-6 h-6 text-gray-700" />
@@ -243,7 +243,7 @@ export default function Header() {
               {/* Arama ikonu */}
               <button 
                 onClick={handleSearchClick}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
                 title={t('search')}
               >
                 <svg 
@@ -269,14 +269,14 @@ export default function Header() {
                 <>
                   <button 
                     onClick={handleLogin}
-                    className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                    className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors cursor-pointer"
                     title={t('login')}
                   >
                     {t('login')}
                   </button>
                   <button 
                     onClick={handleRegister}
-                    className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors cursor-pointer"
                     title={t('register')}
                   >
                     {t('register')}
@@ -288,7 +288,7 @@ export default function Header() {
               {isAuthenticated && (
                 <button 
                   onClick={handleLogout}
-                  className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-orange-500 border border-orange-500 rounded-lg hover:bg-orange-50 transition-colors cursor-pointer"
                   title={t('logout')}
                 >
                   {t('logout')}
@@ -319,7 +319,7 @@ export default function Header() {
                 <button 
                   key={index}
                   onClick={() => handleCategoryClick(item.testCategory.slug)}
-                  className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors whitespace-nowrap"
+                  className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors whitespace-nowrap cursor-pointer"
                 >
                   <div 
                     className="w-2 h-2 rounded-full flex-shrink-0" 

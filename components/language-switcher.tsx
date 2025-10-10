@@ -72,7 +72,7 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
           variant="outline"
           size="sm"
           disabled={isPending || loading}
-          className="gap-2 border-gray-300"
+          className="gap-2 border-gray-300 cursor-pointer"
         >
           <span className="hidden sm:inline">{currentLanguage?.flag} {currentLanguage?.name}</span>
           <span className="sm:hidden">{currentLanguage?.flag}</span>
@@ -83,7 +83,7 @@ export function LanguageSwitcher({ onLanguageChange }: LanguageSwitcherProps) {
           <DropdownMenuItem
             key={language.code}
             onClick={() => handleLanguageChange(language.code)}
-            className={locale === language.code ? 'bg-accent' : ''}
+            className={`${locale === language.code ? 'bg-accent' : ''} cursor-pointer`}
           >
             <span className="mr-2">{language.flag}</span>
             {language.name}
