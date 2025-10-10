@@ -161,9 +161,9 @@ export default function HeroSlider() {
           <div className="bg-black border-t border-gray-800 p-2">
             <Skeleton className="h-4 w-24 bg-gray-700 mb-2" />
             
-            <div className="flex gap-1 overflow-x-auto pb-1">
-              {[...Array(5)].map((_, index) => (
-                <div key={index} className="flex flex-col items-center gap-1 p-2 rounded flex-shrink-0" style={{ minWidth: '120px' }}>
+            <div className="grid grid-cols-2 gap-2">
+              {[...Array(4)].map((_, index) => (
+                <div key={index} className="flex flex-col items-center gap-1 p-2 rounded">
                   <Skeleton className="w-16 h-12 bg-gray-700" />
                   <div className="text-center space-y-1">
                     <Skeleton className="h-3 w-12 bg-gray-700" />
@@ -371,11 +371,11 @@ export default function HeroSlider() {
             {t('trendingNow')}
           </h3>
           
-          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
-            {displayData.map((item: any, index: number) => (
+          <div className="grid grid-cols-2 gap-2">
+            {displayData.slice(0, 4).map((item: any, index: number) => (
               <div 
                 key={item._id} 
-                className={`flex flex-col items-center gap-1 p-2 rounded cursor-pointer transition-all flex-shrink-0 ${
+                className={`flex flex-col items-center gap-1 p-2 rounded cursor-pointer transition-all ${
                   index === currentSlide 
                     ? 'bg-gray-700/30' 
                     : 'hover:bg-gray-800'
@@ -384,7 +384,6 @@ export default function HeroSlider() {
                   e.stopPropagation();
                   router.push(`/${item.slug || item._id}`);
                 }}
-                style={{ minWidth: '120px' }}
               >
                 {/* Thumbnail */}
                 <div className="w-16 h-12 relative">
