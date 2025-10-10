@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
-import { getAllTests, voteOnTest, getTestResults, getSingleTestBySlug, voteOnTestBySlug, getTestResultsBySlug } from '@/redux/actions/testActions';
+import { getAllTests, voteOnTest, getTestResults, getSingleTestBySlug, voteOnTestBySlug, getTestResultsBySlug, getUserVotedTests } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue, getText } from '@/lib/multiLanguageUtils';
@@ -52,7 +52,7 @@ export default function VotePage() {
   const dispatch = useAppDispatch();
   const voteId = params?.vote as string;
   
-  const { allTests, testsLoading, testResults } = useAppSelector((state) => state.test);
+  const { allTests, testsLoading, testResults, userVotedTests, userVotedTestsLoading } = useAppSelector((state) => state.test);
   const { activeCategories } = useAppSelector((state) => state.testCategory);
   const [test, setTest] = useState<Test | null>(null);
   const [currentPair, setCurrentPair] = useState<[Option, Option] | null>(null);
@@ -67,6 +67,8 @@ export default function VotePage() {
   const [finalWinner, setFinalWinner] = useState<Option | null>(null);
   const [votingInitialized, setVotingInitialized] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [hasUserVoted, setHasUserVoted] = useState(false);
+  const [userVotedOption, setUserVotedOption] = useState<Option | null>(null);
 
   // Get category name by ID
   const getCategoryNameById = (categoryId: string) => {
@@ -80,6 +82,11 @@ export default function VotePage() {
   useEffect(() => {
     dispatch(getAllTests({ isActive: true }));
     dispatch(getActiveTestCategories());
+  }, [dispatch]);
+
+  // Kullanıcının oy verdiği testleri yükle - sadece bir kez
+  useEffect(() => {
+    dispatch(getUserVotedTests());
   }, [dispatch]);
 
   // Test'i yükle - slug veya ID ile
@@ -112,7 +119,7 @@ export default function VotePage() {
         }
       }
     }
-  }, [voteId, test, dispatch]); // allTests dependency'sini kaldırdık
+  }, [voteId, allTests, dispatch]);
 
   // Test results değiştiğinde final rankings oluştur
   useEffect(() => {
@@ -133,9 +140,43 @@ export default function VotePage() {
     }
   }, [testResults, showResults]);
 
+  // Kullanıcının bu teste oy verip vermediğini kontrol et
+  useEffect(() => {
+    if (test && userVotedTests && userVotedTests.length > 0 && !hasUserVoted) {
+      const currentTestId = test._id;
+      const votedTest = userVotedTests.find((votedTest: any) => 
+        votedTest.test._id === currentTestId
+      );
+      
+      if (votedTest && votedTest.selectedOption) {
+        // Kullanıcı bu teste daha önce oy vermiş
+        setHasUserVoted(true);
+        
+        // Seçilen seçeneği bul
+        const selectedOption = test.options.find(option => 
+          option._id === votedTest.selectedOption._id
+        );
+        
+        if (selectedOption) {
+          setUserVotedOption(selectedOption);
+          setFinalWinner(selectedOption);
+          setIsComplete(true);
+          setShowResults(true);
+          
+          // Test results'ı da yükle
+          if (isSlug(voteId)) {
+            dispatch(getTestResultsBySlug(voteId));
+          } else {
+            dispatch(getTestResults(voteId));
+          }
+        }
+      }
+    }
+  }, [test, userVotedTests, hasUserVoted, voteId, dispatch]);
+
   // Fallback: Eğer API'den veri gelmezse, test options'ından basit ranking oluştur
   useEffect(() => {
-    if (showResults && finalRankings.length === 0 && test && finalWinner) {
+    if (showResults && finalRankings.length === 0 && test && finalWinner && !testResults) {
       // Basit fallback ranking oluştur
       const fallbackRankings = test.options.map((option, index) => ({
         option: {
@@ -151,12 +192,12 @@ export default function VotePage() {
       
       setFinalRankings(fallbackRankings);
     }
-  }, [showResults, finalRankings.length, test, finalWinner]);
+  }, [showResults, finalRankings.length, test, finalWinner, testResults]);
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
-    // Eğer zaten initialize edilmişse tekrar etme
-    if (votingInitialized) {
+    // Eğer zaten initialize edilmişse veya kullanıcı daha önce oy vermişse tekrar etme
+    if (votingInitialized || hasUserVoted) {
       return;
     }
     
@@ -261,7 +302,7 @@ export default function VotePage() {
     }, 500);
   };
 
-  if (testsLoading || !test || !currentPair) {
+  if (testsLoading || userVotedTestsLoading || !test || (!currentPair && !hasUserVoted)) {
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Header Skeleton */}
@@ -307,7 +348,7 @@ export default function VotePage() {
 
 
   // Final ekranı - Yüzdesel Sıralama
-  if (isComplete && showResults) {
+  if ((isComplete && showResults) || hasUserVoted) {
     // Eğer final rankings henüz yüklenmediyse skeleton göster
     if (finalRankings.length === 0) {
       return (
@@ -375,8 +416,6 @@ export default function VotePage() {
              </h1>
              <p className="text-base text-gray-600 mb-2">{getTestTitle(test)}</p>
              <p className="text-sm text-gray-500">{getTestDescription(test)}</p>
-             
-             
           </div>
 
           {/* Podium - Top 3 */}
@@ -632,6 +671,11 @@ export default function VotePage() {
     );
   }
 
+  // Eğer kullanıcı daha önce oy vermişse, oylama ekranını gösterme
+  if (hasUserVoted) {
+    return null; // Bu durumda yukarıdaki sonuç ekranı gösterilecek
+  }
+
   // Oylama ekranı
   return (
     <div className="min-h-screen bg-gray-50">
@@ -678,7 +722,7 @@ export default function VotePage() {
         {/* Voting Cards */}
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          {currentPair.map((option) => (
+          {currentPair?.map((option) => (
             <button
               key={option._id}
               onClick={() => handleVote(option)}
