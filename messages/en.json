@@ -215,7 +215,11 @@
     "otherParticipantsChoice": "Other Participants' Choice",
     "otherRankings": "Other Rankings",
     "shareResults": "Share Results",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "copyLink": "Copy Link",
+    "shareResultsText": "voting results",
+    "rankings": "Rankings",
+    "voting": "Voting"
   },
   "ShareDialog": {
     "shareResultsText": "voting results",

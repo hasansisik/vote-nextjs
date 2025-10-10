@@ -215,7 +215,11 @@
     "otherParticipantsChoice": "Wahl der Anderen Teilnehmer",
     "otherRankings": "Andere Ranglisten",
     "shareResults": "Ergebnisse Teilen",
-    "backToHome": "Zurück zur Startseite"
+    "backToHome": "Zurück zur Startseite",
+    "copyLink": "Link Kopieren",
+    "shareResultsText": "Abstimmungsergebnisse",
+    "rankings": "Rangliste",
+    "voting": "Abstimmung"
   },
   "ShareDialog": {
     "shareResultsText": "Abstimmungsergebnisse",

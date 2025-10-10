@@ -215,7 +215,11 @@
     "otherParticipantsChoice": "Diğer Katılımcıların Tercihi",
     "otherRankings": "Diğer Sıralamalar",
     "shareResults": "Sonuçları Paylaş",
-    "backToHome": "Ana Sayfaya Dön"
+    "backToHome": "Ana Sayfaya Dön",
+    "copyLink": "Link Kopyala",
+    "shareResultsText": "oylama sonuçları",
+    "rankings": "Sıralama",
+    "voting": "Oylama"
   },
   "ShareDialog": {
     "shareResultsText": "oylama sonuçları",
