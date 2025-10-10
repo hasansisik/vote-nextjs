@@ -77,6 +77,7 @@ function TestDetailPageClient({ testId }: { testId: string }) {
   };
 
   const getCategoryColor = (categoryId: string) => {
+    if (!categoryId) return "bg-gray-100 text-gray-800";
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
     if (category && category.color) {
       return `${category.color.replace('bg-', 'bg-').replace('-500', '-100')} ${category.color.replace('bg-', 'text-').replace('-500', '-800')}`;
@@ -85,12 +86,16 @@ function TestDetailPageClient({ testId }: { testId: string }) {
   };
 
   const getCategoryName = (categoryId: string) => {
+    if (!categoryId) return 'Kategori Yok';
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
     if (category && category.name) {
-      // Handle multilingual name structure
-      return getText(category.name, 'tr') || categoryId;
+      // Handle multilingual name structure - return Turkish name directly
+      if (typeof category.name === 'object' && category.name.tr) {
+        return category.name.tr;
+      }
+      return category.name || categoryId;
     }
-    return categoryId;
+    return categoryId || 'Kategori Yok';
   };
 
   if (user?.role !== 'admin') {
@@ -224,8 +229,8 @@ function TestDetailPageClient({ testId }: { testId: string }) {
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="space-y-4">
               <div className="flex items-center gap-3 flex-wrap">
-                <Badge className={getCategoryColor(test.category)}>
-                  {getCategoryName(test.category)}
+                <Badge className={getCategoryColor(test.categories?.[0])}>
+                  {getCategoryName(test.categories?.[0])}
                 </Badge>
                 <Badge variant={test.isActive ? "default" : "secondary"}>
                   {test.isActive ? "Aktif" : "Pasif"}
@@ -274,7 +279,11 @@ function TestDetailPageClient({ testId }: { testId: string }) {
           {test.headerText && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-base font-semibold text-gray-900 mb-3">Üst Metin</h3>
-              <p className="text-sm text-gray-700 leading-relaxed">{test.headerText}</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {typeof test.headerText === 'object' && test.headerText.tr 
+                  ? test.headerText.tr 
+                  : test.headerText}
+              </p>
             </div>
           )}
 
@@ -282,7 +291,11 @@ function TestDetailPageClient({ testId }: { testId: string }) {
           {test.footerText && (
             <div className="bg-white rounded-lg border border-gray-200 p-6">
               <h3 className="text-base font-semibold text-gray-900 mb-3">Alt Metin</h3>
-              <p className="text-sm text-gray-700 leading-relaxed">{test.footerText}</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {typeof test.footerText === 'object' && test.footerText.tr 
+                  ? test.footerText.tr 
+                  : test.footerText}
+              </p>
             </div>
           )}
 
@@ -347,9 +360,15 @@ function TestDetailPageClient({ testId }: { testId: string }) {
                           {option.customFields.map((field: any, fieldIndex: number) => (
                             <div key={fieldIndex} className="bg-gray-50 rounded-lg p-2">
                               <span className="text-xs font-medium text-gray-700">
-                                {field.fieldName}:
+                                {typeof field.fieldName === 'object' && field.fieldName.tr 
+                                  ? field.fieldName.tr 
+                                  : field.fieldName}:
                               </span>{" "}
-                              <span className="text-xs text-gray-900">{field.fieldValue}</span>
+                              <span className="text-xs text-gray-900">
+                                {typeof field.fieldValue === 'object' && field.fieldValue.tr 
+                                  ? field.fieldValue.tr 
+                                  : field.fieldValue}
+                              </span>
                             </div>
                           ))}
                         </div>
@@ -466,7 +485,7 @@ function TestDetailPageClient({ testId }: { testId: string }) {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-900">
-                    {test.createdBy.name} {test.createdBy.surname}
+                    {typeof test.createdBy.name === 'string' ? test.createdBy.name : test.createdBy.name?.tr || 'Bilinmeyen'} {typeof test.createdBy.surname === 'string' ? test.createdBy.surname : test.createdBy.surname?.tr || ''}
                   </div>
                   <div className="text-xs text-gray-600">
                     Admin
