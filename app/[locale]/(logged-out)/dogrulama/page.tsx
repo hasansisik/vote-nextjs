@@ -88,10 +88,8 @@ function DogrulamaContent() {
           duration: 5000,
         });
         
-        // Load user data after successful verification
-        dispatch(loadUser());
-        
         // Redirect to home page after 3 seconds
+        // User data is already loaded by verifyEmail action
         setTimeout(() => {
           router.push('/');
         }, 3000);

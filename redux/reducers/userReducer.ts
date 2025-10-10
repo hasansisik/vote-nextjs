@@ -201,8 +201,10 @@ export const userReducer = createReducer(initialState, (builder) => {
     .addCase(verifyEmail.fulfilled, (state, action) => {
       state.loading = false;
       state.isVerified = true;
-      state.isAuthenticated = true; // User is now verified and can be authenticated
+      state.isAuthenticated = true; // User is now verified and authenticated
+      state.user = action.payload.user; // Store user data like login
       state.message = action.payload.message;
+      state.error = null;
     })
     .addCase(verifyEmail.rejected, (state, action) => {
       state.loading = false;

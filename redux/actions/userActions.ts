@@ -228,8 +228,15 @@ export const verifyEmail = createAsyncThunk(
     try {
       const { data } = await axios.post(`${server}/auth/verify-email`, payload);
       
+      // Store token and email like login
+      if (data.user && data.user.token) {
+        localStorage.setItem("accessToken", data.user.token);
+        localStorage.setItem("userEmail", data.user.email);
+      }
+      
       return {
-        message: data.message
+        message: data.message,
+        user: data.user
       };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
