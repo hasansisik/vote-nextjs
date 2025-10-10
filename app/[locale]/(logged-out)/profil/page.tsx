@@ -42,10 +42,18 @@ export default function ProfilPage() {
   });
 
 
-  // Get category name by ID
-  const getCategoryNameById = (categoryId: string) => {
-    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? getCategoryName(category) : categoryId;
+  // Get category name by ID or from populated category object
+  const getCategoryNameById = (category: any) => {
+    // If category is already populated (has name property), use it directly
+    if (category && typeof category === 'object' && category.name) {
+      return getCategoryName(category);
+    }
+    // If category is just an ID string, find it in activeCategories
+    if (typeof category === 'string') {
+      const foundCategory = activeCategories?.find((cat: any) => cat._id === category);
+      return foundCategory ? getCategoryName(foundCategory) : category;
+    }
+    return category || 'Kategori Yok';
   };
 
   useEffect(() => {
