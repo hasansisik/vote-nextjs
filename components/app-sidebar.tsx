@@ -39,6 +39,7 @@ import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
+import { isUserAdmin } from "@/lib/admin-utils"
 import {
   Sidebar,
   SidebarContent,
@@ -101,7 +102,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ];
 
     // Add voting section for admin users
-    if (user?.role === 'admin') {
+    if (isUserAdmin(user)) {
       baseNavMain.push({
         title: "Oylamalar",
         url: "/dashboard/votes",
@@ -183,7 +184,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     ];
 
     // Add admin quick access
-    if (user?.role === 'admin') {
+    if (isUserAdmin(user)) {
       quickAccessProjects.push(
         {
           name: "Yeni Oylama Oluştur",
@@ -213,7 +214,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         name: "VOTE Platform",
         logo: Vote,
-        plan: user?.role === 'admin' ? 'Admin' : 'Kullanıcı',
+        plan: isUserAdmin(user) ? 'Admin' : 'Kullanıcı',
       },
     ];
 

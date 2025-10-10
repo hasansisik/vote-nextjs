@@ -1,6 +1,7 @@
 import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
 import { routing } from './i18n/routing';
+import { isAdmin, getUserRoleFromToken } from './lib/admin-utils';
 
 // Create the next-intl middleware
 const intlMiddleware = createMiddleware(routing);
@@ -13,15 +14,22 @@ export function middleware(request: NextRequest) {
     // Check if user is authenticated by looking for accessToken in cookies
     const accessToken = request.cookies.get('accessToken')?.value;
     
-    // If no token, redirect to login
+    // If no token, redirect to home page instead of login
     if (!accessToken) {
-      const loginUrl = new URL('/giris', request.url);
-      loginUrl.searchParams.set('redirect', pathname);
-      return NextResponse.redirect(loginUrl);
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
+    }
+    
+    // Decode token to check role
+    const userRole = getUserRoleFromToken(accessToken);
+    
+    // Only allow admin and moderator roles to access dashboard
+    if (!isAdmin(userRole || undefined)) {
+      const homeUrl = new URL('/', request.url);
+      return NextResponse.redirect(homeUrl);
     }
     
     // Allow access to dashboard without locale prefix
-    // Role checking will be handled by the dashboard layout
     return NextResponse.next();
   }
 
@@ -87,12 +95,10 @@ export function middleware(request: NextRequest) {
   // Check if user is authenticated by looking for accessToken in cookies
   const accessToken = request.cookies.get('accessToken')?.value;
 
-  // If no token and trying to access protected route, redirect to login
+  // If no token and trying to access protected route, redirect to home
   if (!accessToken && !isPublicRoute) {
-    const locale = pathname.match(/^\/(tr|en|de|fr)/)?.[1] || 'tr';
-    const loginUrl = new URL(`/${locale}/giris`, request.url);
-    loginUrl.searchParams.set('redirect', pathnameWithoutLocale);
-    return NextResponse.redirect(loginUrl);
+    const homeUrl = new URL('/', request.url);
+    return NextResponse.redirect(homeUrl);
   }
 
   return intlResponse;

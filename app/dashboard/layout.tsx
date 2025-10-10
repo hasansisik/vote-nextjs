@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/sidebar"
 import { loadUser } from '@/redux/actions/userActions';
 import { Loader2 } from 'lucide-react';
+import { isUserAdmin } from '@/lib/admin-utils';
 
 export default function DashboardLayout({
   children,
@@ -32,7 +33,9 @@ export default function DashboardLayout({
 
   useEffect(() => {
     // Check if user is authenticated (only on client side)
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
     
     const token = localStorage.getItem('accessToken');
     
@@ -41,26 +44,35 @@ export default function DashboardLayout({
       return;
     }
 
-    // Always try to load user if token exists
-    dispatch(loadUser() as any).then((result: any) => {
-      if (result.type === 'user/loadUser/rejected') {
-        // If loadUser fails, redirect to login
+    // If we have a token but no user data, load user
+    if (token && (!user || Object.keys(user).length === 0)) {
+      dispatch(loadUser() as any).then((result: any) => {
+        if (result.type === 'user/loadUser/rejected') {
+          router.push('/giris');
+        }
+      }).catch((error: any) => {
         router.push('/giris');
-      }
-    }).catch((error: any) => {
-      router.push('/giris');
-    });
+      });
+    }
   }, []); // Run only once on mount
 
   // Check user role and redirect normal users to home page
   useEffect(() => {
-    if (user && user.role !== 'admin') {
-      router.push('/');
+    // Only check role if user data is loaded and not loading
+    if (user && Object.keys(user).length > 0 && !loading) {
+      if (!isUserAdmin(user)) {
+        router.push('/');
+      }
     }
-  }, [user, router]);
+    // Don't redirect if still loading or if user data is being loaded
+    // Let the first useEffect handle the loadUser call
+  }, [user, loading, router]);
 
-  // Show loading only when actually loading
-  if (loading) {
+  // Show loading when loading or when we have token but no user data yet
+  const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+  const shouldShowLoading = loading || (token && (!user || Object.keys(user).length === 0));
+  
+  if (shouldShowLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex items-center gap-2">

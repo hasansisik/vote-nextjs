@@ -76,6 +76,12 @@ export const googleRegister = createAsyncThunk(
     try {
       const { data } = await axios.post(`${server}/auth/google-register`, payload);
       localStorage.setItem("accessToken", data.user.token);
+      
+      // Also set cookie for middleware access
+      if (typeof document !== 'undefined') {
+        document.cookie = `accessToken=${data.user.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      
       return data.user;
     } catch (error: any) {
       // Handle inactive user case
@@ -97,6 +103,12 @@ export const login = createAsyncThunk(
       const { data } = await axios.post(`${server}/auth/login`, payload);
       localStorage.setItem("accessToken", data.user.token);
       localStorage.setItem("userEmail", data.user.email);
+      
+      // Also set cookie for middleware access
+      if (typeof document !== 'undefined') {
+        document.cookie = `accessToken=${data.user.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      
       return data.user;
     } catch (error: any) {
       // Handle email verification required case
@@ -127,6 +139,12 @@ export const googleAuth = createAsyncThunk(
       const { data } = await axios.post(`${server}/auth/google-auth`, payload);
       localStorage.setItem("accessToken", data.user.token);
       localStorage.setItem("userEmail", data.user.email);
+      
+      // Also set cookie for middleware access
+      if (typeof document !== 'undefined') {
+        document.cookie = `accessToken=${data.user.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      
       return data.user;
     } catch (error: any) {
       // Handle inactive user case
@@ -148,6 +166,12 @@ export const googleLogin = createAsyncThunk(
       const { data } = await axios.post(`${server}/auth/google-login`, payload);
       localStorage.setItem("accessToken", data.user.token);
       localStorage.setItem("userEmail", data.user.email);
+      
+      // Also set cookie for middleware access
+      if (typeof document !== 'undefined') {
+        document.cookie = `accessToken=${data.user.token}; path=/; max-age=86400; SameSite=Lax`;
+      }
+      
       return data.user;
     } catch (error: any) {
       // Handle inactive user case
@@ -177,6 +201,7 @@ export const loadUser = createAsyncThunk(
           Authorization: `Bearer ${token}`,
         },
       });
+      
       // Store user email for potential verification redirects
       if (data.user.email) {
         localStorage.setItem("userEmail", data.user.email);
@@ -188,6 +213,12 @@ export const loadUser = createAsyncThunk(
         // Clear invalid token and return silent error
         localStorage.removeItem("accessToken");
         localStorage.removeItem("userEmail");
+        
+        // Also clear cookie
+        if (typeof document !== 'undefined') {
+          document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        }
+        
         return thunkAPI.rejectWithValue("User not found");
       }
       
@@ -196,6 +227,12 @@ export const loadUser = createAsyncThunk(
         // Clear local storage and return special error
         localStorage.removeItem("accessToken");
         localStorage.removeItem("userEmail");
+        
+        // Also clear cookie
+        if (typeof document !== 'undefined') {
+          document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        }
+        
         return thunkAPI.rejectWithValue({
           message: error.response.data.message,
           requiresLogout: true
@@ -216,6 +253,12 @@ export const logout = createAsyncThunk("user/logout", async (_, thunkAPI) => {
     });
     localStorage.removeItem("accessToken");
     localStorage.removeItem("userEmail");
+    
+    // Also clear cookie
+    if (typeof document !== 'undefined') {
+      document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    }
+    
     return data.message;
   } catch (error: any) {
     return thunkAPI.rejectWithValue(error.response.data.message);
@@ -232,6 +275,11 @@ export const verifyEmail = createAsyncThunk(
       if (data.user && data.user.token) {
         localStorage.setItem("accessToken", data.user.token);
         localStorage.setItem("userEmail", data.user.email);
+        
+        // Also set cookie for middleware access
+        if (typeof document !== 'undefined') {
+          document.cookie = `accessToken=${data.user.token}; path=/; max-age=86400; SameSite=Lax`;
+        }
       }
       
       return {
@@ -353,6 +401,12 @@ export const deleteAccount = createAsyncThunk(
       // Clear local storage after successful deletion
       localStorage.removeItem("accessToken");
       localStorage.removeItem("userEmail");
+      
+      // Also clear cookie
+      if (typeof document !== 'undefined') {
+        document.cookie = 'accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      }
+      
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
