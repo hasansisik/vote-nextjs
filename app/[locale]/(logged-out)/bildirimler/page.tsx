@@ -94,6 +94,14 @@ export default function NotificationsPage() {
 
   const unreadCount = stats?.unread || 0;
 
+  // Helper function to get localized text from multi-language object
+  const getLocalizedText = (textObj: any, fallback: string = '') => {
+    if (!textObj || typeof textObj !== 'object') return fallback;
+    
+    // Try current locale first, then fallback to Turkish, then English, then any available
+    return textObj[locale] || textObj.tr || textObj.en || textObj[Object.keys(textObj)[0]] || fallback;
+  };
+
   // Get translated notification content based on type
   const getNotificationContent = (notification: any) => {
     const type = notification.type;
@@ -111,14 +119,30 @@ export default function NotificationsPage() {
           message: t('types.profileUpdate.message')
         };
       case 'new_vote':
+        // Handle both string and multi-language category names
+        let categoryName = metadata.categoryName;
+        if (categoryName && typeof categoryName === 'object') {
+          categoryName = getLocalizedText(categoryName, 'Kategori');
+        } else if (!categoryName) {
+          categoryName = notification.message?.match(/"([^"]+)"/)?.[1] || 'Kategori';
+        }
+        
         return {
           title: t('types.newVote.title'),
-          message: t('types.newVote.message', { categoryName: metadata.categoryName || 'Kategori' })
+          message: t('types.newVote.message', { categoryName })
         };
       case 'test_voted':
+        // Handle both string and multi-language test titles
+        let testTitle = metadata.testTitle;
+        if (testTitle && typeof testTitle === 'object') {
+          testTitle = getLocalizedText(testTitle, 'Test');
+        } else if (!testTitle) {
+          testTitle = notification.message?.match(/"([^"]+)"/)?.[1] || 'Test';
+        }
+        
         return {
           title: t('types.testVoted.title'),
-          message: t('types.testVoted.message', { testTitle: metadata.testTitle || 'Test' })
+          message: t('types.testVoted.message', { testTitle })
         };
       case 'usage_stats':
         return {
