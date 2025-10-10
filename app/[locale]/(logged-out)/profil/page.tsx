@@ -10,6 +10,7 @@ import { editProfile, deleteAccount, clearError, logout } from '@/redux/actions/
 import { getUserVotedTests } from '@/redux/actions/testActions';
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldValue } from '@/lib/multiLanguageUtils';
+import { useLocale } from 'next-intl';
 import ProfilePhotoUpload from '@/components/profile-photo-upload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ export default function ProfilPage() {
   const t = useTranslations('ProfilePage');
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { user, loading, error, isAuthenticated } = useSelector((state: any) => state.user);
   const { userVotedTests, userVotedTestsLoading, userVotedTestsError } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
@@ -46,7 +48,7 @@ export default function ProfilPage() {
   const getCategoryNameById = (category: any) => {
     // If category is already populated (has name property), use it directly
     if (category && typeof category === 'object' && category.name) {
-      return getCategoryName(category);
+      return getCategoryName(category, locale);
     }
     // If category is just an ID string, find it in activeCategories
     if (typeof category === 'string') {
@@ -434,7 +436,7 @@ export default function ProfilPage() {
                             {votedTest.test.coverImage ? (
                               <Image
                                 src={votedTest.test.coverImage}
-                                alt={getTestTitle(votedTest.test)}
+                                alt={getTestTitle(votedTest.test, locale)}
                                 width={200}
                                 height={120}
                                 className="w-full h-32 rounded-lg object-cover"
@@ -449,10 +451,10 @@ export default function ProfilPage() {
                           {/* Test Info */}
                           <div className="mb-3">
                             <h4 className="font-semibold text-gray-900 text-base mb-2">
-                              {getTestTitle(votedTest.test)}
+                              {getTestTitle(votedTest.test, locale)}
                             </h4>
                             <p className="text-sm text-gray-600 mb-3">
-                              {getTestDescription(votedTest.test)}
+                              {getTestDescription(votedTest.test, locale)}
                             </p>
                             
                             {/* Vote Details - Stacked on Mobile */}
@@ -472,18 +474,18 @@ export default function ProfilPage() {
                               <div className="flex items-center gap-3">
                                 <Image
                                   src={votedTest.selectedOption.image}
-                                  alt={getOptionTitle(votedTest.selectedOption)}
+                                  alt={getOptionTitle(votedTest.selectedOption, locale)}
                                   width={50}
                                   height={50}
                                   className="rounded object-cover flex-shrink-0"
                                 />
                                 <div className="text-sm text-gray-700 flex-1">
                                   <div className="font-medium">
-                                    {getOptionTitle(votedTest.selectedOption)}
+                                    {getOptionTitle(votedTest.selectedOption, locale)}
                                   </div>
                                   {votedTest.selectedOption.customFields && votedTest.selectedOption.customFields.length > 0 && (
                                     <div className="text-xs text-gray-500">
-                                      {getCustomFieldValue(votedTest.selectedOption.customFields[0])}
+                                      {getCustomFieldValue(votedTest.selectedOption.customFields[0], locale)}
                                     </div>
                                   )}
                                 </div>
@@ -510,7 +512,7 @@ export default function ProfilPage() {
                               {votedTest.test.coverImage ? (
                                 <Image
                                   src={votedTest.test.coverImage}
-                                  alt={getTestTitle(votedTest.test)}
+                                  alt={getTestTitle(votedTest.test, locale)}
                                   width={80}
                                   height={80}
                                   className="rounded-lg object-cover"
@@ -525,14 +527,14 @@ export default function ProfilPage() {
                             {/* Test Info */}
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-gray-900 truncate">
-                                {getTestTitle(votedTest.test)}
+                                {getTestTitle(votedTest.test, locale)}
                               </h4>
                               <p className="text-sm text-gray-600 mt-1 overflow-hidden" style={{
                                 display: '-webkit-box',
                                 WebkitLineClamp: 2,
                                 WebkitBoxOrient: 'vertical'
                               }}>
-                                {getTestDescription(votedTest.test)}
+                                {getTestDescription(votedTest.test, locale)}
                               </p>
                               <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                                 <span>{t('category')}: {votedTest.test.categories && votedTest.test.categories.length > 0 ? getCategoryNameById(votedTest.test.categories[0]) : 'Kategori Yok'}</span>
@@ -552,18 +554,18 @@ export default function ProfilPage() {
                                 <div className="flex items-center gap-2">
                                   <Image
                                     src={votedTest.selectedOption.image}
-                                    alt={getOptionTitle(votedTest.selectedOption)}
+                                    alt={getOptionTitle(votedTest.selectedOption, locale)}
                                     width={40}
                                     height={40}
                                     className="rounded object-cover"
                                   />
                                   <div className="text-sm text-gray-700 max-w-32">
                                     <div className="font-medium truncate">
-                                      {getOptionTitle(votedTest.selectedOption)}
+                                      {getOptionTitle(votedTest.selectedOption, locale)}
                                     </div>
                                     {votedTest.selectedOption.customFields && votedTest.selectedOption.customFields.length > 0 && (
                                       <div className="text-xs text-gray-500 truncate">
-                                        {getCustomFieldValue(votedTest.selectedOption.customFields[0])}
+                                        {getCustomFieldValue(votedTest.selectedOption.customFields[0], locale)}
                                       </div>
                                     )}
                                   </div>

@@ -377,6 +377,13 @@
     "invalidStatus": "Geçersiz durum. Sadece 'active' veya 'inactive' durumları kabul edilir",
     "cannotChangeOwnStatus": "Kendi durumunuzu değiştiremezsiniz",
     "statusUpdateSuccess": "Kullanıcı durumu başarıyla güncellendi"
+  },
+  "CategoryPage": {
+    "voteCount": "{count} oylama bulundu",
+    "noVotes": "Henüz oylama yok",
+    "noVotesDescription": "Bu kategoride henüz hiç oylama bulunmuyor.",
+    "previous": "Önceki",
+    "next": "Sonraki"
   }
 }
 

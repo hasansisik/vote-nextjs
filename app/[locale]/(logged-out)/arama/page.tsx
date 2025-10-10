@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { useLocale } from 'next-intl';
 import {
   Pagination,
   PaginationContent,
@@ -34,10 +35,11 @@ interface CardProps {
   test: Test;
   index: number;
   onTestClick: (test: Test, e: React.MouseEvent) => void;
+  locale: 'tr' | 'en' | 'de' | 'fr';
   className?: string;
 }
 
-const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" }) => {
+const Card: React.FC<CardProps> = ({ test, index, onTestClick, locale, className = "" }) => {
   const { activeMenus } = useAppSelector((state) => state.menu);
   
   const handleClick = (e: React.MouseEvent) => {
@@ -52,7 +54,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
       
       // If category is already an object with multilingual data, use it directly
       if (typeof firstCategory === 'object' && firstCategory !== null && firstCategory.name) {
-        return getCategoryName(firstCategory);
+        return getCategoryName(firstCategory, locale);
       }
       
       // If category is a string ID, find the corresponding menu
@@ -61,14 +63,14 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
           menu.testCategory && menu.testCategory._id === firstCategory
         );
         if (menu && menu.testCategory) {
-          return getCategoryName(menu.testCategory);
+          return getCategoryName(menu.testCategory, locale);
         }
       }
     }
     
     // Handle single category (backward compatibility)
     if (typeof categories === 'object' && categories !== null && categories.name) {
-      return getCategoryName(categories);
+      return getCategoryName(categories, locale);
     }
     
     if (typeof categories === 'string' && activeMenus && activeMenus.length > 0) {
@@ -76,7 +78,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
         menu.testCategory && menu.testCategory._id === categories
       );
       if (menu && menu.testCategory) {
-        return getCategoryName(menu.testCategory);
+        return getCategoryName(menu.testCategory, locale);
       }
     }
     
@@ -113,13 +115,13 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, className = "" })
         
         {/* Başlık */}
         <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
-          {getTestTitle(test)}
+          {getTestTitle(test, locale)}
         </h3>
         
         {/* Açıklama */}
         {test.description && (
           <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-            {getTestDescription(test)}
+            {getTestDescription(test, locale)}
           </p>
         )}
       </div>
@@ -131,6 +133,7 @@ export default function AramaPage() {
   const t = useTranslations('SearchPage');
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeMenus } = useAppSelector((state) => state.menu);
   const [searchTerm, setSearchTerm] = useState('');
@@ -157,7 +160,7 @@ export default function AramaPage() {
       
       // If category is already an object with multilingual data, use it directly
       if (typeof firstCategory === 'object' && firstCategory !== null && firstCategory.name) {
-        return getCategoryName(firstCategory);
+        return getCategoryName(firstCategory, locale);
       }
       
       // If category is a string ID, find the corresponding menu
@@ -166,14 +169,14 @@ export default function AramaPage() {
           menu.testCategory && menu.testCategory._id === firstCategory
         );
         if (menu && menu.testCategory) {
-          return getCategoryName(menu.testCategory);
+          return getCategoryName(menu.testCategory, locale);
         }
       }
     }
     
     // Handle single category (backward compatibility)
     if (typeof categories === 'object' && categories !== null && categories.name) {
-      return getCategoryName(categories);
+      return getCategoryName(categories, locale);
     }
     
     if (typeof categories === 'string' && activeMenus && activeMenus.length > 0) {
@@ -181,7 +184,7 @@ export default function AramaPage() {
         menu.testCategory && menu.testCategory._id === categories
       );
       if (menu && menu.testCategory) {
-        return getCategoryName(menu.testCategory);
+        return getCategoryName(menu.testCategory, locale);
       }
     }
     
@@ -225,8 +228,8 @@ export default function AramaPage() {
     // Arama terimi filtresi
     if (searchTerm.trim()) {
       filtered = filtered.filter((test: any) => 
-        getTestTitle(test).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getTestDescription(test).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getTestTitle(test, locale).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getTestDescription(test, locale).toLowerCase().includes(searchTerm.toLowerCase()) ||
         getCategoryNameById(test.categories).toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -258,7 +261,7 @@ export default function AramaPage() {
         if (menu.testCategory) {
           categories.push({
             value: menu.testCategory._id,
-            label: getCategoryName(menu.testCategory),
+            label: getCategoryName(menu.testCategory, locale),
             color: menu.color ? 'custom-color' : 'bg-gray-400'
           });
         }
@@ -417,6 +420,7 @@ export default function AramaPage() {
                       test={test}
                       index={index}
                       onTestClick={handleTestClick}
+                      locale={locale}
                     />
                   ))}
                 </div>
@@ -431,6 +435,7 @@ export default function AramaPage() {
                       test={test}
                       index={index}
                       onTestClick={handleTestClick}
+                      locale={locale}
                     />
                   ))}
                 </div>

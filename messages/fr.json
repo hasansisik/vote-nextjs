@@ -377,6 +377,13 @@
     "invalidStatus": "Statut invalide. Seuls les statuts 'active' ou 'inactive' sont acceptés",
     "cannotChangeOwnStatus": "Vous ne pouvez pas changer votre propre statut",
     "statusUpdateSuccess": "Statut utilisateur mis à jour avec succès"
+  },
+  "CategoryPage": {
+    "voteCount": "{count} votes trouvés",
+    "noVotes": "Aucun vote pour le moment",
+    "noVotesDescription": "Il n'y a pas encore de votes dans cette catégorie.",
+    "previous": "Précédent",
+    "next": "Suivant"
   }
 }
 

@@ -8,6 +8,7 @@ import { getTrendTests } from '@/redux/actions/testActions';
 import { useTranslations } from 'next-intl';
 import { Skeleton } from './ui/skeleton';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { useLocale } from 'next-intl';
 
 interface SliderContent {
   _id: string;
@@ -27,6 +28,7 @@ export default function HeroSlider() {
   const t = useTranslations('HeroSlider');
   const router = useRouter();
   const dispatch = useDispatch();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { trendTests, trendTestsLoading } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -54,9 +56,9 @@ export default function HeroSlider() {
       if (typeof firstCategory === 'string') {
         // Category ID'si string olarak geliyorsa, activeCategories'den bul
         const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
-        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+        return categoryObj ? getCategoryName(categoryObj, locale).toUpperCase() : 'KATEGORİ';
       }
-      return getCategoryName(firstCategory).toUpperCase() || t('category');
+      return getCategoryName(firstCategory, locale).toUpperCase() || 'KATEGORİ';
     }
     
     // Handle single category (backward compatibility)
@@ -65,7 +67,7 @@ export default function HeroSlider() {
       return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
     }
     
-    return getCategoryName(categories).toUpperCase() || t('category');
+    return getCategoryName(categories, locale).toUpperCase() || 'KATEGORİ';
   };
 
   // Sadece trend testleri yükle - kategoriler ana sayfada zaten yükleniyor
@@ -217,12 +219,12 @@ export default function HeroSlider() {
               
               {/* Başlık */}
               <h2 className="text-lg lg:text-xl font-bold leading-tight">
-                {getTestTitle(displayData[currentSlide])}
+                {getTestTitle(displayData[currentSlide], locale)}
               </h2>
               
               {/* Açıklama */}
               <p className="text-xs text-gray-300 leading-relaxed">
-                {getTestDescription(displayData[currentSlide])}
+                {getTestDescription(displayData[currentSlide], locale)}
               </p>
             </div>
             
@@ -289,12 +291,12 @@ export default function HeroSlider() {
                   
                   {/* Başlık */}
                   <h4 className="text-xs font-bold text-white leading-tight mb-1">
-                    {getTestTitle(item)}
+                    {getTestTitle(item, locale)}
                   </h4>
                   
                   {/* Açıklama */}
                   <p className="text-xs text-gray-400 leading-relaxed line-clamp-2">
-                    {getTestDescription(item)}
+                    {getTestDescription(item, locale)}
                   </p>
                 </div>
               </div>
@@ -336,12 +338,12 @@ export default function HeroSlider() {
               
               {/* Başlık */}
               <h2 className="text-base font-bold leading-tight">
-                {getTestTitle(displayData[currentSlide])}
+                {getTestTitle(displayData[currentSlide], locale)}
               </h2>
               
               {/* Açıklama */}
               <p className="text-xs text-gray-300 leading-relaxed">
-                {getTestDescription(displayData[currentSlide])}
+                {getTestDescription(displayData[currentSlide], locale)}
               </p>
             </div>
             
@@ -404,7 +406,7 @@ export default function HeroSlider() {
                   
                   {/* Başlık */}
                   <h4 className="text-xs font-bold text-white leading-tight">
-                    {getTestTitle(item)}
+                    {getTestTitle(item, locale)}
                   </h4>
                 </div>
               </div>

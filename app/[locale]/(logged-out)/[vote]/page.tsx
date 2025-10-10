@@ -10,6 +10,7 @@ import { getAllTests, voteOnTest, getTestResults, getSingleTestBySlug, voteOnTes
 import { getActiveTestCategories } from '@/redux/actions/testCategoryActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTestTitle, getTestDescription, getCategoryName, getOptionTitle, getCustomFieldName, getCustomFieldValue, getText } from '@/lib/multiLanguageUtils';
+import { useLocale } from 'next-intl';
 // Utility functions for slug/ID detection
 const isObjectId = (str: string): boolean => {
   return /^[0-9a-fA-F]{24}$/.test(str);
@@ -40,6 +41,7 @@ interface Test {
   headerText: string;
   footerText: string;
   category: string;
+  categories: string[];
   options: Option[];
   totalVotes: number;
   isActive: boolean;
@@ -51,6 +53,7 @@ export default function VotePage() {
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const voteId = params?.vote as string;
   
   const { allTests, testsLoading, testResults, userVotedTests, userVotedTestsLoading } = useAppSelector((state) => state.test);
@@ -73,8 +76,9 @@ export default function VotePage() {
 
   // Get category name by ID
   const getCategoryNameById = (categoryId: string) => {
+    if (!categoryId) return 'Kategori';
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
-    return category ? getCategoryName(category) : categoryId;
+    return category ? getCategoryName(category, locale) : 'Kategori';
   };
 
 
@@ -441,10 +445,10 @@ export default function VotePage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-6">
              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-               {t('finalRankingsTitle', { category: getCategoryNameById(test.category).toUpperCase() })}
+               {t('finalRankingsTitle', { category: getCategoryNameById(test.categories?.[0] || '').toUpperCase() })}
              </h1>
-             <p className="text-base text-gray-600 mb-2">{getTestTitle(test)}</p>
-             <p className="text-sm text-gray-500">{getTestDescription(test)}</p>
+             <p className="text-base text-gray-600 mb-2">{getTestTitle(test, locale)}</p>
+             <p className="text-sm text-gray-500">{getTestDescription(test, locale)}</p>
           </div>
 
           {/* Podium - Top 3 */}
@@ -483,7 +487,7 @@ export default function VotePage() {
                     <div className={`relative ${index === 0 ? 'h-48' : 'h-40'}`}>
                       <Image
                         src={ranking.option.image}
-                        alt={getOptionTitle(ranking.option)}
+                        alt={getOptionTitle(ranking.option, locale)}
                         fill
                         className="object-cover w-full h-full"
                       />
@@ -494,7 +498,7 @@ export default function VotePage() {
                   {/* Content */}
                   <div className="p-4">
                     <h3 className={`font-bold text-gray-900 mb-2 ${index === 0 ? 'text-xl' : 'text-lg'}`}>
-                      {getOptionTitle(ranking.option)}
+                      {getOptionTitle(ranking.option, locale)}
                     </h3>
                     
                     {/* Score */}
@@ -522,8 +526,8 @@ export default function VotePage() {
                     <div className="space-y-1 text-xs">
                       {ranking.option.customFields.slice(0, 2).map((field, idx) => (
                         <div key={idx} className="flex justify-between">
-                          <span className="text-gray-600">{getCustomFieldName(field)}:</span>
-                          <span className="font-medium text-gray-900">{getCustomFieldValue(field)}</span>
+                          <span className="text-gray-600">{getCustomFieldName(field, locale)}:</span>
+                          <span className="font-medium text-gray-900">{getCustomFieldValue(field, locale)}</span>
                         </div>
                       ))}
                     </div>
@@ -541,9 +545,9 @@ export default function VotePage() {
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
               <button 
                 onClick={() => {
-                  const shareText = `${getTestTitle(test)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
-                    `${index + 1}. ${getOptionTitle(ranking.option)} - %${ranking.score.toFixed(1)}`
-                  ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.category)}`;
+                  const shareText = `${getTestTitle(test, locale)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
+                    `${index + 1}. ${getOptionTitle(ranking.option, locale)} - %${ranking.score.toFixed(1)}`
+                    ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.categories?.[0] || '')}`;
                   const shareUrl = window.location.href;
                   const encodedText = encodeURIComponent(shareText);
                   const encodedUrl = encodeURIComponent(shareUrl);
@@ -560,9 +564,9 @@ export default function VotePage() {
               
               <button 
                 onClick={() => {
-                  const shareText = `${getTestTitle(test)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
-                    `${index + 1}. ${getOptionTitle(ranking.option)} - %${ranking.score.toFixed(1)}`
-                  ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.category)}`;
+                  const shareText = `${getTestTitle(test, locale)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
+                    `${index + 1}. ${getOptionTitle(ranking.option, locale)} - %${ranking.score.toFixed(1)}`
+                    ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.categories?.[0] || '')}`;
                   const shareUrl = window.location.href;
                   const encodedText = encodeURIComponent(shareText);
                   const encodedUrl = encodeURIComponent(shareUrl);
@@ -579,9 +583,9 @@ export default function VotePage() {
               
               <button 
                 onClick={() => {
-                  const shareText = `${getTestTitle(test)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
-                    `${index + 1}. ${getOptionTitle(ranking.option)} - %${ranking.score.toFixed(1)}`
-                  ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.category)}`;
+                  const shareText = `${getTestTitle(test, locale)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
+                    `${index + 1}. ${getOptionTitle(ranking.option, locale)} - %${ranking.score.toFixed(1)}`
+                    ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.categories?.[0] || '')}`;
                   const shareUrl = window.location.href;
                   const encodedText = encodeURIComponent(shareText);
                   const encodedUrl = encodeURIComponent(shareUrl);
@@ -598,9 +602,9 @@ export default function VotePage() {
               
               <button 
                 onClick={() => {
-                  const shareText = `${getTestTitle(test)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
-                    `${index + 1}. ${getOptionTitle(ranking.option)} - %${ranking.score.toFixed(1)}`
-                  ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.category)}`;
+                  const shareText = `${getTestTitle(test, locale)} ${t('shareResultsText')}!\n\n${t('yourChoice')}: ${finalWinner ? getOptionTitle(finalWinner) : ''}\n\n${t('rankings')}:\n${finalRankings.slice(0, 5).map((ranking, index) => 
+                    `${index + 1}. ${getOptionTitle(ranking.option, locale)} - %${ranking.score.toFixed(1)}`
+                    ).join('\n')}\n\n#${t('voting')} #${getCategoryNameById(test.categories?.[0] || '')}`;
                   const shareUrl = window.location.href;
                   const encodedText = encodeURIComponent(shareText);
                   const encodedUrl = encodeURIComponent(shareUrl);
@@ -656,7 +660,7 @@ export default function VotePage() {
                     <div className="relative w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden">
                       <Image
                         src={ranking.option.image}
-                        alt={getOptionTitle(ranking.option)}
+                        alt={getOptionTitle(ranking.option, locale)}
                         fill
                         className="object-cover w-full h-full"
                       />
@@ -664,7 +668,7 @@ export default function VotePage() {
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 truncate text-sm">{getOptionTitle(ranking.option)}</h4>
+                      <h4 className="font-bold text-gray-900 truncate text-sm">{getOptionTitle(ranking.option, locale)}</h4>
                       <p className="text-xs text-gray-600">
                         {ranking.option.customFields[0] ? getCustomFieldValue(ranking.option.customFields[0]) : ''}
                       </p>
@@ -714,7 +718,7 @@ export default function VotePage() {
         <div className="max-w-4xl mx-auto px-4 py-3">
            <div className="flex items-center justify-between mb-3">
              <h1 className="text-base md:text-lg font-bold text-gray-900">
-               {getTestTitle(test)}
+               {getTestTitle(test, locale)}
              </h1>
              
              <button
@@ -743,8 +747,8 @@ export default function VotePage() {
           </div>
           
           <div className="text-center">
-            <p className="text-xs text-gray-600 mb-1">{getTestDescription(test)}</p>
-            <p className="text-xs text-gray-500">{getTestTitle(test)}</p>
+            <p className="text-xs text-gray-600 mb-1">{getTestDescription(test, locale)}</p>
+            <p className="text-xs text-gray-500">{getTestTitle(test, locale)}</p>
           </div>
         </div>
       </div>
@@ -765,7 +769,7 @@ export default function VotePage() {
               <div className="relative h-64 md:h-80">
                 <Image
                   src={option.image}
-                  alt={getOptionTitle(option)}
+                  alt={getOptionTitle(option, locale)}
                   fill
                   className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                 />
@@ -774,15 +778,15 @@ export default function VotePage() {
                 {/* Title */}
                 <div className="absolute bottom-0 left-0 right-0 p-4">
                   <h3 className="text-lg md:text-xl font-bold text-white mb-2">
-                    {getOptionTitle(option)}
+                    {getOptionTitle(option, locale)}
                   </h3>
                   
                   {/* Custom Fields */}
                   <div className="space-y-1">
                     {option.customFields.slice(0, 3).map((field, idx) => (
                       <div key={idx} className="flex items-center text-xs">
-                        <span className="text-gray-300 font-medium">{getCustomFieldName(field)}:</span>
-                        <span className="ml-2 text-white">{getCustomFieldValue(field)}</span>
+                        <span className="text-gray-300 font-medium">{getCustomFieldName(field, locale)}:</span>
+                        <span className="ml-2 text-white">{getCustomFieldValue(field, locale)}</span>
                       </div>
                     ))}
                   </div>

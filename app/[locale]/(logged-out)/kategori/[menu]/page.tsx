@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getTestsByCategorySlug } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
 import { getTestTitle, getTestDescription, getCategoryName, getText } from '@/lib/multiLanguageUtils';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Pagination,
   PaginationContent,
@@ -23,10 +24,11 @@ interface CardProps {
   index: number;
   onTestClick: (testId: string, e: React.MouseEvent) => void;
   getCategoryNameById: (category: any) => string;
+  locale: 'tr' | 'en' | 'de' | 'fr';
   className?: string;
 }
 
-const Card: React.FC<CardProps> = ({ test, index, onTestClick, getCategoryNameById, className = "" }) => {
+const Card: React.FC<CardProps> = ({ test, index, onTestClick, getCategoryNameById, locale, className = "" }) => {
   const handleClick = (e: React.MouseEvent) => {
     onTestClick(test._id, e);
   };
@@ -40,7 +42,7 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, getCategoryNameBy
       <div className="w-full h-32 lg:h-36 relative mb-2 rounded-lg overflow-hidden">
         <Image
           src={test.coverImage || `/images/v${(index % 8) + 1}.jpg`}
-          alt={getTestTitle(test)}
+          alt={getTestTitle(test, locale)}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 50vw, 25vw"
@@ -60,13 +62,13 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, getCategoryNameBy
         
         {/* Başlık */}
         <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
-          {getTestTitle(test)}
+          {getTestTitle(test, locale)}
         </h3>
         
         {/* Açıklama */}
         {test.description && (
           <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-            {getTestDescription(test)}
+            {getTestDescription(test, locale)}
           </p>
         )}
       </div>
@@ -75,9 +77,11 @@ const Card: React.FC<CardProps> = ({ test, index, onTestClick, getCategoryNameBy
 };
 
 export default function CategoryPage() {
+  const t = useTranslations('CategoryPage');
   const params = useParams();
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { categoryTests, categoryInfo, categoryTestsLoading, categoryPagination } = useAppSelector((state) => state.test);
   const { activeMenus } = useAppSelector((state) => state.menu);
   const { activeCategories } = useAppSelector((state) => state.testCategory);
@@ -96,18 +100,18 @@ export default function CategoryPage() {
       if (typeof firstCategory === 'string') {
         // Category ID'si string olarak geliyorsa, activeCategories'den bul
         const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
-        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
+        return categoryObj ? getCategoryName(categoryObj, locale).toUpperCase() : 'KATEGORİ';
       }
-      return getCategoryName(firstCategory).toUpperCase() || 'KATEGORİ';
+      return getCategoryName(firstCategory, locale).toUpperCase() || 'KATEGORİ';
     }
     
     // Handle single category (backward compatibility)
     if (typeof categories === 'string') {
       const categoryObj = activeCategories?.find((cat: any) => cat._id === categories);
-      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : 'KATEGORİ';
+      return categoryObj ? getCategoryName(categoryObj, locale).toUpperCase() : 'KATEGORİ';
     }
     
-    return getCategoryName(categories).toUpperCase() || 'KATEGORİ';
+    return getCategoryName(categories, locale).toUpperCase() || 'KATEGORİ';
   };
 
   // URL'den kategori parametresini al
@@ -134,10 +138,23 @@ export default function CategoryPage() {
   }, [categoryPagination]);
 
   const getCategoryDisplayName = (): string => {
-    if (categoryInfo?.name) {
-      const categoryName = getText(categoryInfo.name, 'tr');
-      return categoryName ? categoryName.toUpperCase() : categorySlug?.toUpperCase() || 'KATEGORİ';
+    // First try to get from activeMenus (Menu model with i18n support)
+    if (activeMenus && activeMenus.length > 0 && categoryInfo) {
+      const menu = activeMenus.find((menu: any) => 
+        menu.testCategory && menu.testCategory._id === categoryInfo._id
+      );
+      if (menu && menu.name) {
+        const menuName = getText(menu.name, locale);
+        return menuName ? menuName.toUpperCase() : getText(menu.name, 'tr').toUpperCase();
+      }
     }
+    
+    // Fallback to categoryInfo name
+    if (categoryInfo?.name) {
+      const categoryName = getText(categoryInfo.name, locale);
+      return categoryName ? categoryName.toUpperCase() : getText(categoryInfo.name, 'tr').toUpperCase() || 'KATEGORİ';
+    }
+    
     return categorySlug?.toUpperCase() || 'KATEGORİ';
   };
 
@@ -243,7 +260,7 @@ export default function CategoryPage() {
             </h1>
           </div>
           <p className="text-gray-600 text-lg">
-            {categoryTests?.length || 0} oylama bulundu
+            {t('voteCount', { count: categoryTests?.length || 0 })}
           </p>
         </div>
 
@@ -261,6 +278,7 @@ export default function CategoryPage() {
                       index={index}
                       onTestClick={handleTestClick}
                       getCategoryNameById={getCategoryNameById}
+                      locale={locale}
                     />
                   ))}
                 </div>
@@ -276,6 +294,7 @@ export default function CategoryPage() {
                       index={index}
                       onTestClick={handleTestClick}
                       getCategoryNameById={getCategoryNameById}
+                      locale={locale}
                     />
                   ))}
                 </div>
@@ -293,7 +312,7 @@ export default function CategoryPage() {
                         onClick={handlePrevPage}
                         className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       >
-                        <span className="hidden sm:block">Önceki</span>
+                        <span className="hidden sm:block">{t('previous')}</span>
                       </PaginationPrevious>
                     </PaginationItem>
 
@@ -336,7 +355,7 @@ export default function CategoryPage() {
                         onClick={handleNextPage}
                         className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
                       >
-                        <span className="hidden sm:block">Sonraki</span>
+                        <span className="hidden sm:block">{t('next')}</span>
                       </PaginationNext>
                     </PaginationItem>
                   </PaginationContent>
@@ -354,10 +373,10 @@ export default function CategoryPage() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Henüz oylama yok
+              {t('noVotes')}
             </h3>
             <p className="text-gray-600">
-              Bu kategoride henüz hiç oylama bulunmuyor.
+              {t('noVotesDescription')}
             </p>
           </div>
         )}

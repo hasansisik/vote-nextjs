@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { useLocale } from 'next-intl';
 
 interface HomepageCard {
   id: number;
@@ -74,6 +75,7 @@ interface CardProps {
 
 const Card: React.FC<CardProps> = ({ card, className = "" }) => {
   const router = useRouter();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   
   const handleClick = () => {
     // Slug varsa slug'ı kullan, yoksa ID'yi kullan
@@ -110,13 +112,13 @@ const Card: React.FC<CardProps> = ({ card, className = "" }) => {
         
         {/* Başlık */}
         <h3 className="text-sm font-bold text-gray-900 leading-tight mt-1 line-clamp-2">
-          {typeof card.title === 'string' ? card.title : getTestTitle(card)}
+          {typeof card.title === 'string' ? card.title : getTestTitle(card, locale)}
         </h3>
         
         {/* Açıklama */}
         {card.description && (
           <p className="text-xs text-gray-600 line-clamp-2 mt-1">
-            {typeof card.description === 'string' ? card.description : getTestDescription(card)}
+            {typeof card.description === 'string' ? card.description : getTestDescription(card, locale)}
           </p>
         )}
       </div>

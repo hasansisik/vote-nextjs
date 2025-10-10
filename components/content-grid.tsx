@@ -7,6 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { getPopularTests } from '@/redux/actions/testActions';
 import { useTranslations } from 'next-intl';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
+import { useLocale } from 'next-intl';
 
 
 interface HomepageCard {
@@ -31,6 +32,7 @@ const ContentGrid: React.FC<ContentGridProps> = ({
 }) => {
   const t = useTranslations('ContentGrid');
   const dispatch = useDispatch();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { popularTests, popularTestsLoading } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
 
@@ -42,18 +44,18 @@ const ContentGrid: React.FC<ContentGridProps> = ({
       if (typeof firstCategory === 'string') {
         // Category ID'si string olarak geliyorsa, activeCategories'den bul
         const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
-        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+        return categoryObj ? getCategoryName(categoryObj, locale).toUpperCase() : 'KATEGORİ';
       }
-      return getCategoryName(firstCategory).toUpperCase() || t('category');
+      return getCategoryName(firstCategory, locale).toUpperCase() || 'KATEGORİ';
     }
     
     // Handle single category (backward compatibility)
     if (typeof categories === 'string') {
       const categoryObj = activeCategories?.find((cat: any) => cat._id === categories);
-      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+      return categoryObj ? getCategoryName(categoryObj, locale).toUpperCase() : 'KATEGORİ';
     }
     
-    return getCategoryName(categories).toUpperCase() || t('category');
+    return getCategoryName(categories, locale).toUpperCase() || 'KATEGORİ';
   };
 
   // Popular testleri yükle
@@ -90,9 +92,9 @@ const ContentGrid: React.FC<ContentGridProps> = ({
       testId: test._id, // Gerçek test ID'si
       slug: test.slug, // Test slug'ı
       categories: test.categories || [], // Use categories array
-      title: getTestTitle(test),
+      title: getTestTitle(test, locale),
       image: imageUrl,
-      description: getTestDescription(test),
+      description: getTestDescription(test, locale),
       tag: "popular"
     };
   }) || [];
@@ -219,6 +221,7 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
   const router = useRouter();
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const t = useTranslations('ContentGrid');
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   
   // Category name helper function
   const getCategoryNameById = (categories: any) => {
@@ -228,18 +231,18 @@ const Card: React.FC<CardProps> = ({ card, variant, className = "" }) => {
       if (typeof firstCategory === 'string') {
         // Category ID'si string olarak geliyorsa, activeCategories'den bul
         const categoryObj = activeCategories?.find((cat: any) => cat._id === firstCategory);
-        return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+        return categoryObj ? getCategoryName(categoryObj, locale).toUpperCase() : 'KATEGORİ';
       }
-      return getCategoryName(firstCategory).toUpperCase() || t('category');
+      return getCategoryName(firstCategory, locale).toUpperCase() || 'KATEGORİ';
     }
     
     // Handle single category (backward compatibility)
     if (typeof categories === 'string') {
       const categoryObj = activeCategories?.find((cat: any) => cat._id === categories);
-      return categoryObj ? getCategoryName(categoryObj).toUpperCase() : t('category');
+      return categoryObj ? getCategoryName(categoryObj, locale).toUpperCase() : 'KATEGORİ';
     }
     
-    return getCategoryName(categories).toUpperCase() || t('category');
+    return getCategoryName(categories, locale).toUpperCase() || 'KATEGORİ';
   };
   
   const handleClick = () => {

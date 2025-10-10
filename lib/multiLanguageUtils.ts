@@ -43,13 +43,14 @@ export function isMultiLanguageText(text: any): text is MultiLanguageText {
 /**
  * Get category name with fallback
  */
-export function getCategoryName(category: any): string {
-  if (!category) return 'Kategori Yok';
+export function getCategoryName(category: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+  if (!category) return 'Kategori';
   
-  // If category has a name property (populated object)
+  // If category has a name property (populated object from TestCategory model)
   if (category.name) {
     if (typeof category.name === 'object') {
-      return category.name.tr || category.name.en || 'Kategori';
+      const categoryName = getText(category.name, locale);
+      return categoryName || getText(category.name, 'tr') || 'Kategori';
     }
     return category.name;
   }
@@ -66,34 +67,34 @@ export function getCategoryName(category: any): string {
 /**
  * Get test title with fallback
  */
-export function getTestTitle(test: any): string {
-  return getTurkishText(test?.title);
+export function getTestTitle(test: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+  return getText(test?.title, locale);
 }
 
 /**
  * Get test description with fallback
  */
-export function getTestDescription(test: any): string {
-  return getTurkishText(test?.description);
+export function getTestDescription(test: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+  return getText(test?.description, locale);
 }
 
 /**
  * Get option title with fallback
  */
-export function getOptionTitle(option: any): string {
-  return getTurkishText(option?.title);
+export function getOptionTitle(option: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+  return getText(option?.title, locale);
 }
 
 /**
  * Get custom field name with fallback
  */
-export function getCustomFieldName(field: any): string {
-  return getTurkishText(field?.fieldName);
+export function getCustomFieldName(field: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+  return getText(field?.fieldName, locale);
 }
 
 /**
  * Get custom field value with fallback
  */
-export function getCustomFieldValue(field: any): string {
-  return getTurkishText(field?.fieldValue);
+export function getCustomFieldValue(field: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+  return getText(field?.fieldValue, locale);
 }

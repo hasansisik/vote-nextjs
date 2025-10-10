@@ -11,10 +11,12 @@ import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
 import { getText } from "@/lib/multiLanguageUtils";
+import { useLocale } from 'next-intl';
 
 export default function Home() {
   const t = useTranslations('HomePage');
   const dispatch = useAppDispatch();
+  const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeCategories, loading: categoriesLoading } = useAppSelector((state) => state.testCategory);
 
@@ -28,10 +30,10 @@ export default function Home() {
     const category = activeCategories?.find((cat: any) => cat._id === categoryId);
     if (category && category.name) {
       // Handle multilingual name structure
-      const categoryName = getText(category.name, 'tr');
-      return categoryName ? categoryName.toUpperCase() : t('general');
+      const categoryName = getText(category.name, locale);
+      return categoryName ? categoryName.toUpperCase() : 'GENEL';
     }
-    return t('general');
+    return 'GENEL';
   };
 
   // Convert tests to homepage card format - sadece aktif testleri göster

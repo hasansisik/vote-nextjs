@@ -377,6 +377,13 @@
     "invalidStatus": "Ungültiger Status. Nur 'active' oder 'inactive' Status werden akzeptiert",
     "cannotChangeOwnStatus": "Sie können Ihren eigenen Status nicht ändern",
     "statusUpdateSuccess": "Benutzerstatus erfolgreich aktualisiert"
+  },
+  "CategoryPage": {
+    "voteCount": "{count} Abstimmungen gefunden",
+    "noVotes": "Noch keine Abstimmungen",
+    "noVotesDescription": "In dieser Kategorie gibt es noch keine Abstimmungen.",
+    "previous": "Vorherige",
+    "next": "Nächste"
   }
 }
 
