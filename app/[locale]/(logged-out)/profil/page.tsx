@@ -413,65 +413,62 @@ export default function ProfilPage() {
                   <div className="space-y-4">
                     {userVotedTests.map((votedTest: any) => (
                       <div key={votedTest._id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <div className="flex items-start gap-4">
-                          {/* Test Image */}
-                          <div className="flex-shrink-0">
+                        {/* Mobile Layout */}
+                        <div className="block sm:hidden">
+                          {/* Test Image - Full Width on Mobile */}
+                          <div className="w-full mb-3">
                             {votedTest.test.coverImage ? (
                               <Image
                                 src={votedTest.test.coverImage}
                                 alt={getTestTitle(votedTest.test)}
-                                width={80}
-                                height={80}
-                                className="rounded-lg object-cover"
+                                width={200}
+                                height={120}
+                                className="w-full h-32 rounded-lg object-cover"
                               />
                             ) : (
-                              <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <span className="text-gray-400 text-xs">{t('noImage')}</span>
+                              <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <span className="text-gray-400 text-sm">{t('noImage')}</span>
                               </div>
                             )}
                           </div>
 
                           {/* Test Info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-gray-900 truncate">
+                          <div className="mb-3">
+                            <h4 className="font-semibold text-gray-900 text-base mb-2">
                               {getTestTitle(votedTest.test)}
                             </h4>
-                            <p className="text-sm text-gray-600 mt-1 overflow-hidden" style={{
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical'
-                            }}>
+                            <p className="text-sm text-gray-600 mb-3">
                               {getTestDescription(votedTest.test)}
                             </p>
-                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                              <span>{t('category')}: {votedTest.test.categories && votedTest.test.categories.length > 0 ? getCategoryNameById(votedTest.test.categories[0]) : 'Kategori Yok'}</span>
-                              <span>•</span>
-                              <span>{t('totalVotes')}: {votedTest.test.totalVotes}</span>
-                              <span>•</span>
-                              <span>{t('votedOn')}: {new Date(votedTest.votedAt).toLocaleDateString('tr-TR')}</span>
+                            
+                            {/* Vote Details - Stacked on Mobile */}
+                            <div className="space-y-1 text-xs text-gray-500 mb-3">
+                              <div>{t('category')}: {votedTest.test.categories && votedTest.test.categories.length > 0 ? getCategoryNameById(votedTest.test.categories[0]) : 'Kategori Yok'}</div>
+                              <div>{t('totalVotes')}: {votedTest.test.totalVotes}</div>
+                              <div>{t('votedOn')}: {new Date(votedTest.votedAt).toLocaleDateString('tr-TR')}</div>
                             </div>
                           </div>
 
-                          {/* Selected Option */}
+                          {/* Selected Option - Full Width on Mobile */}
                           {votedTest.selectedOption && (
-                            <div className="flex-shrink-0 text-right">
-                              <div className="text-sm font-medium text-gray-900 mb-1">
+                            <div className="mb-4 p-3 bg-white rounded-lg border">
+                              <div className="text-sm font-medium text-gray-900 mb-2">
                                 {t('selectedOption')}
                               </div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-3">
                                 <Image
                                   src={votedTest.selectedOption.image}
                                   alt={getOptionTitle(votedTest.selectedOption)}
-                                  width={40}
-                                  height={40}
-                                  className="rounded object-cover"
+                                  width={50}
+                                  height={50}
+                                  className="rounded object-cover flex-shrink-0"
                                 />
-                                <div className="text-sm text-gray-700 max-w-32">
-                                  <div className="font-medium truncate">
+                                <div className="text-sm text-gray-700 flex-1">
+                                  <div className="font-medium">
                                     {getOptionTitle(votedTest.selectedOption)}
                                   </div>
                                   {votedTest.selectedOption.customFields && votedTest.selectedOption.customFields.length > 0 && (
-                                    <div className="text-xs text-gray-500 truncate">
+                                    <div className="text-xs text-gray-500">
                                       {getCustomFieldValue(votedTest.selectedOption.customFields[0])}
                                     </div>
                                   )}
@@ -479,18 +476,99 @@ export default function ProfilPage() {
                               </div>
                             </div>
                           )}
-                        </div>
 
-                        {/* Action Button */}
-                        <div className="mt-4 flex justify-end">
+                          {/* Action Button - Full Width on Mobile */}
                           <Button
                             onClick={() => router.push(`/${votedTest.test.slug || votedTest.test._id}`)}
                             size="sm"
                             variant="outline"
-                            className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                            className="w-full text-orange-600 border-orange-600 hover:bg-orange-50"
                           >
                             {t('viewTestAgain')}
                           </Button>
+                        </div>
+
+                        {/* Desktop Layout */}
+                        <div className="hidden sm:block">
+                          <div className="flex items-start gap-4">
+                            {/* Test Image */}
+                            <div className="flex-shrink-0">
+                              {votedTest.test.coverImage ? (
+                                <Image
+                                  src={votedTest.test.coverImage}
+                                  alt={getTestTitle(votedTest.test)}
+                                  width={80}
+                                  height={80}
+                                  className="rounded-lg object-cover"
+                                />
+                              ) : (
+                                <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
+                                  <span className="text-gray-400 text-xs">{t('noImage')}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Test Info */}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-gray-900 truncate">
+                                {getTestTitle(votedTest.test)}
+                              </h4>
+                              <p className="text-sm text-gray-600 mt-1 overflow-hidden" style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical'
+                              }}>
+                                {getTestDescription(votedTest.test)}
+                              </p>
+                              <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                <span>{t('category')}: {votedTest.test.categories && votedTest.test.categories.length > 0 ? getCategoryNameById(votedTest.test.categories[0]) : 'Kategori Yok'}</span>
+                                <span>•</span>
+                                <span>{t('totalVotes')}: {votedTest.test.totalVotes}</span>
+                                <span>•</span>
+                                <span>{t('votedOn')}: {new Date(votedTest.votedAt).toLocaleDateString('tr-TR')}</span>
+                              </div>
+                            </div>
+
+                            {/* Selected Option */}
+                            {votedTest.selectedOption && (
+                              <div className="flex-shrink-0 text-right">
+                                <div className="text-sm font-medium text-gray-900 mb-1">
+                                  {t('selectedOption')}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Image
+                                    src={votedTest.selectedOption.image}
+                                    alt={getOptionTitle(votedTest.selectedOption)}
+                                    width={40}
+                                    height={40}
+                                    className="rounded object-cover"
+                                  />
+                                  <div className="text-sm text-gray-700 max-w-32">
+                                    <div className="font-medium truncate">
+                                      {getOptionTitle(votedTest.selectedOption)}
+                                    </div>
+                                    {votedTest.selectedOption.customFields && votedTest.selectedOption.customFields.length > 0 && (
+                                      <div className="text-xs text-gray-500 truncate">
+                                        {getCustomFieldValue(votedTest.selectedOption.customFields[0])}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Action Button */}
+                          <div className="mt-4 flex justify-end">
+                            <Button
+                              onClick={() => router.push(`/${votedTest.test.slug || votedTest.test._id}`)}
+                              size="sm"
+                              variant="outline"
+                              className="text-orange-600 border-orange-600 hover:bg-orange-50"
+                            >
+                              {t('viewTestAgain')}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
