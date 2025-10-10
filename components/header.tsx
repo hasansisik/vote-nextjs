@@ -283,6 +283,12 @@ export default function Header() {
             </>
           )}
         </div>
+
+        {/* Mobil sağdaki ikonlar - sadece mobilde görünür */}
+        <div className="flex md:hidden items-center gap-2">
+          {/* Dil Seçici - mobilde en sağda */}
+          <LanguageSwitcher onLanguageChange={handleLanguageChange} />
+        </div>
       </div>
 
 
