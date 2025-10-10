@@ -65,9 +65,8 @@ export default function VotePage() {
   const [optionScores, setOptionScores] = useState<{[key: string]: number}>({});
   const [finalRankings, setFinalRankings] = useState<Array<{option: Option, score: number}>>([]);
   const [finalWinner, setFinalWinner] = useState<Option | null>(null);
-  const [resultsFetched, setResultsFetched] = useState(false);
   const [votingInitialized, setVotingInitialized] = useState(false);
-  const [resultsLoading, setResultsLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
   // Get category name by ID
   const getCategoryNameById = (categoryId: string) => {
@@ -115,17 +114,9 @@ export default function VotePage() {
     }
   }, [voteId, test, dispatch]); // allTests dependency'sini kaldırdık
 
-  // Test bittiğinde final rankings oluştur - sadece bir kez çalışacak
+  // Test results değiştiğinde final rankings oluştur
   useEffect(() => {
-    if (isComplete && test && finalWinner && !resultsFetched) {
-      // Results will be fetched after vote is submitted
-      setResultsFetched(true);
-    }
-  }, [isComplete, test, finalWinner, resultsFetched]);
-
-  // Test results değiştiğinde final rankings oluştur - sadece bir kez
-  useEffect(() => {
-    if (testResults && testResults.results && finalRankings.length === 0) {
+    if (testResults && testResults.results && showResults) {
       const rankings = testResults.results.map((result: any) => ({
         option: {
           _id: result._id,
@@ -135,13 +126,32 @@ export default function VotePage() {
           votes: result.votes,
           winRate: result.winRate
         },
-        score: result.percentage || result.winRate // Yüzde değerini kullan
+        score: result.percentage || result.winRate
       }));
       
       setFinalRankings(rankings);
-      setResultsLoading(false);
     }
-  }, [testResults, finalRankings.length]);
+  }, [testResults, showResults]);
+
+  // Fallback: Eğer API'den veri gelmezse, test options'ından basit ranking oluştur
+  useEffect(() => {
+    if (showResults && finalRankings.length === 0 && test && finalWinner) {
+      // Basit fallback ranking oluştur
+      const fallbackRankings = test.options.map((option, index) => ({
+        option: {
+          _id: option._id,
+          title: option.title,
+          image: option.image,
+          customFields: option.customFields,
+          votes: option.votes || 0,
+          winRate: option.winRate || 0
+        },
+        score: option._id === finalWinner._id ? 100 : Math.max(10, 100 - (index * 15))
+      }));
+      
+      setFinalRankings(fallbackRankings);
+    }
+  }, [showResults, finalRankings.length, test, finalWinner]);
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
@@ -181,8 +191,8 @@ export default function VotePage() {
     setRound(1); // İlk round
     setWinners([]); // Kazananlar listesi temizle
     setIsComplete(false);
-    setResultsFetched(false); // Results fetch durumunu sıfırla
     setFinalRankings([]); // Final rankings'i temizle
+    setShowResults(false); // Results gösterimini sıfırla
     setVotingInitialized(true); // Initialize edildi olarak işaretle
     
   };
@@ -223,25 +233,26 @@ export default function VotePage() {
         setRound(prevRound => prevRound + 1);
       } else {
         // Tüm seçenekler tükendi - EN SON SEÇİLEN KAZANIR!
-        setFinalWinner(winner); // En son seçilen seçeneği final kazanan olarak kaydet
+        setFinalWinner(winner);
         setIsComplete(true);
+        
+        // Önce results'ı göster, sonra vote'u gönder
+        setShowResults(true);
         
         // Vote'u backend'e gönder - slug veya ID ile
         if (isSlug(voteId)) {
           dispatch(voteOnTestBySlug({ slug: voteId, optionId: winner._id })).unwrap().then((result) => {
             // Vote başarılı olduktan sonra test results'ı yenile
-            setResultsLoading(true);
             dispatch(getTestResultsBySlug(voteId));
           }).catch((error) => {
-            setResultsLoading(false);
+            console.error('Vote error:', error);
           });
         } else {
           dispatch(voteOnTest({ testId: voteId, optionId: winner._id })).unwrap().then((result) => {
             // Vote başarılı olduktan sonra test results'ı yenile
-            setResultsLoading(true);
             dispatch(getTestResults(voteId));
           }).catch((error) => {
-            setResultsLoading(false);
+            console.error('Vote error:', error);
           });
         }
       }
@@ -296,9 +307,9 @@ export default function VotePage() {
 
 
   // Final ekranı - Yüzdesel Sıralama
-  if (isComplete) {
+  if (isComplete && showResults) {
     // Eğer final rankings henüz yüklenmediyse skeleton göster
-    if (finalRankings.length === 0 || resultsLoading) {
+    if (finalRankings.length === 0) {
       return (
         <div className="min-h-screen bg-gray-50 p-4 py-8">
           <div className="max-w-6xl mx-auto">
