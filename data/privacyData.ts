@@ -473,3 +473,4 @@ export const privacyData = {
     </div>
   `
 };
+

@@ -597,3 +597,4 @@ export const termsData = {
     </div>
   `
 };
+

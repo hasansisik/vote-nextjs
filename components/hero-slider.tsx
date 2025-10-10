@@ -30,6 +30,21 @@ export default function HeroSlider() {
   const { trendTests, trendTestsLoading } = useSelector((state: any) => state.test);
   const { activeCategories } = useSelector((state: any) => state.testCategory);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Veri yoksa veya boşsa boş array kullan
+  const displayData: SliderContent[] = trendTests || [];
+
+  // Auto-slide functionality
+  useEffect(() => {
+    if (displayData && displayData.length > 1 && !isPaused) {
+      const interval = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % displayData.length);
+      }, 5000); // 5 saniyede bir değişsin
+
+      return () => clearInterval(interval);
+    }
+  }, [displayData, isPaused]);
 
   // Category name helper function
   const getCategoryNameById = (categories: any) => {
@@ -163,9 +178,6 @@ export default function HeroSlider() {
     );
   }
 
-  // Veri yoksa veya boşsa boş array kullan
-  const displayData: SliderContent[] = trendTests || [];
-
   // Eğer veri yoksa hiçbir şey gösterme
   if (!displayData || displayData.length === 0) {
     return null;
@@ -179,6 +191,8 @@ export default function HeroSlider() {
         <div 
           className="w-2/3 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
           onClick={() => router.push(`/${displayData[currentSlide].slug || displayData[currentSlide]._id}`)}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
           {/* Üst Kısım - Fotoğraf */}
           <div className="relative h-3/4 p-4">
@@ -296,6 +310,8 @@ export default function HeroSlider() {
         <div 
           className="flex-1 flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
           onClick={() => router.push(`/${displayData[currentSlide].slug || displayData[currentSlide]._id}`)}
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
           {/* Üst Kısım - Fotoğraf */}
           <div className="relative h-1/2 p-2">
