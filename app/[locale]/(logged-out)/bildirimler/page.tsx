@@ -178,12 +178,6 @@ export default function NotificationsPage() {
   };
 
   const handleNotificationClick = (notification: any) => {
-    // Debug: notification metadata'sını kontrol et
-    console.log('Notification clicked:', {
-      actionUrl: notification.actionUrl,
-      metadata: notification.metadata,
-      type: notification.type
-    });
     
     // Mark as read if not already read
     if (!notification.isRead) {
@@ -198,11 +192,9 @@ export default function NotificationsPage() {
         // Metadata'dan slug'ı al (hem testSlug hem de testId.slug'ı kontrol et)
         const slug = notification.metadata?.testSlug || notification.metadata?.testId?.slug;
         const targetUrl = slug ? `/${slug}` : `/${testId}`;
-        console.log('Target URL:', targetUrl);
         router.push(targetUrl);
       } else {
         // Normal actionUrl kullan
-        console.log('Using normal actionUrl:', notification.actionUrl);
         router.push(notification.actionUrl);
       }
     }
