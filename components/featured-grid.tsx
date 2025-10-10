@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { getTestTitle, getTestDescription, getCategoryName } from '@/lib/multiLanguageUtils';
 

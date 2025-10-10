@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getAllTests, voteOnTest, getTestResults, getSingleTestBySlug, voteOnTestBySlug, getTestResultsBySlug, getUserVotedTests } from '@/redux/actions/testActions';

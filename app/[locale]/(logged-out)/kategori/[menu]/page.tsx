@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getTestsByCategorySlug } from '@/redux/actions/testActions';
