@@ -57,7 +57,8 @@ export default function ProfilPage() {
   };
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Only redirect if we're sure the user is not authenticated and not loading
+    if (!loading && !isAuthenticated) {
       router.push('/giris');
       return;
     }
@@ -69,7 +70,7 @@ export default function ProfilPage() {
         bio: user.profile?.bio || ''
       });
     }
-  }, [user, isAuthenticated, router]);
+  }, [user, isAuthenticated, loading, router]);
 
   // Load categories when component mounts
   useEffect(() => {
@@ -193,8 +194,13 @@ export default function ProfilPage() {
     }
   };
 
-  if (!isAuthenticated) {
-    return null;
+  // Show loading spinner while checking authentication
+  if (loading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+      </div>
+    );
   }
 
   return (
