@@ -99,6 +99,37 @@ export function getCustomFieldValue(field: any, locale: 'tr' | 'en' | 'de' | 'fr
   return getText(field?.fieldValue, locale);
 }
 
+/**
+ * Get menu name with fallback - handles both menu.name and testCategory.name
+ */
+export function getMenuName(menuItem: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr', fallbackText: string = 'Kategori'): string {
+  if (!menuItem) return fallbackText;
+  
+  // Önce menü ismini kontrol et
+  if (menuItem.name && typeof menuItem.name === 'object') {
+    const menuName = getText(menuItem.name, locale);
+    if (menuName) return menuName;
+  }
+  
+  // Sonra testCategory ismini kontrol et
+  if (menuItem.testCategory?.name && typeof menuItem.testCategory.name === 'object') {
+    const categoryName = getText(menuItem.testCategory.name, locale);
+    if (categoryName) return categoryName;
+  }
+  
+  // String olarak gelen isimleri kontrol et
+  if (typeof menuItem.name === 'string' && menuItem.name.trim()) {
+    return menuItem.name;
+  }
+  
+  if (typeof menuItem.testCategory?.name === 'string' && menuItem.testCategory.name.trim()) {
+    return menuItem.testCategory.name;
+  }
+  
+  // Fallback
+  return fallbackText;
+}
+
 // Get slug for current locale
 export function getSlugForLocale(slug: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
   if (!slug) return '';

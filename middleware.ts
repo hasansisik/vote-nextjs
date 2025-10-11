@@ -9,6 +9,24 @@ const intlMiddleware = createMiddleware(routing);
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Handle multilingual category routes - redirect to appropriate language folder
+  const categoryTranslations = {
+    'tr': 'kategori',
+    'en': 'category', 
+    'de': 'kategorie',
+    'fr': 'categorie'
+  };
+
+  // Check if the path contains a translated category route and redirect to the correct language folder
+  for (const [locale, categoryPath] of Object.entries(categoryTranslations)) {
+    const categoryRegex = new RegExp(`^/${locale}/${categoryPath}(/.*)?$`);
+    if (categoryRegex.test(pathname)) {
+      // Keep the same path structure but ensure it uses the correct language folder
+      // No redirect needed - let it go to the actual folder
+      break;
+    }
+  }
+
   // Dashboard routes that should bypass locale prefix completely
   if (pathname.startsWith('/dashboard')) {
     // Check if user is authenticated by looking for accessToken in cookies
@@ -61,13 +79,16 @@ export function middleware(request: NextRequest) {
     '/oylamalar',
     '/kategoriler',
     '/test',
-    '/category',
     '/vote',
     '/arama',
     '/bildirimler',
-    '/kategori',
     '/menu',
-    '/profil'
+    '/profil',
+    // Multilingual category routes
+    '/kategori',
+    '/category',
+    '/kategorie',
+    '/categorie'
     // Dashboard routes are handled separately above and require authentication
   ];
 

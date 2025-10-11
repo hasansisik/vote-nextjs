@@ -221,6 +221,21 @@
     "rankings": "Classement",
     "voting": "Vote"
   },
+  "CategoryPage": {
+    "categoryNotFound": "Catégorie Non Trouvée",
+    "categoryNotFoundDescription": "La catégorie que vous recherchez n'existe pas.",
+    "backToHome": "Retour à l'Accueil",
+    "noVotesYet": "Aucun Vote Encore",
+    "noVotesYetDescription": "Il n'y a pas encore de votes actifs dans cette catégorie.",
+    "viewOtherCategories": "Voir Autres Catégories",
+    "options": "options",
+    "votes": "votes",
+    "voteCount": "{count} votes",
+    "noVotes": "Aucun Vote Encore",
+    "noVotesDescription": "Il n'y a pas encore de votes actifs dans cette catégorie.",
+    "previous": "Précédent",
+    "next": "Suivant"
+  },
   "ShareDialog": {
     "shareResultsText": "résultats de vote",
     "yourChoice": "Votre Choix",

@@ -23,6 +23,7 @@ import { Skeleton } from './ui/skeleton';
 import MobileMenu from './mobile-menu';
 import { LanguageSwitcher } from './language-switcher';
 import { useRouter as useNextRouter } from 'next/navigation';
+import { getMenuName } from '@/lib/multiLanguageUtils';
 
 export default function Header() {
   const t = useTranslations('Header');
@@ -101,7 +102,16 @@ export default function Header() {
   };
 
   const handleCategoryClick = (categorySlug: string) => {
-    router.push(`/kategori/${categorySlug}`);
+    // Dil bazlı kategori klasör isimlerini belirle
+    const categoryPaths = {
+      'tr': 'kategori',
+      'en': 'category',
+      'de': 'kategorie', 
+      'fr': 'categorie'
+    };
+    
+    const categoryPath = categoryPaths[locale as keyof typeof categoryPaths] || 'kategori';
+    router.push(`/${categoryPath}/${categorySlug}`);
   };
 
   const handleLogout = async () => {
@@ -317,7 +327,7 @@ export default function Header() {
                     className="w-2 h-2 rounded-full flex-shrink-0" 
                     style={{ backgroundColor: item.color || '#f97316' }}
                   ></div>
-                  {item.name?.[locale] || item.testCategory.name?.[locale] || item.testCategory.name || t('category')}
+                  {getMenuName(item, locale as 'tr' | 'en' | 'de' | 'fr', t('category'))}
                 </button>
               ))
             )}

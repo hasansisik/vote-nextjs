@@ -221,6 +221,21 @@
     "rankings": "Sıralama",
     "voting": "Oylama"
   },
+  "CategoryPage": {
+    "categoryNotFound": "Kategori Bulunamadı",
+    "categoryNotFoundDescription": "Aradığınız kategori mevcut değil.",
+    "backToHome": "Ana Sayfaya Dön",
+    "noVotesYet": "Henüz Oylama Yok",
+    "noVotesYetDescription": "Bu kategoride henüz aktif oylama bulunmuyor.",
+    "viewOtherCategories": "Diğer Kategorileri Gör",
+    "options": "seçenek",
+    "votes": "oy",
+    "voteCount": "{count} oylama",
+    "noVotes": "Henüz Oylama Yok",
+    "noVotesDescription": "Bu kategoride henüz aktif oylama bulunmuyor.",
+    "previous": "Önceki",
+    "next": "Sonraki"
+  },
   "ShareDialog": {
     "shareResultsText": "oylama sonuçları",
     "yourChoice": "Seçimin",

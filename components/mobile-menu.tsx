@@ -18,6 +18,7 @@ import {
   Search,
   Bell
 } from 'lucide-react';
+import { getMenuName } from '@/lib/multiLanguageUtils';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -56,7 +57,16 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleMobileCategoryClick = (categorySlug: string) => {
-    router.push(`/kategori/${categorySlug}`);
+    // Dil bazlı kategori klasör isimlerini belirle
+    const categoryPaths = {
+      'tr': 'kategori',
+      'en': 'category',
+      'de': 'kategorie', 
+      'fr': 'categorie'
+    };
+    
+    const categoryPath = categoryPaths[locale as keyof typeof categoryPaths] || 'kategori';
+    router.push(`/${categoryPath}/${categorySlug}`);
     onClose();
   };
 
@@ -252,7 +262,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                         className="w-3 h-3 rounded-full flex-shrink-0" 
                         style={{ backgroundColor: item.color || '#f97316' }}
                       ></div>
-                      {item.name?.[locale] || item.testCategory.name?.[locale] || item.testCategory.name || t('category')}
+                      {getMenuName(item, locale as 'tr' | 'en' | 'de' | 'fr', t('category'))}
                     </div>
                   </button>
                 ))

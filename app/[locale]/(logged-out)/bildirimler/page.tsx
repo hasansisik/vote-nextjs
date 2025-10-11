@@ -193,6 +193,17 @@ export default function NotificationsPage() {
         const slug = notification.metadata?.testSlug || notification.metadata?.testId?.slug;
         const targetUrl = slug ? `/${slug}` : `/${testId}`;
         router.push(targetUrl);
+      } else if (notification.actionUrl.startsWith('/kategori/')) {
+        // Kategori URL'lerini dil bazlı olarak güncelle
+        const categorySlug = notification.actionUrl.replace('/kategori/', '');
+        const categoryPaths = {
+          'tr': 'kategori',
+          'en': 'category',
+          'de': 'kategorie', 
+          'fr': 'categorie'
+        };
+        const categoryPath = categoryPaths[locale as keyof typeof categoryPaths] || 'kategori';
+        router.push(`/${categoryPath}/${categorySlug}`);
       } else {
         // Normal actionUrl kullan
         router.push(notification.actionUrl);
