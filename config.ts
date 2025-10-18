@@ -1,1 +1,1 @@
-export const server: string ="https://vote-backend-sage.vercel.app/v1";
+export const server: string ="https://vote-backend-omega.vercel.app/v1";
