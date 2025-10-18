@@ -6,7 +6,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   // This typically corresponds to the `[locale]` segment
   let locale = await requestLocale;
 
-  // If no locale in URL, try to get from localStorage via cookie or default to Turkish
+  // If no locale in URL, try to get from localStorage via cookie or default to English
   if (!locale || !routing.locales.includes(locale as any)) {
     // Try to get preferred language from cookie (set by client-side)
     const headersList = await headers();
@@ -15,7 +15,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     if (preferredLanguage && routing.locales.includes(preferredLanguage as any)) {
       locale = preferredLanguage;
     } else {
-      // Default to Turkish
+      // Default to English
       locale = routing.defaultLocale;
     }
   }
