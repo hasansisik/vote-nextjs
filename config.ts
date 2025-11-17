@@ -1,1 +1,1 @@
-export const server: string ="http://localhost:5001/v1";
+export const server: string ="https://vote-backend-jet.vercel.app/v1";
