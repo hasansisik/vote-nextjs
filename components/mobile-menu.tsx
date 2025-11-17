@@ -47,12 +47,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleProfileClick = () => {
-    router.push('/profil');
+    router.push('/profile');
     onClose();
   };
 
   const handleMobileSearch = () => {
-    router.push('/arama');
+    router.push('/search');
     onClose();
   };
 
@@ -71,12 +71,12 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleMobileLogin = () => {
-    router.push('/giris');
+    router.push('/login');
     onClose();
   };
 
   const handleMobileRegister = () => {
-    router.push('/kayit-ol');
+    router.push('/register');
     onClose();
   };
 
@@ -91,7 +91,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   };
 
   const handleMobileNotifications = () => {
-    router.push('/bildirimler');
+    router.push('/notifications');
     onClose();
   };
 

@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAppDispatch } from '@/redux/hook';
 import { useSelector } from 'react-redux';
 import {
   getSettings,
+  getEnabledLanguages,
   toggleLanguage,
+  updateDefaultLanguage,
 } from '@/redux/actions/settingsActions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +22,9 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { ArrowLeft, Save, Globe, Check, X } from 'lucide-react';
+import RichTextEditor from '@/components/RichTextEditor';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { updateSettings } from '@/redux/actions/settingsActions';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -33,10 +38,35 @@ export default function SettingsPage() {
   const dispatch = useAppDispatch();
   const { settings, loading, error } = useSelector((state: any) => state.settings);
   const { user } = useSelector((state: any) => state.user);
+  const { enabledLanguages } = useSelector((state: any) => state.settings);
+
+  const [homePageHtmlContent, setHomePageHtmlContent] = useState<{
+    tr: string;
+    en: string;
+    de: string;
+    fr: string;
+  }>({
+    tr: '',
+    en: '',
+    de: '',
+    fr: '',
+  });
 
   useEffect(() => {
     dispatch(getSettings() as any);
+    dispatch(getEnabledLanguages() as any);
   }, [dispatch]);
+
+  useEffect(() => {
+    if (settings?.homePageHtmlContent) {
+      setHomePageHtmlContent({
+        tr: settings.homePageHtmlContent.tr || '',
+        en: settings.homePageHtmlContent.en || '',
+        de: settings.homePageHtmlContent.de || '',
+        fr: settings.homePageHtmlContent.fr || '',
+      });
+    }
+  }, [settings]);
 
   const handleToggleLanguage = async (languageCode: string, currentEnabled: boolean) => {
     try {
@@ -48,6 +78,52 @@ export default function SettingsPage() {
         toast.success('Başarılı', {
           description: `${languageCode.toUpperCase()} dili ${!currentEnabled ? 'aktif' : 'pasif'} edildi.`,
         });
+      } else {
+        toast.error('Hata', {
+          description: result.payload as string || 'Bir hata oluştu.',
+        });
+      }
+    } catch (error) {
+      toast.error('Hata', {
+        description: 'Bir hata oluştu.',
+      });
+    }
+  };
+
+  const handleSaveHomePageHtml = async () => {
+    try {
+      const result = await dispatch(
+        updateSettings({ homePageHtmlContent }) as any
+      );
+
+      if (updateSettings.fulfilled.match(result)) {
+        toast.success('Başarılı', {
+          description: 'Anasayfa HTML içeriği başarıyla güncellendi.',
+        });
+      } else {
+        toast.error('Hata', {
+          description: result.payload as string || 'Bir hata oluştu.',
+        });
+      }
+    } catch (error) {
+      toast.error('Hata', {
+        description: 'Bir hata oluştu.',
+      });
+    }
+  };
+
+  const handleChangeDefaultLanguage = async (languageCode: string) => {
+    try {
+      const result = await dispatch(
+        updateDefaultLanguage(languageCode) as any
+      );
+
+      if (updateDefaultLanguage.fulfilled.match(result)) {
+        toast.success('Başarılı', {
+          description: `Varsayılan dil ${languageCode.toUpperCase()} olarak güncellendi.`,
+        });
+        // Refresh settings
+        dispatch(getSettings() as any);
       } else {
         toast.error('Hata', {
           description: result.payload as string || 'Bir hata oluştu.',
@@ -149,6 +225,8 @@ export default function SettingsPage() {
             <Button
               type="button"
               className="bg-orange-600 hover:bg-orange-700"
+              onClick={handleSaveHomePageHtml}
+              disabled={loading}
             >
               <Save className="h-4 w-4 mr-2" />
               Kaydet
@@ -170,6 +248,38 @@ export default function SettingsPage() {
               </div>
               
               <div className="space-y-6">
+                {/* Default Language Selection */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Varsayılan Dil
+                  </Label>
+                  <Select
+                    value={settings.languages.defaultLanguage}
+                    onValueChange={handleChangeDefaultLanguage}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Varsayılan dil seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {settings.languages.availableLanguages
+                        .filter((lang: any) => lang.enabled)
+                        .map((lang: any) => (
+                          <SelectItem key={lang.code} value={lang.code}>
+                            <div className="flex items-center gap-2">
+                              <span>{lang.flag}</span>
+                              <span>{lang.name}</span>
+                              {settings.languages.defaultLanguage === lang.code && (
+                                <span className="text-xs text-orange-600">(Varsayılan)</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    Varsayılan dil, yeni kullanıcılar için otomatik olarak seçilen dildir.
+                  </p>
+                </div>
 
                 {/* Language Toggle List */}
                 <div className="space-y-4">
@@ -185,7 +295,14 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-4">
                           <span className="text-3xl">{lang.flag}</span>
                           <div>
-                            <p className="font-medium text-gray-900">{lang.name}</p>
+                            <p className="font-medium text-gray-900 flex items-center gap-2">
+                              {lang.name}
+                              {settings.languages.defaultLanguage === lang.code && (
+                                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded">
+                                  Varsayılan
+                                </span>
+                              )}
+                            </p>
                             <p className="text-sm text-gray-500">
                               Kod: {lang.code.toUpperCase()}
                             </p>
@@ -197,10 +314,11 @@ export default function SettingsPage() {
                               checked={lang.enabled}
                               onCheckedChange={() => handleToggleLanguage(lang.code, lang.enabled)}
                               disabled={
-                                lang.enabled &&
+                                (lang.enabled &&
                                 settings.languages.availableLanguages.filter(
                                   (l: any) => l.enabled
-                                ).length === 1
+                                ).length === 1) ||
+                                (lang.enabled && settings.languages.defaultLanguage === lang.code)
                               }
                             />
                             <Label className="text-sm font-normal">
@@ -223,9 +341,52 @@ export default function SettingsPage() {
                   </div>
                   <p className="text-xs text-gray-500">
                     * En az bir dil aktif olmalıdır
+                    <br />* Varsayılan dil devre dışı bırakılamaz
                     <br />* Kullanıcılar dil seçimlerini localStorage'da saklayabilir
                   </p>
                 </div>
+              </div>
+            </div>
+
+            {/* Home Page HTML Content Card */}
+            <div className="bg-white rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <Globe className="h-5 w-5 text-orange-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Anasayfa HTML İçeriği</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600 mb-4">
+                  Anasayfanın altına gösterilecek HTML içeriği. Her dil için ayrı içerik ekleyebilirsiniz.
+                </p>
+                
+                {enabledLanguages && enabledLanguages.length > 0 && (
+                  <Tabs defaultValue={enabledLanguages[0]?.code} className="w-full">
+                    <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${enabledLanguages.length}, 1fr)` }}>
+                      {enabledLanguages.map((lang: any) => (
+                        <TabsTrigger key={lang.code} value={lang.code} className="flex items-center gap-2">
+                          <span>{lang.flag}</span>
+                          <span className="hidden sm:inline">{lang.name}</span>
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                    
+                    {enabledLanguages.map((lang: any) => (
+                      <TabsContent key={lang.code} value={lang.code} className="mt-4">
+                        <div className="border rounded-md">
+                          <RichTextEditor
+                            content={homePageHtmlContent[lang.code as keyof typeof homePageHtmlContent] || ''}
+                            onChange={(html) => setHomePageHtmlContent({
+                              ...homePageHtmlContent,
+                              [lang.code]: html
+                            })}
+                            placeholder={`${lang.name} anasayfa HTML içeriği girin...`}
+                          />
+                        </div>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                )}
               </div>
             </div>
           </div>

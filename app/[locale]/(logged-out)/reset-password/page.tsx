@@ -6,36 +6,44 @@ import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
-import { verifyEmail, againEmail, clearError } from '@/redux/actions/userActions';
+import { resetPassword, clearError } from '@/redux/actions/userActions';
 import { toast } from 'sonner';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 
-function DogrulamaContent() {
-  const t = useTranslations('VerificationPage');
+function SifreSifirlaContent() {
+  const t = useTranslations('ResetPasswordPage');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { loading, error, isAuthenticated, isVerified } = useSelector((state: any) => state.user);
+  const { loading, error, isAuthenticated } = useSelector((state: any) => state.user);
 
-  const [verificationCode, setVerificationCode] = useState('');
-  const [isResending, setIsResending] = useState(false);
+  const [formData, setFormData] = useState({
+    passwordToken: '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
 
   const email = searchParams.get('email');
 
   useEffect(() => {
-    if (isAuthenticated && isVerified) {
+    if (isAuthenticated) {
       router.push('/');
     }
-  }, [isAuthenticated, isVerified, router]);
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     if (error) {
-      // Don't show "user not found" error on verification page
+      // Don't show "user not found" error on reset password page
       const errorMessage = typeof error === 'string' ? error : error.message;
       if (errorMessage && errorMessage.toLowerCase().includes('user not found')) {
         return;
@@ -48,18 +56,48 @@ function DogrulamaContent() {
     }
   }, [error]);
 
+  const validatePassword = (password: string) => {
+    const minLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+
+    if (!minLength) return t('passwordTooShort');
+    if (!hasUpperCase) return t('passwordNoUppercase');
+    if (!hasLowerCase) return t('passwordNoLowercase');
+    if (!hasNumbers) return t('passwordNoNumber');
+    return '';
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    // Only allow numbers and limit to 6 digits
-    if (/^\d*$/.test(value) && value.length <= 6) {
-      setVerificationCode(value);
+    const { name, value } = e.target;
+    
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+
+    // Validate password in real-time
+    if (name === 'password') {
+      const passwordErrorMsg = validatePassword(value);
+      setPasswordError(passwordErrorMsg);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!verificationCode || verificationCode.length !== 4) {
+    // Validate required fields
+    if (!formData.passwordToken || !formData.password || !formData.confirmPassword) {
+      toast.error(t('fillAllFields'), {
+        description: t('fillAllFieldsDescription'),
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Validate password token (should be 4 digits)
+    if (!/^\d{4}$/.test(formData.passwordToken)) {
       toast.error(t('invalidCode'), {
         description: t('invalidCodeDescription'),
         duration: 3000,
@@ -67,61 +105,56 @@ function DogrulamaContent() {
       return;
     }
 
-    if (!email) {
-      toast.error(t('emailNotFound'), {
-        description: t('emailNotFoundDescription'),
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError(t('passwordMismatch'));
+      toast.error(t('passwordMismatch'), {
+        description: t('passwordMismatchDescription'),
         duration: 3000,
       });
       return;
     }
 
+    // Validate password strength
+    const passwordErrorMsg = validatePassword(formData.password);
+    if (passwordErrorMsg) {
+      setPasswordError(passwordErrorMsg);
+      toast.error(t('passwordMismatch'), {
+        description: passwordErrorMsg,
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!email) {
+      toast.error(t('invalidLink'), {
+        description: t('invalidLinkDescription'),
+        duration: 5000,
+      });
+      return;
+    }
+
     try {
-      const result = await dispatch(verifyEmail({
+      const result = await dispatch(resetPassword({
         email,
-        verificationCode: parseInt(verificationCode)
+        passwordToken: formData.passwordToken,
+        newPassword: formData.password
       }));
       
-      if (verifyEmail.fulfilled.match(result)) {
+      if (resetPassword.fulfilled.match(result)) {
         setIsSuccess(true);
-        toast.success(t('verificationSuccess'), {
-          description: t('verificationSuccessDescription'),
+        toast.success(t('resetSuccess'), {
+          description: t('resetSuccessDescription'),
           duration: 5000,
         });
         
-        // Redirect to home page after 3 seconds
-        // User data is already loaded by verifyEmail action
+        // Redirect to login page after 3 seconds
         setTimeout(() => {
-          router.push('/');
+          router.push('/login');
         }, 3000);
       }
     } catch (error) {
-      console.error('Verification error:', error);
-    }
-  };
-
-  const handleResendCode = async () => {
-    if (!email) {
-      toast.error(t('emailNotFound'), {
-        description: t('emailNotFoundDescription'),
-        duration: 3000,
-      });
-      return;
-    }
-
-    setIsResending(true);
-    try {
-      const result = await dispatch(againEmail(email));
-      
-      if (againEmail.fulfilled.match(result)) {
-        toast.success(t('resendSuccess'), {
-          description: t('resendSuccessDescription'),
-          duration: 5000,
-        });
-      }
-    } catch (error) {
-      console.error('Resend error:', error);
-    } finally {
-      setIsResending(false);
+      console.error('Reset password error:', error);
     }
   };
 
@@ -170,10 +203,10 @@ function DogrulamaContent() {
 
           <div className="text-center">
             <Button
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/login')}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
-              {t('homeButton')}
+              {t('loginButton')}
             </Button>
           </div>
         </div>
@@ -208,31 +241,66 @@ function DogrulamaContent() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <Label htmlFor="verificationCode" className="text-sm font-medium text-gray-700">
-              {t('verificationCodeLabel')}
-            </Label>
-            <Input
-              id="verificationCode"
-              name="verificationCode"
-              type="text"
-              value={verificationCode}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="passwordToken" className="text-sm font-medium text-gray-700">
+                {t('verificationCodeLabel')}
+              </Label>
+              <Input
+                id="passwordToken"
+                name="passwordToken"
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                value={formData.passwordToken}
+                onChange={handleChange}
+                className="mt-1 w-full bg-white text-center text-lg tracking-widest"
+                placeholder={t('verificationCodePlaceholder')}
+                required
+                autoComplete="one-time-code"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                {t('verificationCodeHelp')}
+              </p>
+            </div>
+
+            <PasswordInput
+              id="password"
+              name="password"
+              label={t('newPasswordLabel')}
+              value={formData.password}
               onChange={handleChange}
-              placeholder={t('verificationCodePlaceholder')}
-              className="text-center text-2xl tracking-widest mt-2 bg-white"
-              maxLength={4}
+              placeholder={t('newPasswordPlaceholder')}
               required
+              autoComplete="new-password"
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              error={passwordError}
+              success={!passwordError && formData.password ? t('passwordStrong') : undefined}
+              className="w-full"
             />
-            <p className="mt-2 text-xs text-gray-500 text-center">
-              {t('verificationCodeHelp')}
-            </p>
+
+            <PasswordInput
+              id="confirmPassword"
+              name="confirmPassword"
+              label={t('confirmPasswordLabel')}
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder={t('confirmPasswordPlaceholder')}
+              required
+              autoComplete="new-password"
+              showPassword={showConfirmPassword}
+              setShowPassword={setShowConfirmPassword}
+              className="w-full"
+            />
           </div>
 
           <div>
             <Button
               type="submit"
-              disabled={loading || verificationCode.length !== 4}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || passwordError !== '' || !formData.passwordToken || !formData.password || !formData.confirmPassword}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
               {loading ? (
                 <>
@@ -240,35 +308,21 @@ function DogrulamaContent() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {t('verifyButtonLoading')}
+                  {t('resetButtonLoading')}
                 </>
               ) : (
                 <>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                   </svg>
-                  {t('verifyButton')}
+                  {t('resetButton')}
                 </>
               )}
             </Button>
           </div>
 
           <div className="text-center">
-            <p className="text-sm text-gray-600">
-              {t('resendText')}{' '}
-              <button
-                type="button"
-                onClick={handleResendCode}
-                disabled={isResending}
-                className="font-medium text-orange-600 hover:text-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isResending ? t('resendButtonLoading') : t('resendButton')}
-              </button>
-            </p>
-          </div>
-
-          <div className="text-center">
-            <Link href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
+            <Link href="/login" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
               {t('backToLogin')}
             </Link>
           </div>
@@ -278,7 +332,7 @@ function DogrulamaContent() {
   );
 }
 
-export default function DogrulamaPage() {
+export default function SifreSifirlaPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -300,7 +354,7 @@ export default function DogrulamaPage() {
         </div>
       </div>
     }>
-      <DogrulamaContent />
+      <SifreSifirlaContent />
     </Suspense>
   );
 }

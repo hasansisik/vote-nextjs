@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import Image from "next/image";
+import Script from "next/script";
 import { useTranslations } from 'next-intl';
 import StatsBanner from "@/components/stats-banner";
 import HeroSection from "@/components/hero-section";
@@ -10,6 +11,7 @@ import FeaturedGrid from "@/components/featured-grid";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
+import { getSettings } from "@/redux/actions/settingsActions";
 import { getText } from "@/lib/multiLanguageUtils";
 import { useLocale } from 'next-intl';
 
@@ -19,10 +21,12 @@ export default function Home() {
   const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeCategories, loading: categoriesLoading } = useAppSelector((state) => state.testCategory);
+  const { settings } = useAppSelector((state) => state.settings);
 
   useEffect(() => {
     dispatch(getAllTests({}));
     dispatch(getActiveTestCategories());
+    dispatch(getSettings() as any);
   }, [dispatch]);
 
   // Get category name by ID
@@ -76,26 +80,68 @@ export default function Home() {
   const popularData = homepageData.filter(item => item.tag === "popular");
   const featuredData = homepageData; // Tüm testleri göster
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://whowins.vote';
+
+  // Schema.org JSON-LD
+  const schemaData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "whowins",
+    "url": `${baseUrl}/`,
+    "inLanguage": locale,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": `${baseUrl}/search?q={query}`,
+      "query-input": "required name=query"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "whowins",
+      "url": `${baseUrl}/`
+    }
+  };
+
   return (
-    <div className="font-sans bg-white max-w-6xl mx-auto ">
-      {/* İstatistik Banner */}
-      <StatsBanner />
+    <>
+      {/* Schema.org JSON-LD */}
+      <Script
+        id="website-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+      />
       
-      {/* Ana Hero Section */}
-      <div className=" px-2 lg:px-6">
-        <HeroSection />
+      <div className="font-sans bg-white max-w-6xl mx-auto ">
+        {/* İstatistik Banner */}
+        <StatsBanner />
+        
+        {/* Ana Hero Section */}
+        <div className=" px-2 lg:px-6">
+          <HeroSection />
+        </div>
+        
+        {/* İçerik Grid */}
+        <ContentGrid 
+          title={t('popularVotes')}
+        />
+        
+        {/* Featured Grid */}
+        <FeaturedGrid 
+          title={t('featuredContent')}
+          cards={featuredData}
+        />
+        
+        {/* Home Page HTML Content */}
+        {settings?.homePageHtmlContent && getText(settings.homePageHtmlContent, locale) && (
+          <div className="mt-12 max-w-6xl mx-auto px-2 lg:px-6">
+            <div 
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ 
+                __html: getText(settings.homePageHtmlContent, locale) 
+              }}
+            />
+          </div>
+        )}
       </div>
-      
-      {/* İçerik Grid */}
-      <ContentGrid 
-        title={t('popularVotes')}
-      />
-      
-      {/* Featured Grid */}
-      <FeaturedGrid 
-        title={t('featuredContent')}
-        cards={featuredData}
-      />
-    </div>
+    </>
   );
 }

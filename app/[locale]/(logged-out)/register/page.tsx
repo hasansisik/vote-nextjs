@@ -139,7 +139,7 @@ export default function KayitOlPage() {
           duration: 5000,
         });
         // Redirect to verification page
-        router.push(`/dogrulama?email=${encodeURIComponent(formData.email)}`);
+        router.push(`/verification?email=${encodeURIComponent(formData.email)}`);
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -165,7 +165,7 @@ export default function KayitOlPage() {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {t('subtitle')}{' '}
-            <Link href="/giris" className="font-medium text-orange-600 hover:text-orange-500">
+            <Link href="/login" className="font-medium text-orange-600 hover:text-orange-500">
               {t('loginLink')}
             </Link>
           </p>
@@ -269,11 +269,11 @@ export default function KayitOlPage() {
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
                 {t('termsText')}{' '}
-                <Link href="/kullanim-sartlari" className="text-orange-600 hover:text-orange-500">
+                <Link href="/terms" className="text-orange-600 hover:text-orange-500">
                   {t('termsLink')}
                 </Link>{' '}
                 {t('andText')}{' '}
-                <Link href="/gizlilik-politikasi" className="text-orange-600 hover:text-orange-500">
+                <Link href="/privacy-policy" className="text-orange-600 hover:text-orange-500">
                   {t('privacyLink')}
                 </Link>
               </label>
@@ -309,11 +309,11 @@ export default function KayitOlPage() {
 
         <div className="text-center text-xs text-gray-500">
           {t('footerText')}{' '}
-          <Link href="/kullanim-sartlari" className="text-orange-600 hover:text-orange-500 underline">
+          <Link href="/terms" className="text-orange-600 hover:text-orange-500 underline">
             {t('footerTermsLink')}
           </Link>{' '}
           {t('footerAndText')}{' '}
-          <Link href="/gizlilik-politikasi" className="text-orange-600 hover:text-orange-500 underline">
+          <Link href="/privacy-policy" className="text-orange-600 hover:text-orange-500 underline">
             {t('footerPrivacyLink')}
           </Link>
         </div>

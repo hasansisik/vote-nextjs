@@ -86,7 +86,7 @@ export default function LoginPage() {
             duration: 5000,
           });
           // Redirect to verification page
-          router.push(`/dogrulama?email=${encodeURIComponent(formData.email)}`);
+          router.push(`/verification?email=${encodeURIComponent(formData.email)}`);
         }
       }
     } catch (error) {
@@ -113,7 +113,7 @@ export default function LoginPage() {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             {t('subtitle')}{' '}
-            <Link href="/kayit-ol" className="font-medium text-orange-600 hover:text-orange-500">
+            <Link href="/register" className="font-medium text-orange-600 hover:text-orange-500">
               {t('signupLink')}
             </Link>
           </p>
@@ -155,7 +155,7 @@ export default function LoginPage() {
 
           <div className="flex justify-end">
             <div className="text-sm">
-              <Link href="/sifremi-unuttum" className="font-medium text-orange-600 hover:text-orange-500">
+              <Link href="/forgot-password" className="font-medium text-orange-600 hover:text-orange-500">
                 {t('forgotPassword')}
               </Link>
             </div>

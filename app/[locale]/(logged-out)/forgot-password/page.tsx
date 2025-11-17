@@ -76,7 +76,7 @@ export default function SifremiUnuttumPage() {
         
         // Redirect to reset password page after 1.5 seconds
         setTimeout(() => {
-          router.push(`/sifre-sifirla?email=${encodeURIComponent(email)}`);
+          router.push(`/reset-password?email=${encodeURIComponent(email)}`);
         }, 1500);
       }
     } catch (error) {
@@ -130,7 +130,7 @@ export default function SifremiUnuttumPage() {
 
           <div className="text-center">
             <Link
-              href="/giris"
+              href="/login"
               className="text-orange-600 hover:text-orange-500 font-medium text-sm"
             >
               {t('backToLogin')}
@@ -207,7 +207,7 @@ export default function SifremiUnuttumPage() {
           </div>
 
           <div className="text-center">
-            <Link href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
+            <Link href="/login" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
               {t('backToLogin')}
             </Link>
           </div>

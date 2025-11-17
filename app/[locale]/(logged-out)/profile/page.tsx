@@ -61,7 +61,7 @@ export default function ProfilPage() {
   useEffect(() => {
     // Only redirect if we're sure the user is not authenticated and not loading
     if (!loading && !isAuthenticated) {
-      router.push('/giris');
+      router.push('/login');
       return;
     }
 

@@ -82,11 +82,11 @@ export default function Header() {
   }, []);
 
   const handleLogin = () => {
-    router.push('/giris');
+    router.push('/login');
   };
 
   const handleRegister = () => {
-    router.push('/kayit-ol');
+    router.push('/register');
   };
 
   const handleLogoClick = () => {
@@ -94,11 +94,11 @@ export default function Header() {
   };
 
   const handleSearchClick = () => {
-    router.push('/arama');
+    router.push('/search');
   };
 
   const handleNotificationsClick = () => {
-    router.push('/bildirimler');
+    router.push('/notifications');
   };
 
   const handleCategoryClick = (categorySlug: string) => {
@@ -124,7 +124,7 @@ export default function Header() {
   };
 
   const handleProfileClick = () => {
-    router.push('/profil');
+    router.push('/profile');
     setIsMobileMenuOpen(false);
   };
 

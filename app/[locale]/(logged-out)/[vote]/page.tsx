@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
+import Script from 'next/script';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
@@ -46,6 +47,8 @@ interface Test {
   totalVotes: number;
   isActive: boolean;
   createdAt: string;
+  slug?: any;
+  updatedAt?: string;
 }
 
 export default function VotePage() {
@@ -198,6 +201,111 @@ export default function VotePage() {
       setFinalRankings(fallbackRankings);
     }
   }, [showResults, finalRankings.length, test, finalWinner]);
+
+  // Base URL for SEO
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://whowins.vote';
+
+  // Schema.org JSON-LD for WebPage with Question
+  const schemaData = useMemo(() => {
+    if (!test) return null;
+
+    const testTitle = getTestTitle(test, locale);
+    const testDescription = getTestDescription(test, locale) || 
+      `Join this online poll to vote ${testTitle.toLowerCase()} and see real-time results.`;
+    
+    // Get test URL
+    const testSlug = getSlugForLocale(test.slug, locale) || test._id;
+    const testUrl = locale === 'en' 
+      ? `${baseUrl}/${testSlug}`
+      : `${baseUrl}/${locale}/${testSlug}`;
+
+    // Get category info for breadcrumb
+    const categoryId = test.categories?.[0] || test.category;
+    const category = activeCategories?.find((cat: any) => cat._id === categoryId);
+    const categoryName = category ? getCategoryName(category, locale) : 'Category';
+    const categorySlug = category?.slug?.[locale] || category?.slug?.tr || categoryId;
+    const categoryUrl = locale === 'en'
+      ? `${baseUrl}/category/${categorySlug}`
+      : `${baseUrl}/${locale}/category/${categorySlug}`;
+
+    // Get options with vote counts - use testResults if available, otherwise use test.options
+    const optionsWithVotes = testResults && testResults.length > 0 
+      ? testResults.map((result: any) => {
+          const option = test.options.find((opt: Option) => opt._id === result.optionId);
+          return {
+            option: option || result,
+            votes: result.votes || result.voteCount || 0
+          };
+        }).filter((item: any) => item.option)
+      : test.options.map((opt: Option) => ({
+          option: opt,
+          votes: opt.votes || 0
+        }));
+
+    // Sort by votes descending
+    const sortedOptions = [...optionsWithVotes].sort((a: any, b: any) => b.votes - a.votes);
+    
+    // Total votes
+    const totalVotes = sortedOptions.reduce((sum: number, item: any) => sum + item.votes, 0) || test.totalVotes || 0;
+
+    // Format dates
+    const createdAt = test.createdAt ? new Date(test.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    const dateModified = test.updatedAt ? new Date(test.updatedAt).toISOString().split('T')[0] : createdAt;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": testTitle,
+      "url": testUrl,
+      "description": testDescription,
+      "inLanguage": locale,
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": locale === 'en' ? `${baseUrl}/` : `${baseUrl}/${locale}/`
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": categoryName,
+            "item": categoryUrl
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": testTitle,
+            "item": testUrl
+          }
+        ]
+      },
+      "mainEntity": {
+        "@type": "Question",
+        "name": testTitle,
+        "text": "Which option should win this poll?",
+        "dateCreated": createdAt,
+        "dateModified": dateModified,
+        "author": {
+          "@type": "Organization",
+          "name": "whowins"
+        },
+        "answerCount": sortedOptions.length,
+        "suggestedAnswer": sortedOptions.map((item: any) => ({
+          "@type": "Answer",
+          "text": getOptionTitle(item.option, locale),
+          "upvoteCount": item.votes
+        })),
+        "interactionStatistic": {
+          "@type": "InteractionCounter",
+          "interactionType": { "@type": "VoteAction" },
+          "userInteractionCount": totalVotes
+        }
+      }
+    };
+  }, [test, testResults, locale, baseUrl, activeCategories]);
 
   // Oylama sistemini başlat
   const initializeVoting = (testData: Test) => {
@@ -385,8 +493,17 @@ export default function VotePage() {
     // Eğer hala final rankings yoksa skeleton göster
     if (finalRankings.length === 0) {
       return (
-        <div className="min-h-screen bg-gray-50 p-4 py-8">
-          <div className="max-w-6xl mx-auto">
+        <>
+          {/* Schema.org JSON-LD */}
+          {schemaData && (
+            <Script
+              id="vote-schema"
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+            />
+          )}
+          <div className="min-h-screen bg-gray-50 p-4 py-8">
+            <div className="max-w-6xl mx-auto">
             <div className="text-center mb-6">
               <Skeleton className="h-8 w-96 mx-auto mb-2" />
               <Skeleton className="h-6 w-64 mx-auto mb-2" />
@@ -437,12 +554,22 @@ export default function VotePage() {
             </div>
           </div>
         </div>
+        </>
       );
     }
 
     return (
-      <div className="min-h-screen bg-gray-50 p-4 py-8">
-        <div className="max-w-6xl mx-auto">
+      <>
+        {/* Schema.org JSON-LD */}
+        {schemaData && (
+          <Script
+            id="vote-schema"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+          />
+        )}
+        <div className="min-h-screen bg-gray-50 p-4 py-8">
+          <div className="max-w-6xl mx-auto">
           <div className="text-center mb-6">
              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
                {t('finalRankingsTitle', { category: getCategoryNameById(test.categories?.[0] || '').toUpperCase() })}
@@ -702,8 +829,9 @@ export default function VotePage() {
 
         </div>
       </div>
-    );
-  }
+        </>
+      );
+    }
 
   // Eğer kullanıcı daha önce oy vermişse, oylama ekranını gösterme
   if (hasUserVoted) {
@@ -712,7 +840,16 @@ export default function VotePage() {
 
   // Oylama ekranı
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      {/* Schema.org JSON-LD */}
+      {schemaData && (
+        <Script
+          id="vote-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      )}
+      <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3">
@@ -843,5 +980,6 @@ export default function VotePage() {
         )}
       </div>
     </div>
+    </>
   );
 }

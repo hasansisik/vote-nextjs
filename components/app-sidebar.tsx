@@ -168,17 +168,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       },
       {
         name: "Arama",
-        url: "/arama",
+        url: "/search",
         icon: Search,
       },
       {
         name: "Profil",
-        url: "/profil",
+        url: "/profile",
         icon: UserCog,
       },
       {
         name: "Hakkımızda",
-        url: "/hakkimizda",
+        url: "/about",
         icon: Globe,
       },
     ];

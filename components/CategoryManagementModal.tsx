@@ -42,6 +42,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import RichTextEditor from '@/components/RichTextEditor';
 
 interface CategoryManagementModalProps {
   isOpen: boolean;
@@ -84,6 +85,12 @@ export default function CategoryManagementModal({
       de: '',
       fr: '',
     },
+    htmlContent: {
+      tr: '',
+      en: '',
+      de: '',
+      fr: '',
+    },
   });
 
   // Load categories and enabled languages on mount
@@ -111,6 +118,12 @@ export default function CategoryManagementModal({
         de: '',
         fr: '',
       },
+      htmlContent: {
+        tr: '',
+        en: '',
+        de: '',
+        fr: '',
+      },
     });
   };
 
@@ -130,6 +143,12 @@ export default function CategoryManagementModal({
         en: category.description?.en || '',
         de: category.description?.de || '',
         fr: category.description?.fr || '',
+      },
+      htmlContent: {
+        tr: category.htmlContent?.tr || '',
+        en: category.htmlContent?.en || '',
+        de: category.htmlContent?.de || '',
+        fr: category.htmlContent?.fr || '',
       },
     });
   };
@@ -180,6 +199,12 @@ export default function CategoryManagementModal({
           fr: '',
         },
         description: {
+          tr: '',
+          en: '',
+          de: '',
+          fr: '',
+        },
+        htmlContent: {
           tr: '',
           en: '',
           de: '',
@@ -299,6 +324,25 @@ export default function CategoryManagementModal({
                             className="mt-1"
                           />
                         </div>
+                        
+                        <div>
+                          <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                            HTML İçerik ({lang.name}) - Sayfanın Altında Gösterilir
+                          </Label>
+                          <div className="border rounded-md">
+                            <RichTextEditor
+                              content={formData.htmlContent[lang.code as keyof typeof formData.htmlContent] || ''}
+                              onChange={(html) => setFormData({
+                                ...formData,
+                                htmlContent: {
+                                  ...formData.htmlContent,
+                                  [lang.code]: html
+                                }
+                              })}
+                              placeholder={`${lang.name} HTML içeriği girin...`}
+                            />
+                          </div>
+                        </div>
                       </TabsContent>
                     ))}
                   </Tabs>
@@ -331,6 +375,12 @@ export default function CategoryManagementModal({
                           fr: '',
                         },
                         description: {
+                          tr: '',
+                          en: '',
+                          de: '',
+                          fr: '',
+                        },
+                        htmlContent: {
                           tr: '',
                           en: '',
                           de: '',

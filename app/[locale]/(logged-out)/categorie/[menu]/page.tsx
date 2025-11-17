@@ -366,7 +366,21 @@ export default function CategoryPage() {
 
            
           </>
-        ) : (
+        ) : null}
+
+        {/* Category HTML Content - Always show if exists */}
+        {categoryInfo?.htmlContent && getText(categoryInfo.htmlContent, locale) && (
+          <div className="mt-12 max-w-7xl mx-auto px-2 lg:px-4">
+            <div 
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ 
+                __html: getText(categoryInfo.htmlContent, locale) 
+              }}
+            />
+          </div>
+        )}
+
+        {categoryTests && categoryTests.length === 0 && (
           <div className="text-center py-16">
             <div className="text-gray-400 mb-4">
               <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">

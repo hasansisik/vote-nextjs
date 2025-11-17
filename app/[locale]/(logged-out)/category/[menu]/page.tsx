@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import Image from 'next/image';
+import Script from 'next/script';
 import { useAppDispatch, useAppSelector } from '@/redux/hook';
 import { getTestsByCategorySlug } from '@/redux/actions/testActions';
 import { getActiveMenus } from '@/redux/actions/menuActions';
@@ -234,6 +235,109 @@ export default function CategoryPage() {
     }
   };
 
+  // Base URL for SEO
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://whowins.vote';
+  
+  // Generate category URL based on locale
+  const getCategoryUrl = () => {
+    if (locale === 'en') {
+      return `${baseUrl}/category/${categorySlug}`;
+    }
+    return `${baseUrl}/${locale}/category/${categorySlug}`;
+  };
+
+  // Generate test URL
+  const getTestUrl = (test: any) => {
+    const testSlug = getSlugForLocale(test?.slug, locale) || test?._id;
+    if (locale === 'en') {
+      return `${baseUrl}/${testSlug}`;
+    }
+    return `${baseUrl}/${locale}/${testSlug}`;
+  };
+
+  // Schema.org JSON-LD for CollectionPage
+  const schemaData = useMemo(() => {
+    if (!categoryInfo || !categoryTests || categoryTests.length === 0) {
+      return null;
+    }
+
+    // Calculate values inside useMemo
+    const categoryName = (() => {
+      // First try to get from activeMenus (Menu model with i18n support)
+      if (activeMenus && activeMenus.length > 0 && categoryInfo) {
+        const menu = activeMenus.find((menu: any) => 
+          menu.testCategory && menu.testCategory._id === categoryInfo._id
+        );
+        if (menu) {
+          const menuName = getMenuName(menu, locale, 'KATEGORİ');
+          return menuName.toUpperCase();
+        }
+      }
+      
+      // Fallback to categoryInfo name
+      if (categoryInfo) {
+        const categoryName = getMenuName(categoryInfo, locale, 'KATEGORİ');
+        return categoryName.toUpperCase();
+      }
+      
+      return categorySlug?.toUpperCase() || 'KATEGORİ';
+    })();
+
+    const categoryUrl = locale === 'en' 
+      ? `${baseUrl}/category/${categorySlug}`
+      : `${baseUrl}/${locale}/category/${categorySlug}`;
+
+    const categoryDescription = getText(categoryInfo.description, locale) || 
+      `Trending online polls about ${categoryName.toLowerCase()}. Vote and see instant results.`;
+    
+    // Get first 3 tests for ItemList
+    const topTests = categoryTests.slice(0, 3);
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": `${categoryName} Polls`,
+      "url": categoryUrl,
+      "description": categoryDescription,
+      "inLanguage": locale,
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": locale === 'en' ? `${baseUrl}/` : `${baseUrl}/${locale}/`
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": categoryName,
+            "item": categoryUrl
+          }
+        ]
+      },
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListOrder": "https://schema.org/ItemListOrderDescending",
+        "numberOfItems": categoryTests.length,
+        "itemListElement": topTests.map((test: any, index: number) => {
+          const testSlug = getSlugForLocale(test?.slug, locale) || test?._id;
+          const testUrl = locale === 'en'
+            ? `${baseUrl}/${testSlug}`
+            : `${baseUrl}/${locale}/${testSlug}`;
+          
+          return {
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": testUrl,
+            "name": getTestTitle(test, locale)
+          };
+        })
+      }
+    };
+  }, [categoryInfo, categoryTests, categorySlug, locale, baseUrl, activeMenus]);
+
   if (categoryTestsLoading) {
     return (
       <div className="min-h-screen">
@@ -247,8 +351,18 @@ export default function CategoryPage() {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="max-w-6xl mx-auto px-4 py-8">
+    <>
+      {/* Schema.org JSON-LD */}
+      {schemaData && (
+        <Script
+          id="category-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
+        />
+      )}
+      
+      <div className="min-h-screen">
+        <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Kategori Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
@@ -363,10 +477,23 @@ export default function CategoryPage() {
                 </Pagination>
               </div>
             )}
-
            
           </>
-        ) : (
+        ) : null}
+
+        {/* Category HTML Content - Always show if exists */}
+        {categoryInfo?.htmlContent && getText(categoryInfo.htmlContent, locale) && (
+          <div className="mt-12 max-w-7xl mx-auto px-2 lg:px-4">
+            <div 
+              className="prose prose-lg max-w-none"
+              dangerouslySetInnerHTML={{ 
+                __html: getText(categoryInfo.htmlContent, locale) 
+              }}
+            />
+          </div>
+        )}
+
+        {categoryTests && categoryTests.length === 0 && (
           <div className="text-center py-16">
             <div className="text-gray-400 mb-4">
               <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -383,5 +510,6 @@ export default function CategoryPage() {
         )}
       </div>
     </div>
+    </>
   );
 }

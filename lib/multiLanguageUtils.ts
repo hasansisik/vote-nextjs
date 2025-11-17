@@ -9,10 +9,17 @@ export type MultiLanguageText = {
   fr?: string;
 };
 
+export type OptionalMultiLanguageText = {
+  tr?: string;
+  en?: string;
+  de?: string;
+  fr?: string;
+};
+
 /**
  * Get text in a specific language, falling back to Turkish if not available
  */
-export function getText(text: string | MultiLanguageText | undefined, language: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+export function getText(text: string | MultiLanguageText | OptionalMultiLanguageText | undefined, language: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
   if (!text) return '';
   
   if (typeof text === 'string') {

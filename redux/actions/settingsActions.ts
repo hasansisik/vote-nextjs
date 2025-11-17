@@ -24,6 +24,12 @@ export interface SystemSettings {
   _id: string;
   languages: LanguageSettings;
   general: GeneralSettings;
+  homePageHtmlContent?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
   lastUpdatedBy?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -32,6 +38,12 @@ export interface SystemSettings {
 export interface UpdateSettingsPayload {
   languages?: Partial<LanguageSettings>;
   general?: Partial<GeneralSettings>;
+  homePageHtmlContent?: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  };
 }
 
 // Get System Settings (Admin only)

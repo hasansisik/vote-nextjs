@@ -103,9 +103,9 @@ export default function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-3">{t('contact')}</h4>
             <ul className="space-y-2">
-              <li><a href="/hakkimizda" className="text-sm text-gray-600 hover:text-gray-900">{t('about')}</a></li>
-              <li><a href="/gizlilik-politikasi" className="text-sm text-gray-600 hover:text-gray-900">{t('privacy')}</a></li>
-              <li><a href="/kullanim-sartlari" className="text-sm text-gray-600 hover:text-gray-900">{t('terms')}</a></li>
+              <li><a href="/about" className="text-sm text-gray-600 hover:text-gray-900">{t('about')}</a></li>
+              <li><a href="/privacy-policy" className="text-sm text-gray-600 hover:text-gray-900">{t('privacy')}</a></li>
+              <li><a href="/terms" className="text-sm text-gray-600 hover:text-gray-900">{t('terms')}</a></li>
       
             </ul>
           </div>

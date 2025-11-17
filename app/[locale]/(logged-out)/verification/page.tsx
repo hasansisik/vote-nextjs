@@ -6,44 +6,36 @@ import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/redux/hook';
 import { useRouter } from '@/i18n/routing';
 import { useSearchParams } from 'next/navigation';
-import { resetPassword, clearError } from '@/redux/actions/userActions';
+import { verifyEmail, againEmail, clearError } from '@/redux/actions/userActions';
 import { toast } from 'sonner';
-import { PasswordInput } from '@/components/ui/password-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 
-function SifreSifirlaContent() {
-  const t = useTranslations('ResetPasswordPage');
+function DogrulamaContent() {
+  const t = useTranslations('VerificationPage');
   const dispatch = useAppDispatch();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { loading, error, isAuthenticated } = useSelector((state: any) => state.user);
+  const { loading, error, isAuthenticated, isVerified } = useSelector((state: any) => state.user);
 
-  const [formData, setFormData] = useState({
-    passwordToken: '',
-    password: '',
-    confirmPassword: '',
-  });
-
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isResending, setIsResending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const email = searchParams.get('email');
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && isVerified) {
       router.push('/');
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isVerified, router]);
 
   useEffect(() => {
     if (error) {
-      // Don't show "user not found" error on reset password page
+      // Don't show "user not found" error on verification page
       const errorMessage = typeof error === 'string' ? error : error.message;
       if (errorMessage && errorMessage.toLowerCase().includes('user not found')) {
         return;
@@ -56,48 +48,18 @@ function SifreSifirlaContent() {
     }
   }, [error]);
 
-  const validatePassword = (password: string) => {
-    const minLength = password.length >= 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumbers = /\d/.test(password);
-
-    if (!minLength) return t('passwordTooShort');
-    if (!hasUpperCase) return t('passwordNoUppercase');
-    if (!hasLowerCase) return t('passwordNoLowercase');
-    if (!hasNumbers) return t('passwordNoNumber');
-    return '';
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    // Validate password in real-time
-    if (name === 'password') {
-      const passwordErrorMsg = validatePassword(value);
-      setPasswordError(passwordErrorMsg);
+    const value = e.target.value;
+    // Only allow numbers and limit to 6 digits
+    if (/^\d*$/.test(value) && value.length <= 6) {
+      setVerificationCode(value);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.passwordToken || !formData.password || !formData.confirmPassword) {
-      toast.error(t('fillAllFields'), {
-        description: t('fillAllFieldsDescription'),
-        duration: 3000,
-      });
-      return;
-    }
-
-    // Validate password token (should be 4 digits)
-    if (!/^\d{4}$/.test(formData.passwordToken)) {
+    if (!verificationCode || verificationCode.length !== 4) {
       toast.error(t('invalidCode'), {
         description: t('invalidCodeDescription'),
         duration: 3000,
@@ -105,56 +67,61 @@ function SifreSifirlaContent() {
       return;
     }
 
-    // Validate password match
-    if (formData.password !== formData.confirmPassword) {
-      setPasswordError(t('passwordMismatch'));
-      toast.error(t('passwordMismatch'), {
-        description: t('passwordMismatchDescription'),
+    if (!email) {
+      toast.error(t('emailNotFound'), {
+        description: t('emailNotFoundDescription'),
         duration: 3000,
       });
       return;
     }
 
-    // Validate password strength
-    const passwordErrorMsg = validatePassword(formData.password);
-    if (passwordErrorMsg) {
-      setPasswordError(passwordErrorMsg);
-      toast.error(t('passwordMismatch'), {
-        description: passwordErrorMsg,
-        duration: 5000,
-      });
-      return;
-    }
-
-    if (!email) {
-      toast.error(t('invalidLink'), {
-        description: t('invalidLinkDescription'),
-        duration: 5000,
-      });
-      return;
-    }
-
     try {
-      const result = await dispatch(resetPassword({
+      const result = await dispatch(verifyEmail({
         email,
-        passwordToken: formData.passwordToken,
-        newPassword: formData.password
+        verificationCode: parseInt(verificationCode)
       }));
       
-      if (resetPassword.fulfilled.match(result)) {
+      if (verifyEmail.fulfilled.match(result)) {
         setIsSuccess(true);
-        toast.success(t('resetSuccess'), {
-          description: t('resetSuccessDescription'),
+        toast.success(t('verificationSuccess'), {
+          description: t('verificationSuccessDescription'),
           duration: 5000,
         });
         
-        // Redirect to login page after 3 seconds
+        // Redirect to home page after 3 seconds
+        // User data is already loaded by verifyEmail action
         setTimeout(() => {
-          router.push('/giris');
+          router.push('/');
         }, 3000);
       }
     } catch (error) {
-      console.error('Reset password error:', error);
+      console.error('Verification error:', error);
+    }
+  };
+
+  const handleResendCode = async () => {
+    if (!email) {
+      toast.error(t('emailNotFound'), {
+        description: t('emailNotFoundDescription'),
+        duration: 3000,
+      });
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      const result = await dispatch(againEmail(email));
+      
+      if (againEmail.fulfilled.match(result)) {
+        toast.success(t('resendSuccess'), {
+          description: t('resendSuccessDescription'),
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      console.error('Resend error:', error);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -203,10 +170,10 @@ function SifreSifirlaContent() {
 
           <div className="text-center">
             <Button
-              onClick={() => router.push('/giris')}
+              onClick={() => router.push('/')}
               className="w-full bg-orange-600 hover:bg-orange-700 text-white"
             >
-              {t('loginButton')}
+              {t('homeButton')}
             </Button>
           </div>
         </div>
@@ -241,66 +208,31 @@ function SifreSifirlaContent() {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="passwordToken" className="text-sm font-medium text-gray-700">
-                {t('verificationCodeLabel')}
-              </Label>
-              <Input
-                id="passwordToken"
-                name="passwordToken"
-                type="number"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={4}
-                value={formData.passwordToken}
-                onChange={handleChange}
-                className="mt-1 w-full bg-white text-center text-lg tracking-widest"
-                placeholder={t('verificationCodePlaceholder')}
-                required
-                autoComplete="one-time-code"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                {t('verificationCodeHelp')}
-              </p>
-            </div>
-
-            <PasswordInput
-              id="password"
-              name="password"
-              label={t('newPasswordLabel')}
-              value={formData.password}
+          <div>
+            <Label htmlFor="verificationCode" className="text-sm font-medium text-gray-700">
+              {t('verificationCodeLabel')}
+            </Label>
+            <Input
+              id="verificationCode"
+              name="verificationCode"
+              type="text"
+              value={verificationCode}
               onChange={handleChange}
-              placeholder={t('newPasswordPlaceholder')}
+              placeholder={t('verificationCodePlaceholder')}
+              className="text-center text-2xl tracking-widest mt-2 bg-white"
+              maxLength={4}
               required
-              autoComplete="new-password"
-              showPassword={showPassword}
-              setShowPassword={setShowPassword}
-              error={passwordError}
-              success={!passwordError && formData.password ? t('passwordStrong') : undefined}
-              className="w-full"
             />
-
-            <PasswordInput
-              id="confirmPassword"
-              name="confirmPassword"
-              label={t('confirmPasswordLabel')}
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder={t('confirmPasswordPlaceholder')}
-              required
-              autoComplete="new-password"
-              showPassword={showConfirmPassword}
-              setShowPassword={setShowConfirmPassword}
-              className="w-full"
-            />
+            <p className="mt-2 text-xs text-gray-500 text-center">
+              {t('verificationCodeHelp')}
+            </p>
           </div>
 
           <div>
             <Button
               type="submit"
-              disabled={loading || passwordError !== '' || !formData.passwordToken || !formData.password || !formData.confirmPassword}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+              disabled={loading || verificationCode.length !== 4}
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -308,21 +240,35 @@ function SifreSifirlaContent() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  {t('resetButtonLoading')}
+                  {t('verifyButtonLoading')}
                 </>
               ) : (
                 <>
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  {t('resetButton')}
+                  {t('verifyButton')}
                 </>
               )}
             </Button>
           </div>
 
           <div className="text-center">
-            <Link href="/giris" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
+            <p className="text-sm text-gray-600">
+              {t('resendText')}{' '}
+              <button
+                type="button"
+                onClick={handleResendCode}
+                disabled={isResending}
+                className="font-medium text-orange-600 hover:text-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isResending ? t('resendButtonLoading') : t('resendButton')}
+              </button>
+            </p>
+          </div>
+
+          <div className="text-center">
+            <Link href="/login" className="text-orange-600 hover:text-orange-500 font-medium text-sm">
               {t('backToLogin')}
             </Link>
           </div>
@@ -332,7 +278,7 @@ function SifreSifirlaContent() {
   );
 }
 
-export default function SifreSifirlaPage() {
+export default function DogrulamaPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-orange-50 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -354,7 +300,7 @@ export default function SifreSifirlaPage() {
         </div>
       </div>
     }>
-      <SifreSifirlaContent />
+      <DogrulamaContent />
     </Suspense>
   );
 }

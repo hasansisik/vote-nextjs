@@ -40,7 +40,7 @@ export default function DashboardLayout({
     const token = localStorage.getItem('accessToken');
     
     if (!token) {
-      router.push('/giris');
+      router.push('/login');
       return;
     }
 
@@ -48,10 +48,10 @@ export default function DashboardLayout({
     if (token && (!user || Object.keys(user).length === 0)) {
       dispatch(loadUser() as any).then((result: any) => {
         if (result.type === 'user/loadUser/rejected') {
-          router.push('/giris');
+          router.push('/login');
         }
       }).catch((error: any) => {
-        router.push('/giris');
+        router.push('/login');
       });
     }
   }, []); // Run only once on mount
