@@ -2,6 +2,7 @@ import { createReducer } from "@reduxjs/toolkit";
 import {
   getSettings,
   getEnabledLanguages,
+  getHomePageHtmlContent,
   updateSettings,
   toggleLanguage,
   updateDefaultLanguage,
@@ -12,6 +13,12 @@ import {
 interface SettingsState {
   settings: SystemSettings | null;
   enabledLanguages: Language[];
+  homePageHtmlContent: {
+    tr?: string;
+    en?: string;
+    de?: string;
+    fr?: string;
+  } | null;
   loading: boolean;
   error: string | null;
   message: string | null;
@@ -20,6 +27,7 @@ interface SettingsState {
 const initialState: SettingsState = {
   settings: null,
   enabledLanguages: [],
+  homePageHtmlContent: null,
   loading: false,
   error: null,
   message: null,
@@ -52,6 +60,20 @@ export const settingsReducer = createReducer(initialState, (builder) => {
       state.error = null;
     })
     .addCase(getEnabledLanguages.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    })
+    // Get Home Page HTML Content
+    .addCase(getHomePageHtmlContent.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    })
+    .addCase(getHomePageHtmlContent.fulfilled, (state, action) => {
+      state.loading = false;
+      state.homePageHtmlContent = action.payload;
+      state.error = null;
+    })
+    .addCase(getHomePageHtmlContent.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     })

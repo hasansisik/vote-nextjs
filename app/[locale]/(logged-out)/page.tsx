@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo } from "react";
-import Image from "next/image";
 import Script from "next/script";
 import { useTranslations } from 'next-intl';
 import StatsBanner from "@/components/stats-banner";
@@ -11,7 +10,7 @@ import FeaturedGrid from "@/components/featured-grid";
 import { useAppDispatch, useAppSelector } from "@/redux/hook";
 import { getAllTests } from "@/redux/actions/testActions";
 import { getActiveTestCategories } from "@/redux/actions/testCategoryActions";
-import { getSettings } from "@/redux/actions/settingsActions";
+import { getHomePageHtmlContent } from "@/redux/actions/settingsActions";
 import { getText } from "@/lib/multiLanguageUtils";
 import { useLocale } from 'next-intl';
 
@@ -21,12 +20,12 @@ export default function Home() {
   const locale = useLocale() as 'tr' | 'en' | 'de' | 'fr';
   const { allTests, testsLoading } = useAppSelector((state) => state.test);
   const { activeCategories, loading: categoriesLoading } = useAppSelector((state) => state.testCategory);
-  const { settings } = useAppSelector((state) => state.settings);
+  const { homePageHtmlContent } = useAppSelector((state) => state.settings);
 
   useEffect(() => {
     dispatch(getAllTests({}));
     dispatch(getActiveTestCategories());
-    dispatch(getSettings() as any);
+    dispatch(getHomePageHtmlContent() as any);
   }, [dispatch]);
 
   // Get category name by ID
@@ -131,12 +130,12 @@ export default function Home() {
         />
         
         {/* Home Page HTML Content */}
-        {settings?.homePageHtmlContent && getText(settings.homePageHtmlContent, locale) && (
+        {homePageHtmlContent && getText(homePageHtmlContent, locale) && (
           <div className="mt-12 max-w-6xl mx-auto px-2 lg:px-6">
             <div 
               className="prose prose-lg max-w-none"
               dangerouslySetInnerHTML={{ 
-                __html: getText(settings.homePageHtmlContent, locale) 
+                __html: getText(homePageHtmlContent, locale) 
               }}
             />
           </div>

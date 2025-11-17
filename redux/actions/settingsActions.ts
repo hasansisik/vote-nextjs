@@ -82,6 +82,21 @@ export const getEnabledLanguages = createAsyncThunk(
   }
 );
 
+// Get Home Page HTML Content (Public endpoint)
+export const getHomePageHtmlContent = createAsyncThunk(
+  "settings/getHomePageHtmlContent",
+  async (_, thunkAPI) => {
+    try {
+      const { data } = await axios.get(`${server}/settings/homepage-content`);
+      return data.homePageHtmlContent || {};
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
+      );
+    }
+  }
+);
+
 // Update System Settings (Admin only)
 export const updateSettings = createAsyncThunk(
   "settings/updateSettings",
