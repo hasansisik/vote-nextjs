@@ -470,6 +470,29 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         placeholder,
         spellcheck: 'false',
       },
+      handleKeyDown: (view, event) => {
+        // Space tuşuna basıldığında boşluğu koru
+        if (event.key === ' ' && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey) {
+          const { state, dispatch } = view;
+          const { selection } = state;
+          
+          // Eğer seçim varsa, önce seçimi sil ve boşluk ekle
+          if (!selection.empty) {
+            const tr = state.tr.deleteSelection().insertText(' ');
+            dispatch(tr);
+            event.preventDefault();
+            return true;
+          }
+          
+          // Normal boşluğu ekle
+          const tr = state.tr.insertText(' ', selection.$from.pos);
+          dispatch(tr);
+          event.preventDefault();
+          return true;
+        }
+        // Diğer tuşlar için varsayılan davranış
+        return false;
+      },
     },
     parseOptions: {
       preserveWhitespace: 'full',
@@ -1590,15 +1613,37 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           word-wrap: break-word;
         }
         
-        /* Space character handling */
+        /* Space character handling - boşlukların korunması */
         .ProseMirror p {
-          white-space: pre-wrap;
+          white-space: pre-wrap !important;
           word-spacing: normal;
         }
         
         /* Ensure spaces are preserved */
         .ProseMirror * {
           white-space: inherit;
+        }
+        
+        /* Boşluk karakterlerinin korunması için */
+        .ProseMirror {
+          white-space: pre-wrap !important;
+        }
+        
+        /* Non-breaking space'lerin görünür olması */
+        .ProseMirror {
+          white-space: pre-wrap !important;
+        }
+        
+        /* Text node'larında boşlukların korunması */
+        .ProseMirror p br {
+          display: block;
+          content: "";
+          margin-top: 0.5em;
+        }
+        
+        /* Boşlukların her zaman görünür olması */
+        .ProseMirror * {
+          white-space: pre-wrap !important;
         }
         
         /* Link styles */
@@ -1690,11 +1735,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           clear: both;
         }
         
-        /* Paragraph spacing */
+        /* Paragraph spacing - boş paragraflar için min-height */
         .ProseMirror p {
           margin: 0.75rem 0;
           white-space: pre-wrap;
           word-wrap: break-word;
+          min-height: 1.5em;
+        }
+        
+        /* Boş paragrafların görünür olması için */
+        .ProseMirror p:empty::before {
+          content: '\u200B'; /* Zero-width space */
+          display: inline-block;
+        }
+        
+        /* Boş paragraflar için min-height */
+        .ProseMirror p:empty {
+          min-height: 1.5em;
+          display: block;
         }
         
         /* Heading spacing */

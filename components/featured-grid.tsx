@@ -79,7 +79,19 @@ const Card: React.FC<CardProps> = ({ card, className = "" }) => {
   
   const handleClick = () => {
     // Get slug for current locale, fallback to testId or generated ID
-    const localeSlug = getSlugForLocale(card.slug, locale);
+    let localeSlug = '';
+    
+    // Eğer slug bir obje ise, locale'e göre doğru slug'ı al
+    if (card.slug) {
+      if (typeof card.slug === 'object' && card.slug !== null) {
+        localeSlug = getSlugForLocale(card.slug, locale);
+      } else if (typeof card.slug === 'string') {
+        // Eğer slug string ise, bu zaten bir slug olabilir ama obje olması gerekir
+        // Bu durumda testId kullan veya slug'ı olduğu gibi kullan
+        localeSlug = card.slug;
+      }
+    }
+    
     const targetId = localeSlug || card.testId || `test_${card.id}`;
     router.push(`/${targetId}`);
   };

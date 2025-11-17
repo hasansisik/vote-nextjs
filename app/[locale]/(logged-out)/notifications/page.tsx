@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
+import { getSlugForLocale } from '@/lib/multiLanguageUtils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -185,29 +186,86 @@ export default function NotificationsPage() {
     }
     
     // Navigate to action URL if available
-    if (notification.actionUrl) {
-      // Eğer actionUrl ID formatında ise (/vote/ID), slug formatına çevir
-      if (notification.actionUrl.startsWith('/vote/')) {
-        const testId = notification.actionUrl.replace('/vote/', '');
-        // Metadata'dan slug'ı al (hem testSlug hem de testId.slug'ı kontrol et)
-        const slug = notification.metadata?.testSlug || notification.metadata?.testId?.slug;
-        const targetUrl = slug ? `/${slug}` : `/${testId}`;
-        router.push(targetUrl);
-      } else if (notification.actionUrl.startsWith('/kategori/')) {
-        // Kategori URL'lerini dil bazlı olarak güncelle
-        const categorySlug = notification.actionUrl.replace('/kategori/', '');
-        const categoryPaths = {
-          'tr': 'kategori',
-          'en': 'category',
-          'de': 'kategorie', 
-          'fr': 'categorie'
-        };
-        const categoryPath = categoryPaths[locale as keyof typeof categoryPaths] || 'kategori';
-        router.push(`/${categoryPath}/${categorySlug}`);
+    let targetUrl = notification.actionUrl || '/';
+    
+    // Eğer actionUrl bozuk (encoded obje içeriyorsa) veya obje formatında ise, metadata'dan slug'ı al
+    if (targetUrl.includes('%7B') || targetUrl.includes('{') || targetUrl.includes('tr:') || targetUrl.includes('en:')) {
+      // URL'de obje var, metadata'dan slug'ı al
+      let slug = notification.metadata?.testSlug || notification.metadata?.testId?.slug;
+      
+      // Eğer slug bir obje ise, locale'e göre doğru slug'ı al
+      if (slug && typeof slug === 'object') {
+        slug = getSlugForLocale(slug, locale as 'tr' | 'en' | 'de' | 'fr');
+        targetUrl = `/${slug}`;
+      } else if (slug && typeof slug === 'string') {
+        targetUrl = `/${slug}`;
       } else {
-        // Normal actionUrl kullan
-        router.push(notification.actionUrl);
+        // Fallback: testId kullan
+        const testId = notification.metadata?.testId?._id || notification.metadata?.testId;
+        if (testId) {
+          targetUrl = `/${testId}`;
+        } else {
+          targetUrl = '/';
+        }
       }
+    } else if (targetUrl.startsWith('/vote/')) {
+      // Eğer actionUrl ID formatında ise (/vote/ID), slug formatına çevir
+      const testId = targetUrl.replace('/vote/', '');
+      // Metadata'dan slug'ı al (hem testSlug hem de testId.slug'ı kontrol et)
+      let slug = notification.metadata?.testSlug || notification.metadata?.testId?.slug;
+      
+      // Eğer slug bir obje ise, locale'e göre doğru slug'ı al
+      if (slug && typeof slug === 'object') {
+        slug = getSlugForLocale(slug, locale as 'tr' | 'en' | 'de' | 'fr');
+      }
+      
+      // Eğer testId populate edilmişse, slug'ı oradan al
+      if (!slug && notification.metadata?.testId?.slug) {
+        slug = notification.metadata.testId.slug;
+        if (typeof slug === 'object') {
+          slug = getSlugForLocale(slug, locale as 'tr' | 'en' | 'de' | 'fr');
+        }
+      }
+      
+      targetUrl = slug ? `/${slug}` : `/${testId}`;
+    } else if (targetUrl.startsWith('/kategori/') || targetUrl.startsWith('/category/') || targetUrl.startsWith('/kategorie/') || targetUrl.startsWith('/categorie/')) {
+      // Kategori URL'lerini dil bazlı olarak güncelle
+      const categorySlug = targetUrl.replace(/^\/(kategori|category|kategorie|categorie)\//, '');
+      const categoryPaths = {
+        'tr': 'kategori',
+        'en': 'category',
+        'de': 'kategorie', 
+        'fr': 'categorie'
+      };
+      const categoryPath = categoryPaths[locale as keyof typeof categoryPaths] || 'category';
+      targetUrl = `/${categoryPath}/${categorySlug}`;
+    } else if (targetUrl.startsWith('/')) {
+      // Normal URL - eğer başında / varsa ve slug obje formatında değilse olduğu gibi kullan
+      // Ama yine de metadata'dan slug kontrolü yap
+      if (notification.metadata?.testSlug || notification.metadata?.testId?.slug) {
+        let slug = notification.metadata?.testSlug || notification.metadata?.testId?.slug;
+        if (slug && typeof slug === 'object') {
+          slug = getSlugForLocale(slug, locale as 'tr' | 'en' | 'de' | 'fr');
+          targetUrl = `/${slug}`;
+        }
+      }
+    }
+    
+    // URL'yi temizle ve navigate et
+    try {
+      // URL'yi decode et ve temizle
+      try {
+        const decodedUrl = decodeURIComponent(targetUrl);
+        if (decodedUrl !== targetUrl && !decodedUrl.includes('{') && !decodedUrl.includes('tr:')) {
+          targetUrl = decodedUrl;
+        }
+      } catch (e) {
+        // Decode başarısız olursa, orijinal URL'i kullan
+      }
+      
+      router.push(targetUrl);
+    } catch (error) {
+      console.error('Navigation error:', error);
     }
   };
 
