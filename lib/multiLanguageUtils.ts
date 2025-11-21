@@ -3,21 +3,21 @@
  */
 
 export type MultiLanguageText = {
-  tr: string;
   en?: string;
+  tr?: string;
   de?: string;
   fr?: string;
 };
 
 export type OptionalMultiLanguageText = {
-  tr?: string;
   en?: string;
+  tr?: string;
   de?: string;
   fr?: string;
 };
 
 /**
- * Get text in a specific language, falling back to Turkish if not available
+ * Get text in a specific language, falling back to English then Turkish if not available
  */
 export function getText(text: string | MultiLanguageText | OptionalMultiLanguageText | undefined, language: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
   if (!text) return '';
@@ -27,7 +27,23 @@ export function getText(text: string | MultiLanguageText | OptionalMultiLanguage
   }
   
   if (typeof text === 'object') {
-    return text[language] || text.tr || '';
+    // If requested language is available, return it
+    if (text[language] && text[language].trim() !== '') {
+      return text[language];
+    }
+    
+    // If language is 'en', fallback to 'tr' if English is not available
+    if (language === 'en') {
+      return text.en || text.tr || '';
+    }
+    
+    // For other languages, fallback to English first, then Turkish
+    if (language !== 'tr') {
+      return text[language] || text.en || text.tr || '';
+    }
+    
+    // For Turkish, fallback to English if Turkish is not available
+    return text.tr || text.en || '';
   }
   
   return '';
@@ -48,16 +64,16 @@ export function isMultiLanguageText(text: any): text is MultiLanguageText {
 }
 
 /**
- * Get category name with fallback
+ * Get category name with fallback (prefers English, falls back to Turkish)
  */
-export function getCategoryName(category: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
-  if (!category) return 'Kategori';
+export function getCategoryName(category: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'en'): string {
+  if (!category) return locale === 'en' ? 'Category' : 'Kategori';
   
   // If category has a name property (populated object from TestCategory model)
   if (category.name) {
     if (typeof category.name === 'object') {
       const categoryName = getText(category.name, locale);
-      return categoryName || getText(category.name, 'tr') || 'Kategori';
+      return categoryName || (locale === 'en' ? 'Category' : 'Kategori');
     }
     return category.name;
   }
@@ -65,23 +81,23 @@ export function getCategoryName(category: any, locale: 'tr' | 'en' | 'de' | 'fr'
   // If category is just a string, it's likely an ID - return default
   // The actual lookup should be done in the component using activeMenus
   if (typeof category === 'string') {
-    return 'Kategori';
+    return locale === 'en' ? 'Category' : 'Kategori';
   }
   
-  return 'Kategori';
+  return locale === 'en' ? 'Category' : 'Kategori';
 }
 
 /**
- * Get test title with fallback
+ * Get test title with fallback (prefers English, falls back to Turkish)
  */
-export function getTestTitle(test: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+export function getTestTitle(test: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'en'): string {
   return getText(test?.title, locale);
 }
 
 /**
- * Get test description with fallback
+ * Get test description with fallback (prefers English, falls back to Turkish)
  */
-export function getTestDescription(test: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'tr'): string {
+export function getTestDescription(test: any, locale: 'tr' | 'en' | 'de' | 'fr' = 'en'): string {
   return getText(test?.description, locale);
 }
 

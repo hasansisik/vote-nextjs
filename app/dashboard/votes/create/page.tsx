@@ -221,10 +221,10 @@ function CreateTestPageContent() {
   const [croppingFor, setCroppingFor] = useState<"cover" | number>("cover");
   
   // Language tabs state
-  const [activeLanguage, setActiveLanguage] = useState<"tr" | "en" | "de" | "fr">("tr");
+  const [activeLanguage, setActiveLanguage] = useState<"tr" | "en" | "de" | "fr">("en");
   const availableLanguages = [
-    { code: "tr", name: "Türkçe", flag: "🇹🇷" },
     { code: "en", name: "English", flag: "🇺🇸" },
+    { code: "tr", name: "Türkçe", flag: "🇹🇷" },
     { code: "de", name: "Deutsch", flag: "🇩🇪" },
     { code: "fr", name: "Français", flag: "🇫🇷" },
   ];
@@ -697,7 +697,7 @@ function CreateTestPageContent() {
                 value={formData.title[activeLanguage] || ""}
                 onChange={(e) => handleInputChange("title", e.target.value, activeLanguage)}
                 placeholder={`Oylama başlığı girin (${availableLanguages.find(l => l.code === activeLanguage)?.name})...`}
-                required={activeLanguage === "tr"}
+                required={activeLanguage === "en"}
                 className="text-2xl font-semibold px-2 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-gray-400 border border-gray-200"
               />
             </div>
@@ -819,7 +819,7 @@ function CreateTestPageContent() {
                           onChange={(e) => handleOptionChange(index, "title", e.target.value, activeLanguage)}
                           placeholder={`Seçenek başlığı girin (${availableLanguages.find(l => l.code === activeLanguage)?.name})...`}
                           className="bg-white"
-                          required={activeLanguage === "tr"}
+                          required={activeLanguage === "en"}
                         />
                       </div>
 
@@ -890,7 +890,7 @@ function CreateTestPageContent() {
                                 handleCustomFieldChange(index, fieldIndex, "fieldName", e.target.value, activeLanguage)
                               }
                               className="bg-white"
-                              required={activeLanguage === "tr"}
+                              required={activeLanguage === "en"}
                             />
                             <Input
                               placeholder={`Alan değeri (${availableLanguages.find(l => l.code === activeLanguage)?.name})`}
@@ -899,7 +899,7 @@ function CreateTestPageContent() {
                                 handleCustomFieldChange(index, fieldIndex, "fieldValue", e.target.value, activeLanguage)
                               }
                               className="bg-white"
-                              required={activeLanguage === "tr"}
+                              required={activeLanguage === "en"}
                             />
                             <Button
                               type="button"

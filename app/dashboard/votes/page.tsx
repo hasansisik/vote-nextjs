@@ -204,18 +204,18 @@ export default function VotesPage() {
                         <div className="flex-shrink-0 h-10 w-10 rounded-lg overflow-hidden">
                           <img
                             src={test.coverImage}
-                            alt={getTestTitle(test)}
+                            alt={getTestTitle(test, 'en')}
                             className="h-full w-full object-cover"
                           />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-medium text-gray-900 truncate">
-                          {getTestTitle(test)}
+                          {getTestTitle(test, 'en')}
                         </h3>
                         {test.description && (
                           <p className="text-xs text-gray-500 truncate mt-1">
-                            {getTestDescription(test)}
+                            {getTestDescription(test, 'en')}
                           </p>
                         )}
                       </div>
@@ -231,7 +231,7 @@ export default function VotesPage() {
                               key={index} 
                               className={`${getCategoryColor(categoryId)} text-xs`}
                             >
-                              {category ? getCategoryName(category) : 'Bilinmeyen Kategori'}
+                              {category ? getCategoryName(category, 'en') : 'Unknown Category'}
                             </Badge>
                           );
                         })
