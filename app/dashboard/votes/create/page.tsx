@@ -491,28 +491,28 @@ function CreateTestPageContent() {
     e.preventDefault();
 
     // Validation
-    if (!formData.title.tr || formData.categories.length === 0) {
+    if (!formData.title.en || formData.categories.length === 0) {
       toast.error("Eksik Bilgi", {
-        description: "Türkçe başlık ve en az bir kategori alanları zorunludur.",
+        description: "English title and at least one category are required.",
         duration: 4000
       });
       return;
     }
 
-    const validOptions = options.filter(option => option.title.tr && option.image);
+    const validOptions = options.filter(option => option.title.en && option.image);
     if (validOptions.length < 2) {
       toast.error("Yetersiz Seçenek", {
-        description: "En az 2 geçerli seçenek (Türkçe başlık ve görsel ile) gereklidir.",
+        description: "En az 2 geçerli seçenek (İngilizce başlık ve görsel ile) gereklidir.",
         duration: 4000
       });
       return;
     }
 
     // Check for empty option titles or images
-    const emptyOptions = options.filter(option => !option.title.tr || !option.image);
+    const emptyOptions = options.filter(option => !option.title.en || !option.image);
     if (emptyOptions.length > 0) {
       toast.error("Eksik Seçenek Bilgileri", {
-        description: "Tüm seçenekler için Türkçe başlık ve görsel gereklidir.",
+        description: "Tüm seçenekler için İngilizce başlık ve görsel gereklidir.",
         duration: 4000
       });
       return;
@@ -522,7 +522,7 @@ function CreateTestPageContent() {
     const cleanedOptions = validOptions.map(option => ({
       ...option,
       customFields: option.customFields?.filter(field => 
-        field.fieldName.tr.trim() !== '' && field.fieldValue.tr.trim() !== ''
+        field.fieldName.en?.trim() !== '' && field.fieldValue.en?.trim() !== ''
       ) || []
     }));
 

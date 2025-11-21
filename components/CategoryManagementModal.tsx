@@ -157,9 +157,9 @@ export default function CategoryManagementModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if Turkish name is provided (required)
-    if (!formData.name.tr?.trim()) {
-      toast.error('Türkçe kategori adı gereklidir');
+    // Check if English name is provided (required)
+    if (!formData.name.en?.trim()) {
+      toast.error('English category name is required');
       return;
     }
 
@@ -288,7 +288,7 @@ export default function CategoryManagementModal({
                       <TabsContent key={lang.code} value={lang.code} className="space-y-4 mt-4">
                         <div>
                           <Label className="text-sm font-medium text-gray-700">
-                            Kategori Adı ({lang.name}) {lang.code === 'tr' ? '*' : ''}
+                            Kategori Adı ({lang.name}) {lang.code === 'en' ? '*' : ''}
                           </Label>
                           <Input
                             type="text"
@@ -301,7 +301,7 @@ export default function CategoryManagementModal({
                               }
                             })}
                             placeholder={`${lang.name} kategori adını girin`}
-                            required={lang.code === 'tr'}
+                            required={lang.code === 'en'}
                             className="mt-1"
                           />
                         </div>
